@@ -86,8 +86,10 @@ export function FloatingInput({
         <View style={[styles.container, { borderColor, borderWidth }]}>
           {label && (
             <Animated.View
-              pointerEvents="none"
-              style={[styles.labelWrapper, { transform: [{ translateY }] }]}
+              style={[
+                styles.labelWrapper,
+                { transform: [{ translateY }], pointerEvents: "none" },
+              ]}
             >
               <Animated.Text
                 style={[
@@ -128,7 +130,7 @@ export function FloatingInput({
         </View>
       </Pressable>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }
