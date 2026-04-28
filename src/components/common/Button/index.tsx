@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 공통 Button 컴포넌트
  *
  * variant:
@@ -29,8 +29,8 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import { colors } from "../../../constants/colors";
-import { fontSize, fontWeight } from "../../../constants/typography";
+import { colors } from "@/constants/colors";
+import { fontSize, fontWeight } from "@/constants/typography";
 
 type Variant = "primary" | "secondary" | "ghost" | "destructive";
 type Size = "sm" | "md" | "lg";
@@ -60,7 +60,6 @@ export function Button({
       activeOpacity={0.8}
       disabled={isDisabled}
       accessibilityRole="button"
-      // loading 중에도 스크린 리더가 버튼 이름을 읽을 수 있도록 label 고정
       accessibilityLabel={label}
       accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}
       style={[

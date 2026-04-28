@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 공통 Input 컴포넌트
  *
  * 상태별 테두리:
@@ -25,8 +25,8 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
-import { colors } from "../../../constants/colors";
-import { fontSize, fontWeight } from "../../../constants/typography";
+import { colors } from "@/constants/colors";
+import { fontSize, fontWeight } from "@/constants/typography";
 
 interface InputProps extends TextInputProps {
   label?: string;
