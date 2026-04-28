@@ -43,6 +43,8 @@ export function Input({
   hint,
   suffix,
   style,
+  onFocus: externalOnFocus,
+  onBlur: externalOnBlur,
   ...rest
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -74,11 +76,11 @@ export function Input({
           placeholderTextColor={colors.textDisabled}
           onFocus={(e) => {
             setIsFocused(true);
-            rest.onFocus?.(e); // 외부에서 onFocus를 넘겼을 때 같이 실행
+            externalOnFocus?.(e); // 외부에서 onFocus를 넘겼을 때 같이 실행
           }}
           onBlur={(e) => {
-            setIsFocused(false); // 외부에서 onBlur를 넘겼을 때 같이 실행
-            rest.onBlur?.(e);
+            setIsFocused(false);
+            externalOnBlur?.(e); // 외부에서 onBlur를 넘겼을 때 같이 실행
           }}
           {...rest}
         />

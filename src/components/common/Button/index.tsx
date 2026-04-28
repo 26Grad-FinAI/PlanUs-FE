@@ -60,6 +60,8 @@ export function Button({
       activeOpacity={0.8}
       disabled={isDisabled}
       accessibilityRole="button"
+      // loading 중에도 스크린 리더가 버튼 이름을 읽을 수 있도록 label 고정
+      accessibilityLabel={label}
       accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}
       style={[
         styles.base,
