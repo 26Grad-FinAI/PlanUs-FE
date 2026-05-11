@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 공통 FloatingInput 컴포넌트
  *
  * @param label - 입력 필드 이름 (floating label로 표시)
