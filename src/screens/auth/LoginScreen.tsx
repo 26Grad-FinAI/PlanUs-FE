@@ -13,7 +13,7 @@
  * - hasCompletedOnboarding === true  → Main 스택
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -23,27 +23,27 @@ import {
   Platform,
   ScrollView,
   Alert,
-} from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+} from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { Button } from "@/components/common/Button";
-import { FloatingInput } from "@/components/common/FloatingInput";
-import { login } from "@/services/api/authApi";
-import { validateEmail, validatePassword } from "@/utils/validation";
-import { useAuthStore } from "@/store/useAuthStore";
-import { colors } from "@/constants/colors";
-import { fontSize, fontWeight } from "@/constants/typography";
-import { AuthStackParamList } from "@/app/navigation/types";
+import { Button } from '@/components/common/Button';
+import { FloatingInput } from '@/components/common/FloatingInput';
+import { login } from '@/services/api/authApi';
+import { validateEmail, validatePassword } from '@/utils/validation';
+import { useAuthStore } from '@/store/useAuthStore';
+import { colors } from '@/constants/colors';
+import { fontSize, fontWeight } from '@/constants/typography';
+import { AuthStackParamList } from '@/app/navigation/types';
 
-type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
+type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
   const { signIn } = useAuthStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // 이메일, 비밀번호 유효성 검사
@@ -54,13 +54,13 @@ export function LoginScreen({ navigation }: Props) {
     if (!emailResult.isValid) {
       setEmailError(emailResult.message);
       isValid = false;
-    } else setEmailError("");
+    } else setEmailError('');
 
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
       setPasswordError(passwordResult.message);
       isValid = false;
-    } else setPasswordError("");
+    } else setPasswordError('');
 
     return isValid;
   }
@@ -74,10 +74,7 @@ export function LoginScreen({ navigation }: Props) {
       signIn(response.profileCompleted);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : undefined;
-      Alert.alert(
-        "로그인 실패",
-        message ?? "이메일 또는 비밀번호를 확인해주세요.",
-      );
+      Alert.alert('로그인 실패', message ?? '이메일 또는 비밀번호를 확인해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +83,7 @@ export function LoginScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -104,7 +101,7 @@ export function LoginScreen({ navigation }: Props) {
             value={email}
             onChangeText={(text: string) => {
               setEmail(text);
-              if (emailError) setEmailError("");
+              if (emailError) setEmailError('');
             }}
             error={emailError}
             keyboardType="email-address"
@@ -117,7 +114,7 @@ export function LoginScreen({ navigation }: Props) {
             value={password}
             onChangeText={(text: string) => {
               setPassword(text);
-              if (passwordError) setPasswordError("");
+              if (passwordError) setPasswordError('');
             }}
             error={passwordError}
             secureTextEntry
@@ -142,7 +139,7 @@ export function LoginScreen({ navigation }: Props) {
           </TouchableOpacity>
           <View style={styles.signupRow}>
             <Text style={styles.linkText}>계정이 없으신가요? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
               <Text style={styles.signupLink}>가입하기</Text>
             </TouchableOpacity>
           </View>
@@ -159,16 +156,16 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 40,
   },
   titleSection: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 48,
   },
   appTitle: {
-    fontSize: fontSize["3xl"],
+    fontSize: fontSize['3xl'],
     fontWeight: fontWeight.semibold,
     color: colors.textPrimary,
     marginBottom: 8,
@@ -185,7 +182,7 @@ const styles = StyleSheet.create({
   },
   linkSection: {
     marginTop: 32,
-    alignItems: "center",
+    alignItems: 'center',
     gap: 12,
   },
   linkText: {
@@ -193,8 +190,8 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
   signupRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   signupLink: {
     fontSize: fontSize.sm,

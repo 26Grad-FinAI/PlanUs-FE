@@ -32,4 +32,4 @@ export interface AuthResponse {
  * 앱 전역에서 사용하는 인증된 사용자 정보
  * AuthResponse에서 토큰을 제외한 사용자 식별 정보만 포함
  */
-export type AuthUser = Omit<AuthResponse, "accessToken" | "refreshToken">;
+export type AuthUser = Omit<AuthResponse, 'accessToken' | 'refreshToken'>;

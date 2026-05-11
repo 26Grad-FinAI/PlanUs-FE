@@ -3,10 +3,10 @@
  * TODO: 다음 단계에서 구현 예정
  */
 
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
-import { fontSize } from "@/constants/typography";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '@/constants/colors';
+import { fontSize } from '@/constants/typography';
 
 export function SignupScreen() {
   return (
@@ -19,8 +19,8 @@ export function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.background,
   },
   text: {

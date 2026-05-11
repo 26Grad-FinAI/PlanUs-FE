@@ -19,7 +19,7 @@
  * @param fullWidth - true면 부모 너비에 꽉 채움
  */
 
-import React from "react";
+import React from 'react';
 import {
   TouchableOpacity,
   TouchableOpacityProps,
@@ -28,12 +28,12 @@ import {
   Text,
   ViewStyle,
   TextStyle,
-} from "react-native";
-import { colors } from "@/constants/colors";
-import { fontSize, fontWeight } from "@/constants/typography";
+} from 'react-native';
+import { colors } from '@/constants/colors';
+import { fontSize, fontWeight } from '@/constants/typography';
 
-type Variant = "primary" | "secondary" | "ghost" | "destructive";
-type Size = "sm" | "md" | "lg";
+type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive';
+type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends TouchableOpacityProps {
   label: string;
@@ -45,8 +45,8 @@ interface ButtonProps extends TouchableOpacityProps {
 
 export function Button({
   label,
-  variant = "primary",
-  size = "md",
+  variant = 'primary',
+  size = 'md',
   loading = false,
   fullWidth = false,
   disabled,
@@ -75,14 +75,10 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === "primary" ? colors.background : colors.primary}
+          color={variant === 'primary' ? colors.background : colors.primary}
         />
       ) : (
-        <Text
-          style={[styles.label, labelVariantMap[variant], labelSizeMap[size]]}
-        >
-          {label}
-        </Text>
+        <Text style={[styles.label, labelVariantMap[variant], labelSizeMap[size]]}>{label}</Text>
       )}
     </TouchableOpacity>
   );
@@ -90,13 +86,13 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 8,
   },
   fullWidth: {
-    alignSelf: "stretch",
+    alignSelf: 'stretch',
   },
   disabled: {
     opacity: 0.5,
@@ -106,15 +102,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   variant_secondary: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: colors.borderInput,
   },
   variant_ghost: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
   variant_destructive: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: colors.expense,
   },

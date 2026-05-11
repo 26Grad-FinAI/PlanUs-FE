@@ -14,12 +14,12 @@
  * 이 파일의 조건문 분기가 자동으로 올바른 스택을 렌더링한다.
  */
 
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { useAuthStore } from "@/store/useAuthStore";
-import { AuthNavigator } from "./AuthNavigator";
-import { RootStackParamList } from "./types";
+import { useAuthStore } from '@/store/useAuthStore';
+import { AuthNavigator } from './AuthNavigator';
+import { RootStackParamList } from './types';
 
 // TODO: 온보딩/메인 네비게이터 구현 후 import 추가
 // import { OnboardingNavigator } from './OnboardingNavigator';
@@ -31,7 +31,7 @@ export function RootNavigator() {
   const { isAuthenticated, hasCompletedOnboarding } = useAuthStore();
 
   return (
-    <Root.Navigator screenOptions={{ headerShown: false, animation: "fade" }}>
+    <Root.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
       {!isAuthenticated ? (
         // 미인증 상태 → 로그인/회원가입 화면
         <Root.Screen name="Auth" component={AuthNavigator} />

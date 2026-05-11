@@ -17,7 +17,7 @@
  * - TextInputProps 상속으로 기본 input 속성 그대로 사용 가능
  */
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   TextInput,
@@ -26,9 +26,9 @@ import {
   Text,
   Animated,
   Pressable,
-} from "react-native";
-import { colors } from "@/constants/colors";
-import { fontSize, fontWeight } from "@/constants/typography";
+} from 'react-native';
+import { colors } from '@/constants/colors';
+import { fontSize, fontWeight } from '@/constants/typography';
 
 interface FloatingInputProps extends TextInputProps {
   label?: string;
@@ -60,7 +60,7 @@ export function FloatingInput({
       duration: 150,
       useNativeDriver: true,
     }).start();
-  }, [isFloated]);
+  }, [isFloated, animValue]);
 
   // 위치 변환
   const translateY = animValue.interpolate({
@@ -68,16 +68,8 @@ export function FloatingInput({
     outputRange: [0, -13],
   });
 
-  const labelColor = error
-    ? colors.error
-    : isFocused
-      ? colors.primary
-      : colors.textDisabled;
-  const borderColor = error
-    ? colors.error
-    : isFocused
-      ? colors.primary
-      : colors.borderInput;
+  const labelColor = error ? colors.error : isFocused ? colors.primary : colors.textDisabled;
+  const borderColor = error ? colors.error : isFocused ? colors.primary : colors.borderInput;
   const borderWidth = isFocused || !!error ? 2 : 1;
 
   return (
@@ -86,17 +78,10 @@ export function FloatingInput({
         <View style={[styles.container, { borderColor, borderWidth }]}>
           {label && (
             <Animated.View
-              style={[
-                styles.labelWrapper,
-                { transform: [{ translateY }], pointerEvents: "none" },
-              ]}
+              style={[styles.labelWrapper, { transform: [{ translateY }], pointerEvents: 'none' }]}
             >
               <Animated.Text
-                style={[
-                  styles.label,
-                  isFloated && styles.labelFloated,
-                  { color: labelColor },
-                ]}
+                style={[styles.label, isFloated && styles.labelFloated, { color: labelColor }]}
                 numberOfLines={1}
               >
                 {label}
@@ -143,12 +128,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.borderInput,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   labelWrapper: {
     ...StyleSheet.absoluteFillObject,
     paddingHorizontal: 16,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   label: {
     fontSize: fontSize.base,
@@ -172,7 +157,7 @@ const styles = StyleSheet.create({
   },
 
   suffix: {
-    position: "absolute",
+    position: 'absolute',
     right: 16,
     bottom: 12,
     fontSize: fontSize.base,

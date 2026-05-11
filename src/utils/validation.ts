@@ -17,15 +17,15 @@ interface ValidationResult {
  */
 export function validateEmail(email: string): ValidationResult {
   if (!email.trim()) {
-    return { isValid: false, message: "이메일을 입력해주세요." };
+    return { isValid: false, message: '이메일을 입력해주세요.' };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return { isValid: false, message: "올바른 이메일 형식을 입력해주세요." };
+    return { isValid: false, message: '올바른 이메일 형식을 입력해주세요.' };
   }
 
-  return { isValid: true, message: "" };
+  return { isValid: true, message: '' };
 }
 
 /**
@@ -35,14 +35,14 @@ export function validateEmail(email: string): ValidationResult {
  */
 export function validatePassword(password: string): ValidationResult {
   if (!password) {
-    return { isValid: false, message: "비밀번호를 입력해주세요." };
+    return { isValid: false, message: '비밀번호를 입력해주세요.' };
   }
 
   if (password.length < 8) {
-    return { isValid: false, message: "비밀번호는 8자 이상이어야 합니다." };
+    return { isValid: false, message: '비밀번호는 8자 이상이어야 합니다.' };
   }
 
-  return { isValid: true, message: "" };
+  return { isValid: true, message: '' };
 }
 
 /**
@@ -55,7 +55,7 @@ export function validateNumber(
   value: string,
   options: { min?: number; max?: number; fieldName?: string } = {},
 ): ValidationResult {
-  const { min = 0, max, fieldName = "값" } = options;
+  const { min = 0, max, fieldName = '값' } = options;
 
   if (!value.trim()) {
     return { isValid: false, message: `${fieldName}을(를) 입력해주세요.` };
@@ -80,5 +80,5 @@ export function validateNumber(
     };
   }
 
-  return { isValid: true, message: "" };
+  return { isValid: true, message: '' };
 }

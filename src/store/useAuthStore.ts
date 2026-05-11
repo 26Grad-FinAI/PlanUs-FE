@@ -17,7 +17,7 @@
 import { create } from 'zustand';
 
 interface AuthState {
-  isAuthenticated:        boolean;
+  isAuthenticated: boolean;
   hasCompletedOnboarding: boolean;
 
   /** 로그인 성공 후 호출 — RootNavigator가 자동으로 적절한 스택으로 전환 */
@@ -30,17 +30,15 @@ interface AuthState {
   completeOnboarding: () => void;
 }
 
-export const useAuthStore = create<AuthState>(set => ({
-  isAuthenticated:        false,
+export const useAuthStore = create<AuthState>((set) => ({
+  isAuthenticated: false,
   hasCompletedOnboarding: false,
 
   signIn: (hasCompletedOnboarding: boolean) =>
     set({ isAuthenticated: true, hasCompletedOnboarding }),
 
-  signOut: () =>
-    set({ isAuthenticated: false, hasCompletedOnboarding: false }),
-    // TODO: AsyncStorage.removeItem('accessToken') 추가
+  signOut: () => set({ isAuthenticated: false, hasCompletedOnboarding: false }),
+  // TODO: AsyncStorage.removeItem('accessToken') 추가
 
-  completeOnboarding: () =>
-    set({ hasCompletedOnboarding: true }),
+  completeOnboarding: () => set({ hasCompletedOnboarding: true }),
 }));
