@@ -17,16 +17,10 @@
  * @param suffix   - 인풋 우측 단위 텍스트 (예: "원", "%")
  */
 
-import React, { useState } from "react";
-import {
-  View,
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-  Text,
-} from "react-native";
-import { colors } from "../../../constants/colors";
-import { fontSize, fontWeight } from "../../../constants/typography";
+import React, { useState } from 'react';
+import { View, TextInput, TextInputProps, StyleSheet, Text } from 'react-native';
+import { colors } from '@/constants/colors';
+import { fontSize, fontWeight } from '@/constants/typography';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -50,11 +44,7 @@ export function Input({
   const [isFocused, setIsFocused] = useState(false);
 
   // 테두리 색상 우선순위: error > focused > 기본
-  const borderColor = error
-    ? colors.error
-    : isFocused
-      ? colors.primary
-      : colors.borderInput;
+  const borderColor = error ? colors.error : isFocused ? colors.primary : colors.borderInput;
   const borderWidth = isFocused || !!error ? 2 : 1;
 
   return (
@@ -68,11 +58,7 @@ export function Input({
 
       <View style={[styles.container, { borderColor, borderWidth }]}>
         <TextInput
-          style={[
-            styles.input,
-            suffix ? styles.inputWithSuffix : undefined,
-            style,
-          ]}
+          style={[styles.input, suffix ? styles.inputWithSuffix : undefined, style]}
           placeholderTextColor={colors.textDisabled}
           onFocus={(e) => {
             setIsFocused(true);
@@ -96,7 +82,7 @@ export function Input({
 const styles = StyleSheet.create({
   wrapper: { gap: 8 },
 
-  labelRow: { flexDirection: "row", alignItems: "center" },
+  labelRow: { flexDirection: 'row', alignItems: 'center' },
   label: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
@@ -109,8 +95,8 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     height: 48,
     borderRadius: 8,
     paddingHorizontal: 16,
@@ -125,7 +111,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   inputWithSuffix: {
-    textAlign: "right",
+    textAlign: 'right',
     paddingRight: 8,
   },
   suffix: {

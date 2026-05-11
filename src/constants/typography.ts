@@ -5,14 +5,14 @@ export const fontSize = {
   base: 16,
   lg: 18,
   xl: 20,
-  "2xl": 24,
-  "3xl": 30,
-  "5xl": 48,
+  '2xl': 24,
+  '3xl': 30,
+  '5xl': 48,
 } as const;
 
 export const fontWeight = {
-  regular: "400",
-  medium: "500",
-  semibold: "600",
-  bold: "700",
+  regular: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
 } as const;
