@@ -1,5 +1,7 @@
+language: ko-KR
+
 reviews:
   auto_review:
-    enabled: false
+    enabled: true
 
   poem: false
