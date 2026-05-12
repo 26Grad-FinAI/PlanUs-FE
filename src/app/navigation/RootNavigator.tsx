@@ -19,11 +19,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuthStore } from '@/store/useAuthStore';
 import { AuthNavigator } from './AuthNavigator';
+import { MainTabNavigator } from './MainTabNavigator';
 import { RootStackParamList } from './types';
 
-// TODO: 온보딩/메인 네비게이터 구현 후 import 추가
+// TODO: 온보딩 네비게이터 구현 후 import 추가
 // import { OnboardingNavigator } from './OnboardingNavigator';
-// import { MainNavigator }       from './MainNavigator';
 
 const Root = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,10 +41,8 @@ export function RootNavigator() {
         // <Root.Screen name="Onboarding" component={OnboardingNavigator} />
         <Root.Screen name="Auth" component={AuthNavigator} />
       ) : (
-        // 인증 + 온보딩 완료 → 메인 화면
-        // TODO: MainNavigator 구현 후 아래 주석 해제
-        // <Root.Screen name="Main" component={MainNavigator} />
-        <Root.Screen name="Auth" component={AuthNavigator} />
+        // 인증 + 온보딩 완료 → 메인 탭 화면
+        <Root.Screen name="Main" component={MainTabNavigator} />
       )}
     </Root.Navigator>
   );
