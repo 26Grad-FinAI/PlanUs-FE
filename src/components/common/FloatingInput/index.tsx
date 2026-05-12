@@ -68,14 +68,14 @@ export function FloatingInput({
     outputRange: [0, -13],
   });
 
+  // borderWidth는 항상 2로 고정해 포커스/에러 시 레이아웃 흔들림 방지, 색상만 변경
   const labelColor = error ? colors.error : isFocused ? colors.primary : colors.textDisabled;
   const borderColor = error ? colors.error : isFocused ? colors.primary : colors.borderInput;
-  const borderWidth = isFocused || !!error ? 2 : 1;
 
   return (
     <View>
       <Pressable onPress={() => inputRef.current?.focus()}>
-        <View style={[styles.container, { borderColor, borderWidth }]}>
+        <View style={[styles.container, { borderColor }]}>
           {label && (
             <Animated.View
               style={[styles.labelWrapper, { transform: [{ translateY }], pointerEvents: 'none' }]}
