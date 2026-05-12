@@ -36,6 +36,7 @@ export async function signup(params: SignupParams): Promise<AuthResponse> {
   return {
     ...mockAuthResponse,
     email: params.email,
+    nickname: params.nickname,
     // 회원가입 직후이므로 프로필 미완료 상태
     profileCompleted: false,
   };

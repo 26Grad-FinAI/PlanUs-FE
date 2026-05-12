@@ -10,6 +10,7 @@ export interface LoginParams {
 
 /** 회원가입 요청 파라미터 */
 export interface SignupParams {
+  nickname: string;
   email: string;
   password: string;
   confirmPassword: string;

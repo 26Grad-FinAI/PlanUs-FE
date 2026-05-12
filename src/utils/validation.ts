@@ -32,14 +32,61 @@ export function validateEmail(email: string): ValidationResult {
  * 비밀번호 검사
  * - 빈 값 여부
  * - 최소 8자 이상
+ * - maxLength 옵션: 최대 글자 수 초과 여부
  */
-export function validatePassword(password: string): ValidationResult {
+export function validatePassword(
+  password: string,
+  options: { maxLength?: number } = {},
+): ValidationResult {
+  const { maxLength } = options;
+
   if (!password) {
     return { isValid: false, message: '비밀번호를 입력해주세요.' };
   }
 
   if (password.length < 8) {
     return { isValid: false, message: '비밀번호는 8자 이상이어야 합니다.' };
+  }
+
+  if (maxLength !== undefined && password.length > maxLength) {
+    return { isValid: false, message: `비밀번호는 ${maxLength}자 이하여야 합니다.` };
+  }
+
+  return { isValid: true, message: '' };
+}
+
+/**
+ * 비밀번호 확인 검사
+ * - 빈 값 여부
+ * - password와 일치 여부
+ */
+export function validateConfirmPassword(
+  password: string,
+  confirmPassword: string,
+): ValidationResult {
+  if (!confirmPassword) {
+    return { isValid: false, message: '비밀번호 확인을 입력해주세요.' };
+  }
+
+  if (password !== confirmPassword) {
+    return { isValid: false, message: '비밀번호가 일치하지 않습니다.' };
+  }
+
+  return { isValid: true, message: '' };
+}
+
+/**
+ * 닉네임 검사
+ * - 빈 값 여부
+ * - 최소 2자 이상
+ */
+export function validateNickname(nickname: string): ValidationResult {
+  if (!nickname.trim()) {
+    return { isValid: false, message: '닉네임을 입력해주세요.' };
+  }
+
+  if (nickname.trim().length < 2) {
+    return { isValid: false, message: '닉네임은 2자 이상이어야 합니다.' };
   }
 
   return { isValid: true, message: '' };
