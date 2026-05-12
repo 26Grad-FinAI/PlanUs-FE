@@ -178,7 +178,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             accessibilityRole="button"
             accessibilityLabel="소비 기록 추가"
           >
-            <Ionicons name="add" size={30} color="#FFFFFF" />
+            <Ionicons name="add" size={30} color={colors.background} />
           </TouchableOpacity>
         </View>
 
@@ -226,12 +226,12 @@ const tabBarStyles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
 
     // iOS 그림자
-    shadowColor: '#000000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -280,10 +280,10 @@ const tabBarStyles = StyleSheet.create({
   },
   centerButtonActive: {
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: colors.background,
   },
   safeAreaFill: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
 });
 

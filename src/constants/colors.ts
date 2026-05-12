@@ -24,4 +24,6 @@ export const colors = {
   planned: '#D97706',
   plannedBg: '#FFFBEB',
   plannedBorder: '#FCD34D',
+
+  shadow: '#000000',
 } as const;
