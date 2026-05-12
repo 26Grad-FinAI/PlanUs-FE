@@ -1,10 +1,10 @@
-/**
+﻿/**
  * 공통 Input 컴포넌트
  *
  * 상태별 테두리:
- * - 기본      : 회색 테두리 (borderInput), 두께 1
- * - 포커스    : 파란 테두리 (primary), 두께 2
- * - 에러      : 빨간 테두리 (error), 두께 2 — 포커스보다 우선
+ * - 기본      : 회색 테두리 (borderInput)
+ * - 포커스    : 파란 테두리 (primary)
+ * - 에러      : 빨간 테두리 (error) - 포커스보다 우선
  *
  * 하단 텍스트:
  * - hint  : 안내 텍스트 — error가 없을 때만 표시
@@ -43,12 +43,11 @@ export function Input({
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
-  // 테두리 색상 우선순위: error > focused > 기본
+  // borderWidth는 항상 2로 고정해 포커스/에러 시 레이아웃 흔들림 방지, 색상만 변경
   const borderColor = error ? colors.error : isFocused ? colors.primary : colors.borderInput;
-  const borderWidth = isFocused || !!error ? 2 : 1;
 
   return (
-    <View style={styles.wrapper}>
+    <View>
       {label && (
         <View style={styles.labelRow}>
           <Text style={styles.label}>{label}</Text>
@@ -56,7 +55,7 @@ export function Input({
         </View>
       )}
 
-      <View style={[styles.container, { borderColor, borderWidth }]}>
+      <View style={[styles.container, { borderColor }]}>
         <TextInput
           style={[styles.input, suffix ? styles.inputWithSuffix : undefined, style]}
           placeholderTextColor={colors.textDisabled}
@@ -73,16 +72,14 @@ export function Input({
         {suffix && <Text style={styles.suffix}>{suffix}</Text>}
       </View>
 
-      {hint && !error && <Text style={styles.hint}>{hint}</Text>}
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {!!hint && !error && <Text style={styles.hint}>{hint}</Text>}
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 8 },
-
-  labelRow: { flexDirection: 'row', alignItems: 'center' },
+  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   label: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
