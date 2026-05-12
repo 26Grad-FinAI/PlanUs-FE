@@ -1,4 +1,5 @@
 reviews:
   auto_review:
     enabled: false
-    description_keyword: "coderabbit:review"
+
+  poem: false
