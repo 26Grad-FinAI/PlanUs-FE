@@ -132,6 +132,15 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
 
+  // 오늘 자정 기준으로 선택된 날짜가 미래인지 확인 → 예정 소비 뱃지/안내 표시 여부 결정
+  const isPlannedDate = (() => {
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    return selected > todayMidnight;
+  })();
+
   useFocusEffect(
     useCallback(() => {
       const today = new Date();
@@ -315,22 +324,43 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
             />
 
             {/* ── 날짜 ── */}
-            {/* Input 컴포넌트 미사용: 읽기 전용 + 달력 아이콘 필요 → 직접 스타일링 */}
             <View>
               <View style={styles.labelRow}>
                 <Text style={styles.fieldLabel}>날짜</Text>
                 <Text style={styles.required}> *</Text>
               </View>
               <TouchableOpacity
-                style={styles.dateRow}
+                style={[styles.dateRow, isPlannedDate && styles.dateRowPlanned]}
                 onPress={handleOpenDatePicker}
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel="날짜 선택"
               >
-                <Text style={styles.dateText}>{formatDateForDisplay(selectedDate)}</Text>
-                <Ionicons name="calendar-outline" size={18} color={colors.textTertiary} />
+                <Text style={[styles.dateText, isPlannedDate && styles.dateTextPlanned]}>
+                  {formatDateForDisplay(selectedDate)}
+                </Text>
+                {/* 미래 날짜 선택 시 입력란 내부에 '예정' 칩 표시 */}
+                {isPlannedDate && (
+                  <View style={styles.plannedChip}>
+                    <Text style={styles.plannedChipText}>예정</Text>
+                  </View>
+                )}
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={isPlannedDate ? colors.primary : colors.textTertiary}
+                />
               </TouchableOpacity>
+              {/* 미래 날짜 선택 시 예정 소비 안내 문구 */}
+              {isPlannedDate && (
+                <View style={styles.plannedHintRow}>
+                  <Ionicons name="information-circle-outline" size={14} color={colors.primary} />
+                  <Text style={styles.plannedHintText}>
+                    아직 오지 않은 날짜예요. <Text style={styles.plannedHintEm}>예정 소비</Text>로
+                    기록됩니다.
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* ── 카테고리 ── */}
@@ -369,7 +399,6 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
             </View>
 
             {/* ── 메모 ── */}
-            {/* TextArea: 회색 배경 + 테두리 없음 스타일의 멀티라인 입력 컴포넌트 */}
             <TextArea
               label="메모"
               placeholder="메모를 입력하세요"
@@ -520,7 +549,12 @@ const styles = StyleSheet.create({
   },
 
   // ── 날짜 필드 (커스텀) ──
-  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  labelWithRequired: { flexDirection: 'row', alignItems: 'center' },
   fieldLabel: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
@@ -536,10 +570,49 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderInput,
   },
+  // 미래 날짜 선택 시 날짜 행 테두리를 primary 계열로 변경
+  dateRowPlanned: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
   dateText: {
     flex: 1,
     fontSize: fontSize.base,
     color: colors.textPrimary,
+  },
+  dateTextPlanned: {
+    color: colors.textPrimary,
+    fontWeight: fontWeight.medium,
+  },
+
+  // ── 예정 소비 칩 / 안내 ──
+  plannedChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    backgroundColor: colors.primary,
+    marginRight: 10,
+  },
+  plannedChipText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+    color: colors.background,
+  },
+  plannedHintRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 4,
+    marginTop: 6,
+  },
+  plannedHintText: {
+    flex: 1,
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
+    lineHeight: 18,
+  },
+  plannedHintEm: {
+    color: colors.primary,
+    fontWeight: fontWeight.semibold,
   },
 
   // ── 카테고리 섹션 라벨 ──
