@@ -10,15 +10,27 @@
  * - hint  : 안내 텍스트 — error가 없을 때만 표시
  * - error : 에러 메시지 — hint보다 우선
  *
- * @param label    - 인풋 상단 라벨
- * @param required - true면 라벨 옆에 * 표시
- * @param error    - 에러 메시지
- * @param hint     - 안내 텍스트
- * @param suffix   - 인풋 우측 단위 텍스트 (예: "원", "%")
+ * @param label         - 인풋 상단 라벨
+ * @param required      - true면 라벨 옆에 * 표시
+ * @param error         - 에러 메시지
+ * @param hint          - 안내 텍스트
+ * @param suffix        - 인풋 우측 단위 텍스트 (예: "원", "%")
+ * @param suffixStyle   - suffix 텍스트에 추가 스타일 적용
+ * @param multiline     - true면 여러 줄 입력 지원 (고정 높이 대신 minHeight 48 적용)
+ * @param containerStyle - 컨테이너(테두리 박스)에 추가 스타일 적용
  */
 
 import React, { useState } from 'react';
-import { View, TextInput, TextInputProps, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  TextInput,
+  TextInputProps,
+  StyleSheet,
+  Text,
+  TextStyle,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 
@@ -28,6 +40,8 @@ interface InputProps extends TextInputProps {
   error?: string;
   hint?: string;
   suffix?: string;
+  suffixStyle?: StyleProp<TextStyle>;
+  containerStyle?: ViewStyle;
 }
 
 export function Input({
@@ -36,14 +50,15 @@ export function Input({
   error,
   hint,
   suffix,
+  suffixStyle,
+  multiline,
   style,
+  containerStyle,
   onFocus: externalOnFocus,
   onBlur: externalOnBlur,
   ...rest
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
-
-  // borderWidth는 항상 2로 고정해 포커스/에러 시 레이아웃 흔들림 방지, 색상만 변경
   const borderColor = error ? colors.error : isFocused ? colors.primary : colors.borderInput;
 
   return (
@@ -55,9 +70,22 @@ export function Input({
         </View>
       )}
 
-      <View style={[styles.container, { borderColor }]}>
+      <View
+        style={[
+          styles.container,
+          multiline ? styles.containerMultiline : undefined,
+          { borderColor },
+          containerStyle,
+        ]}
+      >
         <TextInput
-          style={[styles.input, suffix ? styles.inputWithSuffix : undefined, style]}
+          multiline={multiline}
+          style={[
+            styles.input,
+            suffix ? styles.inputWithSuffix : undefined,
+            multiline ? styles.inputMultiline : undefined,
+            style,
+          ]}
           placeholderTextColor={colors.textDisabled}
           onFocus={(e) => {
             setIsFocused(true);
@@ -69,7 +97,7 @@ export function Input({
           }}
           {...rest}
         />
-        {suffix && <Text style={styles.suffix}>{suffix}</Text>}
+        {suffix && <Text style={[styles.suffix, suffixStyle]}>{suffix}</Text>}
       </View>
 
       {!!hint && !error && <Text style={styles.hint}>{hint}</Text>}
@@ -90,7 +118,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
     color: colors.error,
   },
-
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,6 +128,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderInput,
   },
+  containerMultiline: {
+    height: undefined,
+    minHeight: 48,
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+  },
   input: {
     flex: 1,
     fontSize: fontSize.base,
@@ -110,6 +143,9 @@ const styles = StyleSheet.create({
   inputWithSuffix: {
     textAlign: 'right',
     paddingRight: 8,
+  },
+  inputMultiline: {
+    textAlignVertical: 'top',
   },
   suffix: {
     fontSize: fontSize.base,
