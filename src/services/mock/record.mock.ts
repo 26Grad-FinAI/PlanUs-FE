@@ -56,7 +56,8 @@ export const mockSpendingRecords: SpendingRecord[] = [
  * return res.data;
  */
 export async function fetchSpendingRecords(): Promise<SpendingRecord[]> {
-  return mockSpendingRecords;
+  // 원본 배열 참조 대신 복사본 반환 → 외부에서의 직접 변이 방지
+  return mockSpendingRecords.map((record) => ({ ...record }));
 }
 
 /**
@@ -76,5 +77,7 @@ export async function createSpendingRecord(
     createdAt: new Date().toISOString(),
   };
 
-  return newRecord;
+  // 목록 맨 앞에 삽입해 이후 fetchSpendingRecords 호출 시 결과에 반영
+  mockSpendingRecords.unshift(newRecord);
+  return { ...newRecord };
 }

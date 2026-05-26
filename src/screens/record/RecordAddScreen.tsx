@@ -436,7 +436,9 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
           <View style={[styles.calendarCard, { paddingBottom: bottomInset + 20 }]}>
             <Calendar
               current={formatDateForISO(tempSelectedDate)}
-              onDayPress={(day: DateData) => setTempSelectedDate(new Date(day.dateString))}
+              onDayPress={({ year, month, day: d }: DateData) =>
+                setTempSelectedDate(new Date(year, month - 1, d))
+              }
               markedDates={markedDates}
               theme={{
                 backgroundColor: colors.background,
