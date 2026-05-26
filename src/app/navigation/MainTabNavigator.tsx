@@ -19,40 +19,10 @@ import { HomeCalendarScreen } from '@/screens/home/HomeCalendarScreen';
 import { MonthlyReportScreen } from '@/screens/report/MonthlyReportScreen';
 import { AIAnalysisScreen } from '@/screens/ai/AIAnalysisScreen';
 import { SettingsScreen } from '@/screens/settings/SettingsScreen';
+import { RecordAddScreen } from '@/screens/record/RecordAddScreen';
 import { MainTabParamList } from './types';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
-
-/**
- * 소비 기록 추가 화면 (Placeholder)
- * 추후 모달 또는 전용 화면으로 교체 예정
- */
-function RecordAddScreen() {
-  return (
-    <View style={placeholderStyles.container}>
-      <Text style={placeholderStyles.emoji}>➕</Text>
-      <Text style={placeholderStyles.title}>소비 기록 추가</Text>
-      <Text style={placeholderStyles.subtitle}>소비 기록 추가 화면 (추후 구현 예정)</Text>
-    </View>
-  );
-}
-
-const placeholderStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    gap: 8,
-  },
-  emoji: { fontSize: 48, marginBottom: 8 },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
-  },
-  subtitle: { fontSize: fontSize.sm, color: colors.textTertiary },
-});
 
 /**
  * 각 탭의 아이콘 이름(Ionicons)과 라벨을 정의
@@ -101,6 +71,9 @@ const TAB_CONFIGS: TabConfig[] = [
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   // iOS 홈 인디케이터, Android 제스처 바 등 기기별 하단 안전 영역 높이
   const { bottom: bottomInset } = useSafeAreaInsets();
+
+  // RecordAdd 탭이 활성화된 경우 탭 바 전체를 숨겨 모달 느낌 연출
+  if (state.routes[state.index].name === 'RecordAdd') return null;
 
   // RecordAdd는 가운데 플로팅 + 버튼으로 별도 렌더링 → route를 직접 찾아 현재 활성 상태인지 확인
   const recordAddRoute = state.routes.find((r) => r.name === 'RecordAdd');
