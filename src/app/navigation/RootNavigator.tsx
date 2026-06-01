@@ -19,11 +19,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuthStore } from '@/store/useAuthStore';
 import { AuthNavigator } from './AuthNavigator';
+import { OnboardingNavigator } from './OnboardingNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { RootStackParamList } from './types';
-
-// TODO: 온보딩 네비게이터 구현 후 import 추가
-// import { OnboardingNavigator } from './OnboardingNavigator';
 
 const Root = createNativeStackNavigator<RootStackParamList>();
 
@@ -36,10 +34,8 @@ export function RootNavigator() {
         // 미인증 상태 → 로그인/회원가입 화면
         <Root.Screen name="Auth" component={AuthNavigator} />
       ) : !hasCompletedOnboarding ? (
-        // 인증 완료, 온보딩 미완료 → 프로필 입력 화면
-        // TODO: OnboardingNavigator 구현 후 아래 주석 해제
-        // <Root.Screen name="Onboarding" component={OnboardingNavigator} />
-        <Root.Screen name="Auth" component={AuthNavigator} />
+        // 인증 완료, 온보딩 미완료 → 프로필 입력 → AI 예산 추천 화면
+        <Root.Screen name="Onboarding" component={OnboardingNavigator} />
       ) : (
         // 인증 + 온보딩 완료 → 메인 탭 화면
         <Root.Screen name="Main" component={MainTabNavigator} />
