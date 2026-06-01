@@ -20,5 +20,5 @@ export const mockAuthResponse: AuthResponse = {
   nickname: '김스펜드',
   accessToken: 'mock-access-token-abc123',
   refreshToken: 'mock-refresh-token-xyz789',
-  profileCompleted: true, // 네비게이션 바 개발 확인용으로 온보딩 완료 처리
+  profileCompleted: false, // AI 예산 추천 화면 테스트용 — 온보딩 미완료로 설정
 };
