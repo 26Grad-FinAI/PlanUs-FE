@@ -16,7 +16,6 @@
  * @param hint          - 안내 텍스트
  * @param suffix        - 인풋 우측 단위 텍스트 (예: "원", "%")
  * @param suffixStyle   - suffix 텍스트에 추가 스타일 적용
- * @param multiline     - true면 여러 줄 입력 지원 (고정 높이 대신 minHeight 48 적용)
  * @param containerStyle - 컨테이너(테두리 박스)에 추가 스타일 적용
  */
 
@@ -51,7 +50,6 @@ export function Input({
   hint,
   suffix,
   suffixStyle,
-  multiline,
   style,
   containerStyle,
   onFocus: externalOnFocus,
@@ -70,22 +68,9 @@ export function Input({
         </View>
       )}
 
-      <View
-        style={[
-          styles.container,
-          multiline ? styles.containerMultiline : undefined,
-          { borderColor },
-          containerStyle,
-        ]}
-      >
+      <View style={[styles.container, { borderColor }, containerStyle]}>
         <TextInput
-          multiline={multiline}
-          style={[
-            styles.input,
-            suffix ? styles.inputWithSuffix : undefined,
-            multiline ? styles.inputMultiline : undefined,
-            style,
-          ]}
+          style={[styles.input, suffix ? styles.inputWithSuffix : undefined, style]}
           placeholderTextColor={colors.textDisabled}
           onFocus={(e) => {
             setIsFocused(true);
@@ -128,12 +113,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderInput,
   },
-  containerMultiline: {
-    height: undefined,
-    minHeight: 48,
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-  },
   input: {
     flex: 1,
     fontSize: fontSize.base,
@@ -143,9 +122,6 @@ const styles = StyleSheet.create({
   inputWithSuffix: {
     textAlign: 'right',
     paddingRight: 8,
-  },
-  inputMultiline: {
-    textAlignVertical: 'top',
   },
   suffix: {
     fontSize: fontSize.base,
