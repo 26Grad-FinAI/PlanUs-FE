@@ -78,15 +78,19 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
     setEditingText(String(currentAmount));
   }
 
-  function commitEdit() {
-    if (!editingCategoryId) return;
+  // 편집 중인 항목을 커밋하고 변경 후의 budgets 배열을 동기적으로 반환
+  // handleConfirm에서 setBudgets 반영 전에 초과 여부를 정확히 판단하기 위해 필요
+  function commitEdit(): CategoryBudget[] {
+    if (!editingCategoryId) return budgets;
     const parsed = parseInt(editingText.replace(/[^0-9]/g, ''), 10);
     const newAmount = isNaN(parsed) ? 0 : parsed;
-    setBudgets((prev) =>
-      prev.map((b) => (b.category === editingCategoryId ? { ...b, userAmount: newAmount } : b)),
+    const nextBudgets = budgets.map((b) =>
+      b.category === editingCategoryId ? { ...b, userAmount: newAmount } : b,
     );
+    setBudgets(nextBudgets);
     setEditingCategoryId(null);
     setEditingText('');
+    return nextBudgets;
   }
 
   // 전체 카테고리를 AI 제안값으로 초기화
@@ -97,8 +101,11 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
   }
 
   function handleConfirm() {
-    commitEdit();
-    if (isExceeded) {
+    // commitEdit이 반환하는 nextBudgets로 초과 여부를 판단하여 모달 표시 여부 결정
+    const nextBudgets = commitEdit();
+    const nextTotal = nextBudgets.reduce((sum, b) => sum + b.userAmount, 0);
+    const nextIsExceeded = nextTotal > aiTotal;
+    if (nextIsExceeded) {
       setShowOverBudgetModal(true);
     } else {
       finalize();
