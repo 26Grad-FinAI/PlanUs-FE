@@ -23,7 +23,7 @@ export const mockUserProfile: UserProfile = {
   },
   isEmployed: true,
   ownsHome: 'rented',
-  topSpendingCategories: ['dining', 'clothing', 'leisure'],
+  topSpendingCategory: 'dining',
 };
 
 // TODO: API 연결 시 사용

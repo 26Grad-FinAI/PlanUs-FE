@@ -48,7 +48,7 @@ export interface UserProfile {
   savingsGoal: SavingsGoal;
   isEmployed: boolean | null;
   ownsHome: HomeOwnership | null;
-  topSpendingCategories: TopSpendingCategory[];
+  topSpendingCategory: TopSpendingCategory | null;
 }
 
 // API 전송용 파라미터 (숫자 타입으로 파싱 완료)
@@ -65,5 +65,5 @@ export interface CreateProfileParams {
   } | null;
   isEmployed: boolean;
   ownsHome: HomeOwnership;
-  topSpendingCategories: TopSpendingCategory[];
+  topSpendingCategory: TopSpendingCategory;
 }
