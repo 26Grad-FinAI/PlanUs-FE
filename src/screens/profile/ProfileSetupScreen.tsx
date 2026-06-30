@@ -92,8 +92,11 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
   const [ageError, setAgeError] = useState('');
   const [genderError, setGenderError] = useState('');
   const [incomeError, setIncomeError] = useState('');
-  // 연도·월·금액을 묶어 하나의 에러로 관리 (세 필드가 하나의 목표를 구성하므로)
+  // 표시용 에러 메시지는 하나로 묶되, 어느 필드(기간/금액)가 문제인지는 별도 플래그로 구분
+  // (테두리 강조를 메시지 문자열 추측이 아니라 명확한 상태로 제어하기 위함)
   const [savingsGoalError, setSavingsGoalError] = useState('');
+  const [savingsPeriodHasError, setSavingsPeriodHasError] = useState(false);
+  const [savingsAmountHasError, setSavingsAmountHasError] = useState(false);
   const [employmentError, setEmploymentError] = useState('');
   const [homeError, setHomeError] = useState('');
   const [categoryError, setCategoryError] = useState('');
@@ -131,11 +134,13 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
     setSavingsTargetYear(year);
     setSavingsTargetMonth(month);
     if (savingsGoalError) setSavingsGoalError('');
+    setSavingsPeriodHasError(false);
   }
 
   function handleSavingsAmountChange(value: string) {
     setSavingsAmount(value);
     if (savingsGoalError) setSavingsGoalError('');
+    setSavingsAmountHasError(false);
   }
 
   // ── 카테고리 단일 선택 ──
@@ -171,13 +176,17 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
       setIncomeError('');
     }
 
-    // 목표 저축액은 필수 항목 — 기간(연도·월)과 금액 모두 입력해야 함
+    // 목표 저축액은 필수 항목 — 기간(연도·월)과 금액 모두 입력해야 하고,
+    // 기간은 이번 달 이후여야 함 (이미 지난 달을 목표로 설정할 수 없음)
     const parsedSavingsYear = parseInt(savingsTargetYear, 10);
     const parsedSavingsMonth = parseInt(savingsTargetMonth, 10);
     const parsedSavings = parseInt(savingsAmount || '0', 10);
+    const currentMonth = new Date().getMonth() + 1;
 
     if (!savingsTargetYear || isNaN(parsedSavingsYear) || parsedSavingsYear < CURRENT_YEAR) {
       setSavingsGoalError('목표 기간을 선택해주세요');
+      setSavingsPeriodHasError(true);
+      setSavingsAmountHasError(false);
       isValid = false;
     } else if (
       !savingsTargetMonth ||
@@ -186,12 +195,23 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
       parsedSavingsMonth > 12
     ) {
       setSavingsGoalError('목표 기간을 선택해주세요');
+      setSavingsPeriodHasError(true);
+      setSavingsAmountHasError(false);
+      isValid = false;
+    } else if (parsedSavingsYear === CURRENT_YEAR && parsedSavingsMonth < currentMonth) {
+      setSavingsGoalError('지난 기간은 선택할 수 없어요');
+      setSavingsPeriodHasError(true);
+      setSavingsAmountHasError(false);
       isValid = false;
     } else if (!savingsAmount || parsedSavings <= 0) {
       setSavingsGoalError('목표 금액을 입력해주세요');
+      setSavingsPeriodHasError(false);
+      setSavingsAmountHasError(true);
       isValid = false;
     } else {
       setSavingsGoalError('');
+      setSavingsPeriodHasError(false);
+      setSavingsAmountHasError(false);
     }
 
     if (isEmployed === null) {
@@ -341,6 +361,8 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
             onConfirmPeriod={handleConfirmSavingsPeriod}
             onAmountChange={handleSavingsAmountChange}
             error={savingsGoalError}
+            periodHasError={savingsPeriodHasError}
+            amountHasError={savingsAmountHasError}
           />
 
           {/* ── 취업 여부 ── */}
