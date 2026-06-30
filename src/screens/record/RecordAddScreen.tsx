@@ -30,6 +30,7 @@ import { Input } from '@/components/common/Input';
 import { TextArea } from '@/components/common/TextArea';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import { MainTabParamList } from '@/app/navigation/types';
 import { SpendingType, SpendingCategory } from '@/types/record';
 
@@ -74,31 +75,6 @@ type RecordAddNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Record
 interface RecordAddScreenProps {
   navigation: RecordAddNavigationProp;
 }
-
-type CategoryItem = {
-  id: SpendingCategory;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-};
-
-const EXPENSE_CATEGORIES: CategoryItem[] = [
-  { id: 'grocery', label: '식료품', icon: 'cart-outline' },
-  { id: 'dining', label: '외식', icon: 'restaurant-outline' },
-  { id: 'alcohol', label: '주류', icon: 'beer-outline' },
-  { id: 'clothing', label: '의류', icon: 'shirt-outline' },
-  { id: 'leisure', label: '여가/문화', icon: 'film-outline' },
-  { id: 'medical', label: '의료/건강', icon: 'medkit-outline' },
-  { id: 'education', label: '교육', icon: 'book-outline' },
-  { id: 'travel', label: '숙박/여행', icon: 'airplane-outline' },
-  { id: 'telecom', label: '정보통신', icon: 'phone-portrait-outline' },
-  { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
-
-const INCOME_CATEGORIES: CategoryItem[] = [
-  { id: 'salary', label: '월급', icon: 'briefcase-outline' },
-  { id: 'allowance', label: '용돈', icon: 'gift-outline' },
-  { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
 
 // 숫자 → 천 단위 콤마 포맷 (예: 4500 → "4,500")
 function formatAmount(value: string): string {

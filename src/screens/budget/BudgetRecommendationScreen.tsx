@@ -18,28 +18,12 @@ import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
+import { CATEGORY_META } from '@/constants/categories';
 import { OnboardingStackParamList } from '@/app/navigation/types';
 import { useAuthStore } from '@/store/useAuthStore';
 import { mockAIBudget } from '@/services/mock/budget.mock';
 import { BudgetCategory, CategoryBudget } from '@/types/budget';
-
-// 카테고리별 아이콘 (소비 등록 화면과 동일한 아이콘 사용)
-const CATEGORY_ICON: Record<BudgetCategory, keyof typeof Ionicons.glyphMap> = {
-  grocery: 'cart-outline',
-  dining: 'restaurant-outline',
-  alcohol: 'beer-outline',
-  clothing: 'shirt-outline',
-  leisure: 'film-outline',
-  medical: 'medkit-outline',
-  education: 'book-outline',
-  travel: 'airplane-outline',
-  telecom: 'phone-portrait-outline',
-  other: 'ellipsis-horizontal-circle-outline',
-};
-
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString('ko-KR');
-}
+import { formatComma } from '@/utils/formatCurrency';
 
 type BudgetRecommendationNavigationProp = NativeStackNavigationProp<
   OnboardingStackParamList,
@@ -134,7 +118,11 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
       <View key={budget.category} style={styles.categoryCard}>
         {/* 상단 행: 아이콘 + 카테고리명 + 금액 편집 */}
         <View style={styles.categoryRow}>
-          <Ionicons name={CATEGORY_ICON[budget.category]} size={19} color={colors.textTertiary} />
+          <Ionicons
+            name={CATEGORY_META[budget.category].icon}
+            size={19}
+            color={colors.textTertiary}
+          />
           <Text style={styles.categoryLabel}>{budget.label}</Text>
 
           {/* 금액 영역 — 탭 시 인라인 편집 모드 전환 */}
@@ -160,7 +148,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
               accessibilityLabel={`${budget.label} 예산 수정`}
             >
               <Text style={[styles.amountText, isCategoryOver && styles.amountTextOver]}>
-                {formatCurrency(budget.userAmount)}원
+                {formatComma(budget.userAmount)}원
               </Text>
               <Ionicons name="create-outline" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -183,9 +171,9 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
         {/* 하단 메타: AI 제안 / 초과 | 비중 % */}
         <View style={styles.categoryMeta}>
           <View style={styles.categoryMetaLeft}>
-            <Text style={styles.aiHintText}>AI 제안 {formatCurrency(budget.aiAmount)}원</Text>
+            <Text style={styles.aiHintText}>AI 제안 {formatComma(budget.aiAmount)}원</Text>
             {isCategoryOver && (
-              <Text style={styles.categoryOverText}> +{formatCurrency(excess)}원 초과</Text>
+              <Text style={styles.categoryOverText}> +{formatComma(excess)}원 초과</Text>
             )}
           </View>
           <Text style={[styles.pctText, isCategoryOver && styles.pctTextOver]}>
@@ -241,7 +229,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryRowLabel}>AI 제안 예산</Text>
-              <Text style={styles.summaryAiAmount}>{formatCurrency(aiTotal)}원</Text>
+              <Text style={styles.summaryAiAmount}>{formatComma(aiTotal)}원</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryRow}>
@@ -250,16 +238,14 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
                 <Text
                   style={[styles.summaryUserAmount, isExceeded && styles.summaryUserAmountOver]}
                 >
-                  {formatCurrency(userTotal)}원
+                  {formatComma(userTotal)}원
                 </Text>
                 {isExceeded && (
-                  <Text style={styles.summaryExcessLabel}>
-                    +{formatCurrency(exceededAmount)} 초과
-                  </Text>
+                  <Text style={styles.summaryExcessLabel}>+{formatComma(exceededAmount)} 초과</Text>
                 )}
                 {!isExceeded && userTotal < aiTotal && (
                   <Text style={styles.summarySavingLabel}>
-                    -{formatCurrency(aiTotal - userTotal)} 절약
+                    -{formatComma(aiTotal - userTotal)} 절약
                   </Text>
                 )}
               </View>
@@ -301,7 +287,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
         iconColor={colors.planned}
         iconBg={colors.plannedBg}
         title="예산이 AI 제안을 초과했어요"
-        description={`AI 제안보다 ${formatCurrency(exceededAmount)}원 더 많아요.\n이대로 확정하시겠어요?`}
+        description={`AI 제안보다 ${formatComma(exceededAmount)}원 더 많아요.\n이대로 확정하시겠어요?`}
         cancelLabel="다시 조정할게요"
         confirmLabel="이대로 확정하기"
         confirmVariant="primary"
