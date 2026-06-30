@@ -30,7 +30,9 @@ import { Input } from '@/components/common/Input';
 import { TextArea } from '@/components/common/TextArea';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import { MainTabParamList } from '@/app/navigation/types';
+import { useRecordStore } from '@/store/useRecordStore';
 import { SpendingType, SpendingCategory } from '@/types/record';
 
 // 캘린더 한국어 로케일
@@ -75,31 +77,6 @@ interface RecordAddScreenProps {
   navigation: RecordAddNavigationProp;
 }
 
-type CategoryItem = {
-  id: SpendingCategory;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-};
-
-const EXPENSE_CATEGORIES: CategoryItem[] = [
-  { id: 'grocery', label: '식료품', icon: 'cart-outline' },
-  { id: 'dining', label: '외식', icon: 'restaurant-outline' },
-  { id: 'alcohol', label: '주류', icon: 'beer-outline' },
-  { id: 'clothing', label: '의류', icon: 'shirt-outline' },
-  { id: 'leisure', label: '여가/문화', icon: 'film-outline' },
-  { id: 'medical', label: '의료/건강', icon: 'medkit-outline' },
-  { id: 'education', label: '교육', icon: 'book-outline' },
-  { id: 'travel', label: '숙박/여행', icon: 'airplane-outline' },
-  { id: 'telecom', label: '정보통신', icon: 'phone-portrait-outline' },
-  { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
-
-const INCOME_CATEGORIES: CategoryItem[] = [
-  { id: 'salary', label: '월급', icon: 'briefcase-outline' },
-  { id: 'allowance', label: '용돈', icon: 'gift-outline' },
-  { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
-
 // 숫자 → 천 단위 콤마 포맷 (예: 4500 → "4,500")
 function formatAmount(value: string): string {
   if (!value) return '';
@@ -118,6 +95,7 @@ function formatDateForISO(date: Date): string {
 
 export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
   const { top: topInset, bottom: bottomInset } = useSafeAreaInsets();
+  const addRecord = useRecordStore((s) => s.addRecord);
   const [recordType, setRecordType] = useState<SpendingType>('expense');
   const [amount, setAmount] = useState(''); // 숫자 문자열 (콤마 제외)
   const [description, setDescription] = useState('');
@@ -209,15 +187,14 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
 
     if (!isValid) return;
 
-    // TODO: API 연결 시 사용
-    // await createSpendingRecord({ type: recordType, amount: parsedAmount, description, date: formatDateForISO(selectedDate), category: selectedCategory!, memo });
-
-    console.log('[mock] 소비 기록 저장:', {
+    // record store에 추가 → 홈 화면 등 store를 구독하는 화면이 자동으로 갱신된다
+    // TODO: API 연결 시 store 대신 createSpendingRecord(params) 호출 후 서버 응답으로 갱신
+    addRecord({
       type: recordType,
       amount: parsedAmount,
       description,
       date: formatDateForISO(selectedDate),
-      category: selectedCategory,
+      category: selectedCategory!,
       memo,
     });
     navigation.navigate('HomeCalendar');

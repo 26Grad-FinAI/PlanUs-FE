@@ -25,7 +25,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { signup } from '@/services/api/authApi';
-import { validateNickname, validateEmail, validatePassword, validateConfirmPassword } from '@/utils/validation';
+import {
+  validateNickname,
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+} from '@/utils/validation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';

@@ -31,8 +31,10 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: false,
-  hasCompletedOnboarding: false,
+  // 개발 편의를 위해 로그인 + 온보딩이 완료된 상태로 시작 (항상 메인 탭에서 시작)
+  // TODO: 실제 로그인 연동 시 false로 되돌리고 로그인 화면부터 시작하도록 변경
+  isAuthenticated: true,
+  hasCompletedOnboarding: true,
 
   signIn: (hasCompletedOnboarding: boolean) =>
     set({ isAuthenticated: true, hasCompletedOnboarding }),
