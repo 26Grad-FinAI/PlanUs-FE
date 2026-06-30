@@ -32,6 +32,7 @@ import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import { MainTabParamList } from '@/app/navigation/types';
+import { useRecordStore } from '@/store/useRecordStore';
 import { SpendingType, SpendingCategory } from '@/types/record';
 
 // 캘린더 한국어 로케일
@@ -94,6 +95,7 @@ function formatDateForISO(date: Date): string {
 
 export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
   const { top: topInset, bottom: bottomInset } = useSafeAreaInsets();
+  const addRecord = useRecordStore((s) => s.addRecord);
   const [recordType, setRecordType] = useState<SpendingType>('expense');
   const [amount, setAmount] = useState(''); // 숫자 문자열 (콤마 제외)
   const [description, setDescription] = useState('');
@@ -185,15 +187,14 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
 
     if (!isValid) return;
 
-    // TODO: API 연결 시 사용
-    // await createSpendingRecord({ type: recordType, amount: parsedAmount, description, date: formatDateForISO(selectedDate), category: selectedCategory!, memo });
-
-    console.log('[mock] 소비 기록 저장:', {
+    // record store에 추가 → 홈 화면 등 store를 구독하는 화면이 자동으로 갱신된다
+    // TODO: API 연결 시 store 대신 createSpendingRecord(params) 호출 후 서버 응답으로 갱신
+    addRecord({
       type: recordType,
       amount: parsedAmount,
       description,
       date: formatDateForISO(selectedDate),
-      category: selectedCategory,
+      category: selectedCategory!,
       memo,
     });
     navigation.navigate('HomeCalendar');

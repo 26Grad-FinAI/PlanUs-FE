@@ -7,8 +7,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { mockSpendingRecords } from '@/services/mock/record.mock';
 import { fetchHomeSummary } from '@/services/mock/home.mock';
+import { useRecordStore } from '@/store/useRecordStore';
 import { HomeSummary } from '@/types/home';
 import { SpendingRecord } from '@/types/record';
 import { buildMonthWeeks, startOfDay, toISODate } from '@/utils/formatDate';
@@ -27,25 +27,28 @@ export function useHomeCalendar() {
     () => new Date(today.getFullYear(), today.getMonth(), 1),
   );
 
+  // 소비 기록 store 구독 — 기록이 추가되면 records가 바뀌어 아래 값들이 자동으로 다시 계산된다
+  const records = useRecordStore((s) => s.records);
+
   // 날짜 문자열 → 해당 날짜의 기록 목록 매핑 (캘린더 셀에서 빠르게 조회하기 위함)
   const recordsByDate = useMemo(() => {
     const map: Record<string, SpendingRecord[]> = {};
-    mockSpendingRecords.forEach((record) => {
+    records.forEach((record) => {
       if (!map[record.date]) map[record.date] = [];
       map[record.date].push(record);
     });
     return map;
-  }, []);
+  }, [records]);
 
   // 현재 보고 있는 달에 속한 기록만 필터링
   const monthRecords = useMemo(() => {
-    return mockSpendingRecords.filter((record) => {
+    return records.filter((record) => {
       const [year, month] = record.date.split('-').map(Number);
       return year === monthCursor.getFullYear() && month - 1 === monthCursor.getMonth();
     });
-  }, [monthCursor]);
+  }, [monthCursor, records]);
 
-  // 이번 달 사용 금액/예산/남은 예산/소진율
+  // 이번 달 사용 금액/예산/남은 예산/소진율 — 기록이 바뀔 때마다 요약도 다시 조회한다
   const [summary, setSummary] = useState<HomeSummary>(EMPTY_SUMMARY);
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +58,7 @@ export function useHomeCalendar() {
     return () => {
       cancelled = true;
     };
-  }, [monthCursor]);
+  }, [monthCursor, records]);
 
   // 날짜별로 그룹화 후 최근 날짜가 먼저 오도록 정렬
   const dateGroups: DateGroup[] = useMemo(() => {

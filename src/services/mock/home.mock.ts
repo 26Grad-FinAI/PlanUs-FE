@@ -6,8 +6,8 @@
  * 화면(HomeCalendarScreen)은 연/월만 넘기고 직접 합산하지 않는다.
  */
 
-import { mockSpendingRecords } from './record.mock';
 import { mockAIBudget } from './budget.mock';
+import { useRecordStore } from '@/store/useRecordStore';
 import { HomeSummary } from '@/types/home';
 
 /**
@@ -20,8 +20,9 @@ import { HomeSummary } from '@/types/home';
 export async function fetchHomeSummary(year: number, month: number): Promise<HomeSummary> {
   const budgetTotal = mockAIBudget.aiTotalAmount;
 
-  const totalExpense = mockSpendingRecords
-    .filter((record) => {
+  const totalExpense = useRecordStore
+    .getState()
+    .records.filter((record) => {
       const [recordYear, recordMonth] = record.date.split('-').map(Number);
       return record.type === 'expense' && recordYear === year && recordMonth === month;
     })
