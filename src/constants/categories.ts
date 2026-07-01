@@ -43,3 +43,19 @@ export const CATEGORY_META: Record<
 > = Object.fromEntries(
   [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES].map(({ id, label, icon }) => [id, { label, icon }]),
 ) as Record<SpendingCategory, { label: string; icon: CategoryItem['icon'] }>;
+
+// 카테고리별 차트 색상 — 통계 화면에서 카테고리를 시각적으로 구분할 때 사용
+export const CATEGORY_COLOR: Record<SpendingCategory, string> = {
+  dining: '#4F46E5',
+  grocery: '#8B5CF6',
+  leisure: '#06B6D4',
+  telecom: '#F59E0B',
+  travel: '#EC4899',
+  education: '#0EA5E9',
+  clothing: '#F472B6',
+  medical: '#14B8A6',
+  alcohol: '#F43F5E',
+  other: '#CBD5E1',
+  salary: '#16A34A',
+  allowance: '#22C55E',
+};

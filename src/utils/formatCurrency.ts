@@ -11,3 +11,11 @@ export function formatComma(amount: number): string {
 export function formatFullAmount(amount: number): string {
   return `${formatComma(amount)}원`;
 }
+
+// 만원 단위 축약 표기 — 차트 라벨 등 좁은 공간용 (예: 1800000 → "180만", 12000 → "1.2만")
+export function formatManwon(amount: number): string {
+  const manwon = amount / 10000;
+  // 정수면 소수점 없이, 아니면 한 자리까지 표기
+  const rounded = Number.isInteger(manwon) ? manwon : Math.round(manwon * 10) / 10;
+  return `${rounded.toLocaleString('ko-KR')}만`;
+}
