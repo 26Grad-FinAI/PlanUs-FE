@@ -23,8 +23,9 @@ interface BudgetComparisonProps {
 }
 
 // 예산 대비 실제 지출이 차지한 비율(0~100%) — 초과 시 100%로 막힘
+// 예산이 0인 카테고리에 지출이 있으면 곧바로 초과이므로 100%로 채운다
 function fillWidth(budget: number, actual: number): string {
-  if (budget <= 0) return '0%';
+  if (budget <= 0) return actual > 0 ? '100%' : '0%';
   return `${Math.min((actual / budget) * 100, 100)}%`;
 }
 
