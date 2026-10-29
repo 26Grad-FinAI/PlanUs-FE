@@ -12,7 +12,7 @@ import Svg, { Circle, G } from 'react-native-svg';
 
 import { colors } from '@/constants/colors';
 import { fontSize, fontFamily } from '@/constants/typography';
-import { CATEGORY_COLOR } from '@/constants/categories';
+import { REPORT_CATEGORY_COLOR } from '@/constants/report';
 import { CategoryBreakdownItem } from '@/types/report';
 
 interface CategoryDonutProps {
@@ -87,7 +87,7 @@ export function CategoryDonut({ items }: CategoryDonutProps) {
                 cx={SIZE / 2}
                 cy={SIZE / 2}
                 r={RADIUS}
-                stroke={CATEGORY_COLOR[item.category]}
+                stroke={REPORT_CATEGORY_COLOR[item.category]}
                 strokeWidth={STROKE_WIDTH}
                 strokeDasharray={`${dash} ${CIRCUMFERENCE}`}
                 strokeDashoffset={offset}
@@ -109,7 +109,9 @@ export function CategoryDonut({ items }: CategoryDonutProps) {
       <View style={styles.legend}>
         {items.map((item) => (
           <View key={item.category} style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: CATEGORY_COLOR[item.category] }]} />
+            <View
+              style={[styles.legendDot, { backgroundColor: REPORT_CATEGORY_COLOR[item.category] }]}
+            />
             <Text style={styles.legendLabel} numberOfLines={1}>
               {item.label}
             </Text>

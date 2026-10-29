@@ -1,44 +1,63 @@
-/**
- * 소비 통계 화면의 상태 + 데이터 조회를 모아둔 훅
- *
- * 월 이동(이전/다음)과 해당 월 리포트 조회를 담당하고,
- * 화면(MonthlyReportScreen)은 반환값을 하위 컴포넌트에 전달하기만 한다.
- */
-
-import { useEffect, useMemo, useState } from 'react';
-
+/** 월별 조회와 재시도, 두 비교 영역의 펼침 상태를 관리한다. */
+import { useEffect, useState } from 'react';
 import { fetchMonthlyReport } from '@/services/mock/report.mock';
 import { MonthlyReport } from '@/types/report';
 
-export function useMonthlyReport() {
-  const today = useMemo(() => new Date(), []);
-  const [monthCursor, setMonthCursor] = useState(
-    () => new Date(today.getFullYear(), today.getMonth(), 1),
-  );
+interface ReportResult {
+  key: string;
+  report: MonthlyReport | null;
+  error: string | null;
+}
 
-  const [report, setReport] = useState<MonthlyReport | null>(null);
+export function useMonthlyReport() {
+  const [monthCursor, setMonthCursor] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<ReportResult | null>(null);
+  const [budgetExpanded, setBudgetExpanded] = useState(false);
+  const [peersExpanded, setPeersExpanded] = useState(false);
+  const year = monthCursor.getFullYear();
+  const month = monthCursor.getMonth() + 1;
+  const requestKey = `${year}-${month}-${attempt}`;
+
   useEffect(() => {
     let cancelled = false;
-    fetchMonthlyReport(monthCursor.getFullYear(), monthCursor.getMonth() + 1).then((data) => {
-      if (!cancelled) setReport(data);
-    });
+    fetchMonthlyReport(year, month).then(
+      (report) => {
+        if (!cancelled) setResult({ key: requestKey, report, error: null });
+      },
+      () => {
+        if (!cancelled) {
+          setResult({ key: requestKey, report: null, error: '통계를 불러오지 못했어요.' });
+        }
+      },
+    );
     return () => {
       cancelled = true;
     };
-  }, [monthCursor]);
+  }, [year, month, requestKey]);
 
-  function handlePrevMonth() {
-    setMonthCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  function moveMonth(offset: number) {
+    setMonthCursor((previous) => new Date(previous.getFullYear(), previous.getMonth() + offset, 1));
+    setBudgetExpanded(false);
+    setPeersExpanded(false);
   }
 
-  function handleNextMonth() {
-    setMonthCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  }
-
+  // 월 선택 직후에는 이전 결과를 새 월의 통계처럼 표시하지 않는다.
+  const currentResult = result?.key === requestKey ? result : null;
   return {
     monthCursor,
-    report,
-    handlePrevMonth,
-    handleNextMonth,
+    report: currentResult?.report ?? null,
+    error: currentResult?.error ?? null,
+    isLoading: currentResult === null,
+    retry: () => setAttempt((previous) => previous + 1),
+    handlePrevMonth: () => moveMonth(-1),
+    handleNextMonth: () => moveMonth(1),
+    budgetExpanded,
+    peersExpanded,
+    toggleBudget: () => setBudgetExpanded((previous) => !previous),
+    togglePeers: () => setPeersExpanded((previous) => !previous),
   };
 }

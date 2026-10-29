@@ -14,7 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { colors } from '@/constants/colors';
 import { fontSize, fontFamily } from '@/constants/typography';
-import { CATEGORY_META } from '@/constants/categories';
+import { BUDGET_CATEGORY_META } from '@/constants/categories';
 import { BudgetComparisonItem } from '@/types/report';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
@@ -60,7 +60,7 @@ export function BudgetComparison({ items, totalBudget, totalExpense }: BudgetCom
         <View key={item.category} style={styles.categoryCard}>
           <View style={styles.categoryHeader}>
             <Ionicons
-              name={CATEGORY_META[item.category].icon}
+              name={BUDGET_CATEGORY_META[item.category].icon}
               size={18}
               color={colors.textSecondary}
             />
