@@ -24,7 +24,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { TextArea } from '@/components/common/TextArea';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import { MainTabParamList } from '@/app/navigation/types';
 import { useRecordStore } from '@/store/useRecordStore';
@@ -246,11 +246,11 @@ const styles = StyleSheet.create({
   },
   amountInputText: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
   },
   amountSuffixText: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
   },
   saveButton: { borderRadius: 12, marginTop: 4 },
 });

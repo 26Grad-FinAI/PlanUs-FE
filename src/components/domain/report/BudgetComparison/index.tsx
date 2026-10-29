@@ -13,7 +13,7 @@ import { Text } from '@/components/common/Text';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { BudgetComparisonItem } from '@/types/report';
 import { formatFullAmount } from '@/utils/formatCurrency';
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
 
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   categoryLabel: {
     flex: 1,
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   actualAmount: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   actualAmountOver: {

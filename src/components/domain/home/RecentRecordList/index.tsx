@@ -11,7 +11,7 @@ import { Text } from '@/components/common/Text';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { DateGroup } from '@/hooks/useHomeCalendar';
 import { formatFullAmount } from '@/utils/formatCurrency';
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   recentSection: { gap: 18 },
   recentSectionTitle: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   emptyText: {
@@ -121,12 +121,12 @@ const styles = StyleSheet.create({
   dateGroupHeader: { flexDirection: 'row', alignItems: 'center' },
   dateGroupToday: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.primary,
   },
   dateGroupTitle: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textSecondary,
   },
   plannedTag: {
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   plannedTagText: {
     fontSize: fontSize.xxs,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.planned,
   },
 
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   recordDescription: {
     fontSize: fontSize.sm,
     lineHeight: 18,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
   recordCategory: {
@@ -171,6 +171,6 @@ const styles = StyleSheet.create({
   },
   recordAmount: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
   },
 });

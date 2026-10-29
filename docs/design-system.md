@@ -2,7 +2,7 @@
 
 ## 범위와 실행
 
-새 화면 이미지의 디자인을 기존 공통 컴포넌트와 토큰에 직접 반영했다. 별도 v2 시스템은 없다. 업무 화면의 전체 배치, 신규 화면, API, 카테고리 및 프로필/기록 데이터 구조는 이 작업의 범위가 아니다.
+새 화면 이미지의 디자인을 공통 컴포넌트와 토큰으로 구성했다. 업무 화면의 전체 배치, 신규 화면, API, 카테고리 및 프로필/기록 데이터 구조는 이 작업의 범위가 아니다.
 
 ```sh
 npm ci
@@ -25,11 +25,11 @@ npx expo export --platform web --output-dir dist/design-system-web --max-workers
 - `src/constants/typography.ts`: Pretendard Regular 400, Medium 500, SemiBold 600, Bold 700. `caption`, `label`, `body`, `button`, `section`, `title`, `amount` 역할 제공.
 - `src/constants/layout.ts`: 간격, 모서리, 최소 터치 영역, 화면 최대 너비, 모달 너비와 그림자.
 
-색상과 치수는 통이미지 기준의 추정값이다. 향후 정확한 Figma 변수나 수치를 받으면 이 토큰을 먼저 조정한다. 기존 화면의 호환성을 위해 기존 색상/글자 크기 키는 유지한다.
+색상과 치수는 통이미지 기준의 추정값이다. 향후 정확한 Figma 변수나 수치를 받으면 이 토큰을 먼저 조정한다. 색상은 의미별 토큰을, 글자 크기는 타이포 역할과 크기 스케일을 사용한다.
 
 Pretendard는 공식 저장소의 **v1.3.9** 정적 TTF 4종을 로컬 번들에 포함했다. 출처는 https://github.com/orioncactus/pretendard 이며 SIL Open Font License 전문은 `assets/fonts/LICENSE.txt`에 있다. CDN 접속 없이 동작한다. `FontProvider`는 로딩을 기다리고 실패 시 재시도 화면을 표시한다.
 
-화면의 `Text`와 직접 사용하던 `TextInput`은 공통 primitive로 연결했다. 숫자 `fontWeight`를 해당 정적 폰트 파일로 변환해 합성 굵기를 피한다. 중첩 `Text`는 부모 크기·색을 상속한다. 폰트 로딩 실패 안내만 시스템 폰트를 사용한다. 달력 내부 폰트도 Pretendard로 지정했다.
+화면의 `Text`와 직접 사용하던 `TextInput`은 공통 primitive로 연결했다. 굵기는 `weight="regular|medium|semibold|bold"` 또는 `fontFamily` 토큰으로 지정한다. 숫자 굵기를 해석하는 호환 처리는 없다. 중첩 강조는 `variant="inherit"`로 부모 크기·색을 상속한다. 폰트 로딩 실패 안내만 시스템 폰트를 사용한다. 달력 내부 폰트도 Pretendard로 지정했다.
 
 ## 컴포넌트 사용 규칙
 
@@ -37,7 +37,7 @@ Pretendard는 공식 저장소의 **v1.3.9** 정적 TTF 4종을 로컬 번들에
 
 | 영역      | 컴포넌트와 인터페이스                                                                                                                                           |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 타이포    | `Text`: `variant`와 Native Text props. `TextInput`: 기존 ref/이벤트/입력 props 지원                                                                             |
+| 타이포    | `Text`: `variant`, `weight`, Native Text props. `TextInput`: `weight`, ref/이벤트/입력 props                                                                    |
 | 액션      | `Button`: `label`, `variant`, `size`, `disabled`, `loading`, `fullWidth`. `IconButton`: `name`, `label` 필수                                                    |
 | 폼        | `FormField`: `label`, `required`, `hint`, `error`. 오류는 도움말보다 우선                                                                                       |
 | 입력      | `Input`: `variant="box"/"underline"`, `suffix`, `rightIcon`, `onRightPress`. `style`은 입력 글자, `containerStyle`은 테두리 영역                                |
@@ -76,7 +76,7 @@ import { Text } from '@/components/common/Text';
 - `FloatingInput`은 삭제했다. 로그인 사용처를 `Input`으로 전환했다. `label`은 이제 입력창 위에 고정 표시한다.
 - `Button`, `Input`, `TextArea`, `ToggleGroup`, `ConfirmModal`은 직접 개편했다. `ConfirmModal`의 기존 icon 관련 props는 제거했고 예산 화면 호출부도 수정했다.
 - 소비 등록의 중복 탭·칩·날짜 모달을 공통 UI로 교체하고 금액을 `AmountInput`에 연결했다.
-- 프로필의 카테고리 선택은 공통 `ChipGroup`을 조합하며 기존 데이터 계약은 유지한다.
+- 프로필 카테고리 선택은 `ChipGroup`을 직접 사용한다. 별도 `CategoryChipSelect` 어댑터는 제거했다.
 - 화면별 헤더·월 선택과 하단 탭, 예산/통계/홈의 진행 바를 공통화했다. 사용하지 않는 기존 스타일을 함께 삭제했다.
 - 기존 `BudgetComparison`의 퍼센트 너비 타입 오류는 공통 진행 바로 교체하면서 해소했다. 기존 배열 타입 lint 경고도 동일한 구조의 `T[]` 표기로 정리했다.
 - Ionicons는 패키지 루트 대신 `@expo/vector-icons/Ionicons`에서 직접 import한다. 사용하지 않는 다른 아이콘 폰트의 Web 번들 포함을 방지한다.
@@ -98,11 +98,17 @@ import { Text } from '@/components/common/Text';
 
 재생성 가능한 `.expo/web`, `dist/export`, `dist/export-ios`를 정리했다. 작업 중 필요한 캐시와 새 검증 빌드는 다시 생성될 수 있다. 용도가 확실하지 않은 `dist/sdk54-backup`, 로컬 환경 파일과 Downloads 원본은 유지했다.
 
-기존 node_modules는 Windows에서 native resolver 파일이 사용 중이라 임시로 `node_modules.previous`에 옮긴 뒤 새로 설치했다. 이전 폴더의 나머지는 삭제했으나 **잠긴 resolver .node 파일 1개가 남아 있다**. 이 폴더는 Git/TypeScript에서 제외되어 새 설치와 빌드에 영향을 주지 않는다. 관련 편집기 프로세스가 종료된 뒤 폴더를 삭제할 수 있다. 사용자 편집기는 강제 종료하지 않았다.
+Windows에서 삭제가 잠긴 native resolver 파일 하나는 프로젝트 밖의 OS 임시 폴더로 이동했다. `node_modules.previous` 폴더와 관련 Git/TypeScript 제외 설정은 제거했다. 잠긴 파일은 편집기를 강제 종료하지 않고 OS 임시 폴더에 남겨 두었다. 이 파일은 코드나 구현 백업이 아니라 설치 도구의 native 바이너리다.
+
+Expo 54의 로컬 의존성 검사에서 `eslint-config-expo@55.0.0`이 요구 버전과 다름을 확인해 `~10.0.0`으로 수정했다. 온라인 검사에서 권장한 Expo SDK 54 패치 `54.0.37`도 적용했다. SDK 메이저 버전은 바꾸지 않았고 최종 온라인 의존성 검사를 통과했다. Prettier의 폐기된 `jsxBracketSameLine` 옵션은 `bracketSameLine`으로 교체했다.
+
+프로젝트는 `my-app`을 작업 폴더로 열어 사용한다. 상위 폴더에서 발생하는 별칭 해석을 우회하기 위한 ESLint resolver 설정은 추가하지 않았다.
 
 ## 검증 결과 · 2026-10-30
 
 - TypeScript `--noEmit`: 통과.
+- `my-app` 작업 폴더 기준 ESLint, Prettier 전체 검사와 Expo 온라인 의존성 검사: 통과.
+- 타이포는 variant/weight 기반 API이며, 숫자 굵기 해석/Context 호환 계층과 카테고리 선택 어댑터는 제거했다.
 - ESLint 전체 src: 오류 0, 경고 0. 최초 기준은 오류 0, 경고 3이었다.
 - 미리보기 실행 스크립트: Windows에서 실제 시작 확인.
 - 미리보기 비활성 Web 배포 빌드: 통과. JS 번들은 아이콘 import 변경 전 약 1.90 MB에서 최종 약 1.47 MB, 내보내는 에셋은 46개에서 28개로 감소했다. 압축 전 Expo 출력 기준이다.

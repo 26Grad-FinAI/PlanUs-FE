@@ -11,7 +11,7 @@ import { Text } from '@/components/common/Text';
 import Svg, { Circle, G } from 'react-native-svg';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_COLOR } from '@/constants/categories';
 import { CategoryBreakdownItem } from '@/types/report';
 
@@ -135,12 +135,12 @@ const styles = StyleSheet.create({
   },
   centerRatio: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   centerCategory: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
     marginTop: 2,
   },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   legendRatio: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
 });

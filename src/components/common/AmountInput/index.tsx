@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Input, InputProps } from '@/components/common/Input';
 import { formatComma } from '@/utils/formatCurrency';
-import { fontSize } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 interface AmountInputProps extends Omit<InputProps, 'value' | 'onChangeText' | 'keyboardType'> {
   value: string;
   onChangeText: (digits: string) => void;
@@ -30,5 +30,5 @@ export function AmountInput({ value, onChangeText, style, ...props }: AmountInpu
   );
 }
 const styles = StyleSheet.create({
-  amount: { textAlign: 'right', fontSize: fontSize['2xl'], fontWeight: '700' },
+  amount: { textAlign: 'right', fontSize: fontSize['2xl'], fontFamily: fontFamily.bold },
 });

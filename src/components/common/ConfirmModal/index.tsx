@@ -1,6 +1,7 @@
 /** 제목/강조문/설명과 하단 두 버튼으로 구성된 공통 확인 모달. */
 import React from 'react';
 import { View, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { fontFamily } from '@/constants/typography';
 import { Text } from '@/components/common/Text';
 import { ModalSurface } from '@/components/common/ModalSurface';
 import { colors } from '@/constants/colors';
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   center: { textAlign: 'center' },
-  emphasis: { fontWeight: '600', textAlign: 'center' },
+  emphasis: { fontFamily: fontFamily.semibold, textAlign: 'center' },
   description: { color: colors.textTertiary, textAlign: 'center', lineHeight: 24 },
   buttons: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border },
   button: {
@@ -92,5 +93,5 @@ const styles = StyleSheet.create({
     borderRightColor: colors.border,
   },
   cancelText: { color: colors.textTertiary, textAlign: 'center' },
-  confirmText: { fontWeight: '600', textAlign: 'center' },
+  confirmText: { fontFamily: fontFamily.semibold, textAlign: 'center' },
 });

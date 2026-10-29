@@ -20,18 +20,11 @@ export const fontSize = {
 } as const;
 
 export const typography = {
-  caption: { fontSize: 12, lineHeight: 18, fontWeight: '400' },
-  label: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  button: { fontSize: 18, lineHeight: 26, fontWeight: '600' },
-  section: { fontSize: 18, lineHeight: 26, fontWeight: '700' },
-  title: { fontSize: 24, lineHeight: 34, fontWeight: '700' },
-  amount: { fontSize: 32, lineHeight: 42, fontWeight: '700' },
-} as const;
-
-export const fontWeight = {
-  regular: '400',
-  medium: '500',
-  semibold: '600',
-  bold: '700',
+  caption: { fontSize: 12, lineHeight: 18, fontFamily: fontFamily.regular },
+  label: { fontSize: 14, lineHeight: 20, fontFamily: fontFamily.medium },
+  body: { fontSize: 16, lineHeight: 24, fontFamily: fontFamily.regular },
+  button: { fontSize: 18, lineHeight: 26, fontFamily: fontFamily.semibold },
+  section: { fontSize: 18, lineHeight: 26, fontFamily: fontFamily.bold },
+  title: { fontSize: 24, lineHeight: 34, fontFamily: fontFamily.bold },
+  amount: { fontSize: 32, lineHeight: 42, fontFamily: fontFamily.bold },
 } as const;

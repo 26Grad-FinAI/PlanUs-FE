@@ -19,7 +19,11 @@ export function InputExamples() {
     <View style={styles.section}>
       <Text variant="section">버튼 · 입력</Text>
       <Text variant="caption">
-        작은 안내 안의 <Text style={styles.bold}>굵은 강조</Text>도 크기를 유지해요.
+        작은 안내 안의{' '}
+        <Text variant="inherit" weight="bold">
+          굵은 강조
+        </Text>
+        도 크기를 유지해요.
       </Text>
       <Button label="오류 상태 전환" onPress={() => setShowError((value) => !value)} />
       <Button label="보조 버튼" variant="secondary" />
@@ -79,4 +83,6 @@ export function InputExamples() {
     </View>
   );
 }
-const styles = StyleSheet.create({ section: { gap: spacing.lg }, bold: { fontWeight: '700' } });
+const styles = StyleSheet.create({
+  section: { gap: spacing.lg },
+});

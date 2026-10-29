@@ -14,7 +14,7 @@
  *
  * 토글 버튼(성별/취업 여부/주택 소유), 고정 지출 입력, 목표 저축액 드롭다운 피커,
  * 카테고리 칩 선택은 각각 별도 컴포넌트로 분리되어 있다 (ToggleGroup, FixedExpenseInput,
- * SavingsGoalInput, CategoryChipSelect). 이 화면은 전체 폼 상태 관리와 유효성 검사,
+ * SavingsGoalInput, ChipGroup). 이 화면은 전체 폼 상태 관리와 유효성 검사,
  * 레이아웃 조립만 담당한다.
  */
 
@@ -30,9 +30,10 @@ import { Input } from '@/components/common/Input';
 import { ToggleGroup } from '@/components/common/ToggleGroup';
 import { FixedExpenseInput } from '@/components/domain/profile/FixedExpenseInput';
 import { SavingsGoalInput } from '@/components/domain/profile/SavingsGoalInput';
-import { CategoryChipSelect } from '@/components/domain/profile/CategoryChipSelect';
+import { ChipGroup } from '@/components/common/Chip';
+import { EXPENSE_CATEGORIES } from '@/constants/categories';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { OnboardingStackParamList } from '@/app/navigation/types';
 import { Gender, HomeOwnership, TopSpendingCategory, FixedExpenseItem } from '@/types/profile';
 
@@ -380,12 +381,13 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
           />
 
           {/* ── 최다 소비 카테고리 ── */}
-          <CategoryChipSelect
+          <ChipGroup
             label="최다 소비 카테고리"
             required
             hint="가장 많이 지출하는 카테고리 1개를 선택하세요"
-            selected={selectedCategory}
-            onSelect={handleSelectCategory}
+            value={selectedCategory}
+            options={EXPENSE_CATEGORIES.map(({ id, label, icon }) => ({ value: id, label, icon }))}
+            onChange={handleSelectCategory}
             error={categoryError}
           />
 
@@ -416,7 +418,7 @@ const styles = StyleSheet.create({
   titleSection: { gap: 8, marginBottom: 4 },
   pageTitle: {
     fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
     lineHeight: 36,
   },

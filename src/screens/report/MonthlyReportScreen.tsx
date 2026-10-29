@@ -17,7 +17,7 @@ import { Text } from '@/components/common/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { useMonthlyReport } from '@/hooks/useMonthlyReport';
 import { formatFullAmount } from '@/utils/formatCurrency';
 import { CategoryDonut } from '@/components/domain/report/CategoryDonut';
@@ -99,12 +99,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
   totalAmount: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
 
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   section: { gap: 12 },
   sectionTitle: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   card: {

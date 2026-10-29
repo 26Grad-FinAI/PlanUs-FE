@@ -11,7 +11,7 @@ import { MonthNavigator } from '@/components/common/MonthNavigator';
 import { Text } from '@/components/common/Text';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { SpendingRecord } from '@/types/record';
 import { formatComma } from '@/utils/formatCurrency';
 import { isSameDay, toISODate } from '@/utils/formatDate';
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
     paddingBottom: 8,
   },
@@ -174,13 +174,13 @@ const styles = StyleSheet.create({
   },
   dayNumberText: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textPrimary,
   },
   dayNumberTextSunday: { color: colors.expense },
   dayNumberTextToday: {
     color: colors.background,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
   },
   // 예정(미래) 소비가 있는 날 표시용 작은 점 — 박스 대신 가볍게 구분
   plannedDot: {
@@ -196,6 +196,6 @@ const styles = StyleSheet.create({
   },
   dayAmountText: {
     fontSize: 9,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
   },
 });

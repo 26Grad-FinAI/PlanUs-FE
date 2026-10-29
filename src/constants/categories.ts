@@ -16,7 +16,7 @@ export interface CategoryItem {
 }
 
 // 지출 카테고리 (10종) — 소비 등록 화면의 칩 노출 순서
-export const EXPENSE_CATEGORIES: CategoryItem[] = [
+export const EXPENSE_CATEGORIES = [
   { id: 'grocery', label: '식료품', icon: 'cart-outline' },
   { id: 'dining', label: '외식', icon: 'restaurant-outline' },
   { id: 'alcohol', label: '주류', icon: 'beer-outline' },
@@ -27,14 +27,14 @@ export const EXPENSE_CATEGORIES: CategoryItem[] = [
   { id: 'travel', label: '숙박/여행', icon: 'airplane-outline' },
   { id: 'telecom', label: '정보통신', icon: 'phone-portrait-outline' },
   { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
+] satisfies CategoryItem[];
 
 // 수입 카테고리 (3종)
-export const INCOME_CATEGORIES: CategoryItem[] = [
+export const INCOME_CATEGORIES = [
   { id: 'salary', label: '월급', icon: 'briefcase-outline' },
   { id: 'allowance', label: '용돈', icon: 'gift-outline' },
   { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
+] satisfies CategoryItem[];
 
 // 카테고리 ID → {label, icon} 빠른 조회용 (지출 + 수입 전체)
 export const CATEGORY_META: Record<

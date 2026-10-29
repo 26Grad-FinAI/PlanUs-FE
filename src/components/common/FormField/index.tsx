@@ -22,7 +22,12 @@ export function FormField({
       {label && (
         <Text variant="label" style={styles.label}>
           {label}
-          {required && <Text style={styles.error}> *</Text>}
+          {required && (
+            <Text variant="inherit" style={styles.error}>
+              {' '}
+              *
+            </Text>
+          )}
         </Text>
       )}
       {hint && !error && (

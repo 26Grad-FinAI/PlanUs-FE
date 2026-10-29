@@ -11,7 +11,7 @@ import { ProgressBar } from '@/components/common/ProgressBar';
 import { Text } from '@/components/common/Text';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { HomeSummary } from '@/types/home';
 import { formatComma, formatFullAmount } from '@/utils/formatCurrency';
 
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.8)',
   },
   summaryAmountRow: {
@@ -67,19 +67,19 @@ const styles = StyleSheet.create({
   summaryAmountLeft: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   summaryAmountMain: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.background,
     lineHeight: 36,
   },
   summaryAmountUnit: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.85)',
     marginBottom: 4,
   },
   summaryBudgetText: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.75)',
     marginBottom: 4,
   },
@@ -95,12 +95,12 @@ const styles = StyleSheet.create({
   usageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   usageLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.85)',
   },
   usageValue: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.background,
   },
   remainingRow: {
@@ -113,12 +113,12 @@ const styles = StyleSheet.create({
   },
   remainingLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.85)',
   },
   remainingValue: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.background,
   },
 });

@@ -1,6 +1,7 @@
 /** 성별/취업/주거 여부 선택. 분리 버튼과 지출/수입 전환의 상태 처리를 공유한다. */
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { fontFamily } from '@/constants/typography';
 import { Text } from '@/components/common/Text';
 import { FormField, FieldProps } from '@/components/common/FormField';
 import { SelectOption } from '@/types/ui';
@@ -90,8 +91,8 @@ const styles = StyleSheet.create({
   },
   selected: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
   segmentSelected: { backgroundColor: colors.background, ...shadows.raised },
-  label: { color: colors.textTertiary, textAlign: 'center', fontWeight: '500' },
-  activeLabel: { color: colors.primaryDark, fontWeight: '600' },
-  segmentLabel: { color: colors.textPrimary, fontWeight: '700' },
+  label: { color: colors.textTertiary, textAlign: 'center', fontFamily: fontFamily.medium },
+  activeLabel: { color: colors.primaryDark, fontFamily: fontFamily.semibold },
+  segmentLabel: { color: colors.textPrimary, fontFamily: fontFamily.bold },
   disabled: { opacity: 0.5 },
 });

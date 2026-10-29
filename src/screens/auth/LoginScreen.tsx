@@ -32,7 +32,7 @@ import { login } from '@/services/api/authApi';
 import { validateEmail, validatePassword } from '@/utils/validation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { AuthStackParamList } from '@/app/navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   appTitle: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
     marginBottom: 8,
   },
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   signupLink: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.primary,
   },
 });

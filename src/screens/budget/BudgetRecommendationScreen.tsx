@@ -22,7 +22,7 @@ import { Header } from '@/components/common/Header';
 import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { OnboardingStackParamList } from '@/app/navigation/types';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -296,13 +296,13 @@ const styles = StyleSheet.create({
   titleSection: { gap: 2 },
   titleMain: {
     fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
     lineHeight: 34,
   },
   titleSub: {
     fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.primary,
     lineHeight: 34,
   },
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   insightLabel: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.primary,
   },
   insightText: { fontSize: fontSize.sm, color: colors.textSecondary, lineHeight: 20 },
@@ -336,30 +336,30 @@ const styles = StyleSheet.create({
   },
   summaryRowLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
   summaryAiAmount: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textSecondary,
   },
   summaryDivider: { height: 1, backgroundColor: colors.border },
   summaryUserRight: { alignItems: 'flex-end', gap: 2 },
   summaryUserAmount: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.primary,
   },
   summaryUserAmountOver: { color: colors.expense },
   summaryExcessLabel: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.expense,
   },
   summarySavingLabel: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.income,
   },
 
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
   resetAllButton: {
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   },
   resetAllText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
 
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   categoryLabel: {
     flex: 1,
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
 
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   amountText: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
   amountTextOver: { color: colors.expense },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   // 금액 TextInput (편집 모드)
   amountInput: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.primary,
     textAlign: 'right',
     minWidth: 100,
@@ -442,12 +442,12 @@ const styles = StyleSheet.create({
   aiHintText: { fontSize: fontSize.xs, color: colors.textDisabled },
   categoryOverText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.expense,
   },
   pctText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textTertiary,
   },
   pctTextOver: { color: colors.expense },
