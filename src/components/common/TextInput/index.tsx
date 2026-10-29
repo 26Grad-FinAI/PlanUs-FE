@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.base,
     color: colors.textPrimary,
-    // 폼의 포커스/오류 테두리와 브라우저 기본 테두리가 겹치지 않게 한다.
-    ...Platform.select({ web: { outlineWidth: 0 } }),
+    ...Platform.select({ web: { outlineStyle: 'solid' as const, outlineWidth: 0 } }),
   },
 });
