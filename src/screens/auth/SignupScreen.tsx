@@ -1,257 +1,263 @@
-/**
- * 회원가입 화면
- *
- * 역할:
- * 1. 닉네임 / 이메일 / 비밀번호 / 비밀번호 확인 입력 받기
- * 2. 입력값 유효성 검사 (전송 전 한 번에 검사)
- * 3. 회원가입 API 호출
- * 4. 가입 성공 시 전역 인증 상태 변경 → Onboarding 스택 진입
- * 5. 가입 실패 시 Alert 표시
- */
-
-import React, { useState } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { Text } from '@/components/common/Text';
+/** 가입 폼과 중복 계정 모달을 Mock 인증 흐름에 연결한다. */
+import React, { useEffect, useRef, useState } from 'react';
+import { Keyboard, Pressable, StyleSheet, TextInputInstance, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import { AuthStackParamList } from '@/app/navigation/types';
 import { Button } from '@/components/common/Button';
+import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { Input } from '@/components/common/Input';
+import { Text } from '@/components/common/Text';
+import { AuthLayout } from '@/components/domain/auth/AuthLayout';
+import { authCopy } from '@/constants/auth';
+import { colors } from '@/constants/colors';
+import { metrics, spacing } from '@/constants/layout';
+import { fontSize } from '@/constants/typography';
 import { signup } from '@/services/api/authApi';
+import { useAuthStore } from '@/store/useAuthStore';
+import { AuthError, SignupParams } from '@/types/auth';
 import {
   validateNickname,
   validateEmail,
   validatePassword,
   validateConfirmPassword,
 } from '@/utils/validation';
-import { useAuthStore } from '@/store/useAuthStore';
-import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
-import { AuthStackParamList } from '@/app/navigation/types';
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Signup'>;
+type SignupScreenProps = NativeStackScreenProps<AuthStackParamList, 'Signup'>;
+type SignupField = keyof SignupParams;
 
-export function SignupScreen({ navigation }: Props) {
-  const { signIn } = useAuthStore();
+export function SignupScreen({ navigation }: SignupScreenProps) {
+  const signIn = useAuthStore((state) => state.signIn);
+  const [values, setValues] = useState<SignupParams>({
+    nickname: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [touched, setTouched] = useState<Partial<Record<SignupField, boolean>>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [requestError, setRequestError] = useState('');
+  const [duplicateEmail, setDuplicateEmail] = useState('');
+  const [duplicateVisible, setDuplicateVisible] = useState(false);
+  const pending = useRef(false);
+  const active = useRef(true);
+  const nicknameRef = useRef<TextInputInstance>(null);
+  const emailRef = useRef<TextInputInstance>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
+  const confirmRef = useRef<TextInputInstance>(null);
+  const validation = {
+    nickname: validateNickname(values.nickname),
+    email: validateEmail(values.email),
+    password: validatePassword(values.password, { maxLength: 16 }),
+    confirmPassword: validateConfirmPassword(values.password, values.confirmPassword),
+  };
 
-  const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
 
-  const [nicknameError, setNicknameError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  function change(field: SignupField, text: string) {
+    setValues((previous) => ({ ...previous, [field]: text }));
+    setRequestError('');
+  }
 
-  const [isLoading, setIsLoading] = useState(false);
+  function touch(field: SignupField) {
+    setTouched((previous) => ({ ...previous, [field]: true }));
+  }
 
-  /**
-   * 폼 전체 유효성 검사
-   * 모든 필드를 순서대로 검사해 에러 메시지를 세팅하고,
-   * 하나라도 실패하면 false 반환
-   */
-  function validate(): boolean {
-    let isValid = true;
-
-    // 닉네임
-    const nicknameResult = validateNickname(nickname);
-    if (!nicknameResult.isValid) {
-      setNicknameError(nicknameResult.message);
-      isValid = false;
-    } else setNicknameError('');
-
-    // 이메일
-    const emailResult = validateEmail(email);
-    if (!emailResult.isValid) {
-      setEmailError(emailResult.message);
-      isValid = false;
-    } else setEmailError('');
-
-    // 비밀번호
-    const passwordResult = validatePassword(password, { maxLength: 16 });
-    if (!passwordResult.isValid) {
-      setPasswordError(passwordResult.message);
-      isValid = false;
-    } else setPasswordError('');
-
-    // 비밀번호 확인
-    const confirmPasswordResult = validateConfirmPassword(password, confirmPassword);
-    if (!confirmPasswordResult.isValid) {
-      setConfirmPasswordError(confirmPasswordResult.message);
-      isValid = false;
-    } else setConfirmPasswordError('');
-
-    return isValid;
+  function errorFor(field: SignupField) {
+    return submitted || touched[field] ? validation[field].message : '';
   }
 
   async function handleSignup() {
-    if (!validate()) return;
-
-    setIsLoading(true);
+    if (pending.current) return;
+    setSubmitted(true);
+    const fields = [
+      { name: 'nickname', ref: nicknameRef },
+      { name: 'email', ref: emailRef },
+      { name: 'password', ref: passwordRef },
+      { name: 'confirmPassword', ref: confirmRef },
+    ] as const;
+    const invalid = fields.find((field) => !validation[field.name].isValid);
+    if (invalid) {
+      invalid.ref.current?.focus();
+      return;
+    }
+    pending.current = true;
+    setLoading(true);
+    setRequestError('');
     try {
-      const response = await signup({ nickname, email, password, confirmPassword });
-      // 회원가입 직후 profileCompleted === false → Onboarding 스택으로 이동
-      signIn(response.profileCompleted);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : undefined;
-      Alert.alert('회원가입 실패', message ?? '잠시 후 다시 시도해주세요.');
+      const response = await signup({
+        ...values,
+        email: values.email.trim(),
+        nickname: values.nickname.trim(),
+      });
+      if (active.current) signIn(response.profileCompleted);
+    } catch (error: unknown) {
+      if (!active.current) return;
+      if (error instanceof AuthError && error.code === 'EMAIL_ALREADY_REGISTERED') {
+        Keyboard.dismiss();
+        setDuplicateEmail(values.email.trim());
+        setDuplicateVisible(true);
+      } else {
+        setRequestError(error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.');
+      }
     } finally {
-      setIsLoading(false);
+      pending.current = false;
+      if (active.current) setLoading(false);
     }
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 상단 제목 영역 */}
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>회원가입</Text>
-          <Text style={styles.subtitle}>플래너스와 함께 시작하세요</Text>
+    <>
+      <AuthLayout>
+        <View style={styles.heading}>
+          <Text weight="bold" accessibilityRole="header" style={styles.title}>
+            회원가입
+          </Text>
+          <Text style={styles.introduction}>{authCopy.signupIntroduction}</Text>
         </View>
-
-        {/* 입력 폼 영역 */}
-        <View style={styles.formSection}>
+        <View style={styles.form}>
           <Input
+            ref={nicknameRef}
             label="닉네임"
-            value={nickname}
-            onChangeText={(text) => {
-              setNickname(text);
-              // 입력 중 에러 메시지 즉시 제거
-              if (nicknameError) setNicknameError('');
-            }}
+            value={values.nickname}
+            onChangeText={(text) => change('nickname', text)}
+            onBlur={() => touch('nickname')}
             placeholder="사용할 닉네임을 입력해주세요"
-            error={nicknameError}
+            error={errorFor('nickname')}
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="nickname"
+            textContentType="nickname"
             maxLength={10}
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => emailRef.current?.focus()}
+            editable={!loading}
           />
           <Input
+            ref={emailRef}
             label="이메일"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              if (emailError) setEmailError('');
-            }}
+            value={values.email}
+            onChangeText={(text) => change('email', text)}
+            onBlur={() => touch('email')}
             placeholder="example@email.com"
-            error={emailError}
+            error={errorFor('email')}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="email"
             textContentType="emailAddress"
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            editable={!loading}
           />
           <Input
+            ref={passwordRef}
             label="비밀번호"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              if (passwordError) setPasswordError('');
-              // 비밀번호가 바뀔 때 확인 필드의 불일치 에러도 갱신
-              if (confirmPasswordError && text === confirmPassword) setConfirmPasswordError('');
-            }}
+            value={values.password}
+            onChangeText={(text) => change('password', text)}
+            onBlur={() => touch('password')}
             placeholder="8~16자로 입력해주세요"
-            error={passwordError}
+            error={errorFor('password')}
             secureTextEntry
-            maxLength={16}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="new-password"
             textContentType="newPassword"
+            maxLength={16}
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => confirmRef.current?.focus()}
+            editable={!loading}
           />
           <Input
+            ref={confirmRef}
             label="비밀번호 확인"
-            value={confirmPassword}
-            onChangeText={(text) => {
-              setConfirmPassword(text);
-              if (confirmPasswordError) setConfirmPasswordError('');
-            }}
+            value={values.confirmPassword}
+            onChangeText={(text) => change('confirmPassword', text)}
+            onBlur={() => touch('confirmPassword')}
             placeholder="비밀번호를 다시 입력해주세요"
-            error={confirmPasswordError}
+            error={errorFor('confirmPassword')}
             secureTextEntry
-            maxLength={16}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="new-password"
             textContentType="newPassword"
+            maxLength={16}
+            returnKeyType="done"
+            onSubmitEditing={handleSignup}
+            editable={!loading}
           />
-
+          {!!requestError && (
+            <Text variant="label" accessibilityRole="alert" style={styles.error}>
+              {requestError}
+            </Text>
+          )}
           <Button
             label="가입하기"
             onPress={handleSignup}
-            loading={isLoading}
+            loading={loading}
             fullWidth
-            size="lg"
-            style={styles.signupButton}
+            style={styles.submit}
           />
         </View>
-
-        {/* 하단 로그인 링크 */}
-        <View style={styles.linkSection}>
-          <View style={styles.loginRow}>
-            <Text style={styles.linkText}>이미 계정이 있으신가요? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>로그인</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.footer}>
+          <Text variant="label" style={styles.footerText}>
+            이미 계정이 있으신가요?
+          </Text>
+          <Pressable
+            accessibilityRole="link"
+            disabled={loading}
+            onPress={() => navigation.popTo('Login')}
+            style={styles.loginLink}
+          >
+            <Text variant="label" style={styles.linkText}>
+              로그인
+            </Text>
+          </Pressable>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </AuthLayout>
+      <ConfirmModal
+        visible={duplicateVisible}
+        title="이미 가입된 계정이에요"
+        emphasis={duplicateEmail}
+        description="로그인 화면으로 이동할까요?"
+        cancelLabel="다른 이메일로 가입"
+        confirmLabel="로그인하기"
+        onCancel={() => setDuplicateVisible(false)}
+        onConfirm={() => {
+          setDuplicateVisible(false);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login', params: { email: duplicateEmail } }],
+          });
+        }}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-  },
-  titleSection: {
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: fontSize['3xl'],
-    fontFamily: fontFamily.bold,
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: fontSize.base,
-    color: colors.textTertiary,
-  },
-  formSection: {
-    gap: 20,
-  },
-  signupButton: {
-    marginTop: 8,
-  },
-  linkSection: {
-    marginTop: 32,
-    alignItems: 'center',
-  },
-  loginRow: {
+  heading: { gap: spacing.sm, marginBottom: spacing.section },
+  title: { fontSize: fontSize['3xl'], lineHeight: 40 },
+  introduction: { color: colors.textTertiary },
+  form: { gap: spacing.xl },
+  submit: { marginTop: spacing.sm },
+  error: { color: colors.error },
+  footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: spacing.xxl,
   },
-  linkText: {
-    fontSize: fontSize.sm,
-    color: colors.textTertiary,
-  },
-  loginLink: {
-    fontSize: fontSize.sm,
-    fontFamily: fontFamily.medium,
-    color: colors.primary,
-  },
+  footerText: { color: colors.textTertiary },
+  loginLink: { minHeight: metrics.touch, paddingHorizontal: spacing.xs, justifyContent: 'center' },
+  linkText: { color: colors.primaryDark, textDecorationLine: 'underline' },
 });
