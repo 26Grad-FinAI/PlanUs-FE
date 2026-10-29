@@ -7,18 +7,26 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Chip, ChipGroup } from '@/components/common/Chip';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Badge } from '@/components/common/Badge';
+import { Button } from '@/components/common/Button';
 import { ProgressBar, StepIndicator } from '@/components/common/ProgressBar';
+import { IndeterminateProgressBar } from '@/components/common/ProgressBar/IndeterminateProgressBar';
 import { spacing } from '@/constants/layout';
 export function SelectionExamples() {
   const [gender, setGender] = useState<string | null>(null);
   const [type, setType] = useState('expense');
   const [feeling, setFeeling] = useState<string | null>('happy');
   const [repeat, setRepeat] = useState(false);
+  const [step, setStep] = useState(1);
   return (
     <View style={styles.section}>
       <Text variant="section">선택 · 상태</Text>
-      <StepIndicator current={1} />
-      <StepIndicator current={2} />
+      <StepIndicator current={step} />
+      <Button
+        label={step === 1 ? '2단계로 이동' : '1단계로 이동'}
+        variant="ghost"
+        onPress={() => setStep((current) => (current === 1 ? 2 : 1))}
+      />
+      <IndeterminateProgressBar label="반복 이동 로딩" />
       <ToggleGroup
         label="성별"
         required

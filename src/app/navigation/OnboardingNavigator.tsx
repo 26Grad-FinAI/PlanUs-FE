@@ -1,11 +1,4 @@
-/**
- * 온보딩 스택 네비게이터
- *
- * 흐름: ProfileSetup → BudgetRecommendation
- *
- * BudgetRecommendation 화면에서 completeOnboarding()을 호출하면
- * RootNavigator가 자동으로 Main 탭으로 전환된다.
- */
+/** 프로필 입력 → 예산 산출 → 추천 확인. 확정 후 루트가 메인 탭으로 전환한다. */
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';

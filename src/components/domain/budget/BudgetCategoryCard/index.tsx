@@ -36,7 +36,7 @@ export function BudgetCategoryCard({
   const exceeded = budget.userAmount > budget.aiAmount;
   const percentage = total > 0 ? Math.round((budget.userAmount / total) * 100) : 0;
   return (
-    <Card>
+    <Card style={styles.card}>
       <View style={styles.row}>
         <View style={styles.name}>
           <Ionicons
@@ -54,6 +54,7 @@ export function BudgetCategoryCard({
           <View style={styles.edit}>
             <Input
               variant="underline"
+              containerStyle={styles.editContainer}
               value={editingValue}
               onChangeText={onChange}
               accessibilityLabel={`${budget.label} 예산 금액`}
@@ -76,6 +77,7 @@ export function BudgetCategoryCard({
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel={`${budget.label} 예산 수정`}
+            hitSlop={{ top: 10, bottom: 10 }}
             onPress={onEdit}
             style={styles.amountButton}
           >
@@ -117,6 +119,7 @@ export function BudgetCategoryCard({
   );
 }
 const styles = StyleSheet.create({
+  card: { padding: spacing.lg, gap: spacing.sm },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -127,14 +130,21 @@ const styles = StyleSheet.create({
   label: { flexShrink: 1 },
   amountButton: {
     maxWidth: '60%',
-    minHeight: 44,
+    minHeight: 28,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
   },
   amount: { flexShrink: 1, textAlign: 'right' },
   edit: { width: '55%' },
-  editText: { fontFamily: fontFamily.semibold, color: colors.primaryDark, textAlign: 'right' },
+  editContainer: { minHeight: 28 },
+  editText: {
+    fontFamily: fontFamily.semibold,
+    color: colors.primaryDark,
+    textAlign: 'right',
+    paddingVertical: 0,
+    lineHeight: 24,
+  },
   meta: { flex: 1, flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   muted: { color: colors.textTertiary },
   exceeded: { color: colors.error },

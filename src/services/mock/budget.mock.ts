@@ -25,14 +25,14 @@ function distributeBudget(total: number): AIBudgetRecommendation {
       userAmount: amount,
     };
   });
-  // 반올림 오차를 가장 큰 비중에 합쳐 총액과 카테고리 합계를 일치시킨다.
+  // 배분 후 남은 금액을 가장 큰 비중에 합쳐 총액과 카테고리 합계를 일치시킨다.
   const remainder = total - categories.reduce((sum, category) => sum + category.aiAmount, 0);
   categories[0].aiAmount += remainder;
   categories[0].userAmount += remainder;
   return {
     aiTotalAmount: total,
     insight:
-      '입력하신 소득에서 고정 지출과 목표 저축액을 제외하고, 샘플 소비 비율로 이번 달 예산을 나눴어요.',
+      '고정 지출과 저축 목표를 반영한 예산이에요. 카테고리별 금액은 생활에 맞게 조정해보세요.',
     categories,
   };
 }

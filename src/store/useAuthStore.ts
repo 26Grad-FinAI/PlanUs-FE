@@ -15,6 +15,7 @@
  */
 
 import { create } from 'zustand';
+import { useBudgetStore } from '@/store/useBudgetStore';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -37,8 +38,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   signIn: (hasCompletedOnboarding: boolean) =>
     set({ isAuthenticated: true, hasCompletedOnboarding }),
 
-  signOut: () => set({ isAuthenticated: false, hasCompletedOnboarding: false }),
-  // TODO: AsyncStorage.removeItem('accessToken') 추가
+  signOut: () => {
+    useBudgetStore.getState().reset();
+    set({ isAuthenticated: false, hasCompletedOnboarding: false });
+  },
 
   completeOnboarding: () => set({ hasCompletedOnboarding: true }),
 }));

@@ -42,7 +42,8 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
   const visibleBudgets = Number.isSafeInteger(sumBudgets(preview)) ? preview : budgets;
   const total = sumBudgets(visibleBudgets);
   const exceeded = total > recommendation.aiTotalAmount;
-  function commitEdit(): CategoryBudget[] | null {
+  function commitEdit(expectedCategory?: BudgetCategory): CategoryBudget[] | null {
+    if (expectedCategory && editing?.category !== expectedCategory) return budgets;
     if (!editing) return budgets;
     if (!validEdit || !Number.isSafeInteger(sumBudgets(preview))) {
       setEditError(
@@ -53,7 +54,7 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
       return null;
     }
     setBudgets(preview);
-    setEditing(null);
+    setEditing((current) => (current?.category === editing.category ? null : current));
     setEditError('');
     return preview;
   }
@@ -115,7 +116,7 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
             accessibilityLabel="예산 달력"
           />
         </View>
-        <Card tone="info">
+        <Card tone="info" style={styles.insightCard}>
           <View style={styles.insightHeading}>
             <Ionicons
               name="sparkles"
@@ -169,31 +170,33 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
             style={styles.reset}
           />
         </View>
-        {visibleBudgets.map((budget) => (
-          <BudgetCategoryCard
-            key={budget.category}
-            budget={budget}
-            total={total}
-            editingValue={editing?.category === budget.category ? editing.text : null}
-            error={editing?.category === budget.category ? editError : undefined}
-            onEdit={() => beginEdit(budget)}
-            onChange={(text) => {
-              setEditing({
-                category: budget.category,
-                text: text
-                  .replace(/[^0-9]/g, '')
-                  .replace(/^0+(?=\d)/, '')
-                  .slice(0, 15),
-              });
-              setEditError('');
-            }}
-            onCommit={commitEdit}
-            onCancel={() => {
-              setEditing(null);
-              setEditError('');
-            }}
-          />
-        ))}
+        <View style={styles.categories}>
+          {visibleBudgets.map((budget) => (
+            <BudgetCategoryCard
+              key={budget.category}
+              budget={budget}
+              total={total}
+              editingValue={editing?.category === budget.category ? editing.text : null}
+              error={editing?.category === budget.category ? editError : undefined}
+              onEdit={() => beginEdit(budget)}
+              onChange={(text) => {
+                setEditing({
+                  category: budget.category,
+                  text: text
+                    .replace(/[^0-9]/g, '')
+                    .replace(/^0+(?=\d)/, '')
+                    .slice(0, 15),
+                });
+                setEditError('');
+              }}
+              onCommit={() => commitEdit(budget.category)}
+              onCancel={() => {
+                setEditing(null);
+                setEditError('');
+              }}
+            />
+          ))}
+        </View>
       </ScreenLayout>
       <ConfirmModal
         visible={showOverBudgetModal}
@@ -210,6 +213,8 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
   );
 }
 const styles = StyleSheet.create({
+  categories: { gap: spacing.lg },
+  insightCard: { padding: spacing.lg, gap: spacing.sm },
   heading: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -41,6 +41,7 @@ export function ScreenLayout({
         {scroll ? (
           <ScrollView
             ref={scrollRef}
+            showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={[styles.content, contentStyle]}
           >

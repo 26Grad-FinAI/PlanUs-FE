@@ -1,5 +1,6 @@
 /** 프로필 조회에 사용하는 독립적인 샘플. */
 import { UserProfile } from '@/types/profile';
+import { useBudgetStore } from '@/store/useBudgetStore';
 export const mockUserProfile: UserProfile = {
   age: 28,
   gender: 'female',
@@ -15,8 +16,6 @@ export const mockUserProfile: UserProfile = {
   introduction: '2월에 자취를 시작했어요. 여행 자금 300만원을 모으는 중이에요.',
 };
 export async function fetchUserProfile(): Promise<UserProfile> {
-  return {
-    ...mockUserProfile,
-    fixedExpenses: mockUserProfile.fixedExpenses.map((item) => ({ ...item })),
-  };
+  const profile = useBudgetStore.getState().confirmedBudget?.profile ?? mockUserProfile;
+  return { ...profile, fixedExpenses: profile.fixedExpenses.map((item) => ({ ...item })) };
 }

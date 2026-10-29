@@ -110,6 +110,7 @@ export function ProfileSetupScreen({ navigation }: Props) {
             required
             placeholder="만 나이를 입력하세요"
             suffix="세"
+            style={styles.age}
             value={draft.age}
             onChangeText={(value) => update('age', value.replace(/[^0-9]/g, '').slice(0, 3))}
             keyboardType="number-pad"
@@ -221,6 +222,7 @@ export function ProfileSetupScreen({ navigation }: Props) {
   );
 }
 const styles = StyleSheet.create({
+  age: { textAlign: 'left', fontSize: 20 },
   header: { width: '100%', maxWidth: metrics.contentMax, alignSelf: 'center' },
   progress: { paddingHorizontal: spacing.page, paddingBottom: spacing.lg },
   content: { gap: spacing.section, paddingTop: spacing.md, paddingBottom: spacing.xxl },

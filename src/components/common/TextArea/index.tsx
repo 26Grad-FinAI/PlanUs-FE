@@ -29,6 +29,7 @@ export function TextArea({
         accessibilityLabel={props.accessibilityLabel ?? label ?? props.placeholder}
         editable={editable}
         aria-disabled={!editable}
+        aria-invalid={!!error}
         multiline
         textAlignVertical="top"
         onFocus={(event) => {
