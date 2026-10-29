@@ -21,7 +21,6 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
   const signIn = useAuthStore((state) => state.signIn);
   const [email, setEmail] = useState(route.params?.email ?? '');
   const [password, setPassword] = useState('');
-  const [emailTouched, setEmailTouched] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState('');
@@ -30,7 +29,7 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
   const emailRef = useRef<TextInputInstance>(null);
   const passwordRef = useRef<TextInputInstance>(null);
   const emailValidation = validateEmail(email);
-  const emailError = emailTouched || submitted ? emailValidation.message : '';
+  const emailError = submitted ? emailValidation.message : '';
   const passwordError = submitted && !password ? '비밀번호를 입력해주세요.' : '';
 
   useEffect(() => {
@@ -86,7 +85,6 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
             setEmail(text);
             setRequestError('');
           }}
-          onBlur={() => setEmailTouched(true)}
           error={emailError}
           keyboardType="email-address"
           autoCapitalize="none"
