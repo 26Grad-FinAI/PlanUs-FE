@@ -14,7 +14,7 @@ import { ToggleGroup } from '@/components/common/ToggleGroup';
 import { StepIndicator } from '@/components/common/ProgressBar';
 import { Button } from '@/components/common/Button';
 import { FixedExpenseInput } from '@/components/domain/profile/FixedExpenseInput';
-import { ProfileDraft } from '@/types/profile';
+import { ProfileDraft, ProfileErrors } from '@/types/profile';
 import { validateProfileStep, normalizeProfile } from '@/utils/profile';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
@@ -33,18 +33,29 @@ const INITIAL_DRAFT: ProfileDraft = {
 export function ProfileSetupScreen({ navigation }: Props) {
   const [draft, setDraft] = useState<ProfileDraft>(INITIAL_DRAFT);
   const [step, setStep] = useState<1 | 2>(1);
-  const [attempted, setAttempted] = useState({ 1: false, 2: false });
+  const [stepErrors, setStepErrors] = useState<Record<1 | 2, ProfileErrors>>({ 1: {}, 2: {} });
   const scrollRef = useRef<ScrollViewInstance>(null);
   const expenseSequence = useRef(1);
   const submitting = useRef(false);
   const signOut = useAuthStore((state) => state.signOut);
-  const errors = attempted[step] ? validateProfileStep(draft, step) : {};
+  const errors = stepErrors[step];
   function update<K extends keyof ProfileDraft>(field: K, value: ProfileDraft[K]) {
     setDraft((current) => ({ ...current, [field]: value }));
+    setStepErrors((current) => ({
+      ...current,
+      [step]: {
+        ...current[step],
+        [field]: undefined,
+        ...(['monthlyIncome', 'fixedExpenses', 'monthlySavings'].includes(field)
+          ? { monthlySavings: undefined }
+          : {}),
+      },
+    }));
   }
   function changeStep(next: 1 | 2) {
     Keyboard.dismiss();
     setStep(next);
+    setStepErrors((current) => ({ ...current, [next]: {} }));
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   }
   function goBack() {
@@ -58,6 +69,7 @@ export function ProfileSetupScreen({ navigation }: Props) {
         if (step === 2) {
           Keyboard.dismiss();
           setStep(1);
+          setStepErrors((current) => ({ ...current, 1: {} }));
           scrollRef.current?.scrollTo({ y: 0, animated: false });
         } else signOut();
         return true;
@@ -66,8 +78,9 @@ export function ProfileSetupScreen({ navigation }: Props) {
     }, [step, signOut]),
   );
   function submit() {
-    setAttempted((current) => ({ ...current, [step]: true }));
-    if (Object.keys(validateProfileStep(draft, step)).length) return;
+    const nextErrors = validateProfileStep(draft, step);
+    setStepErrors((current) => ({ ...current, [step]: nextErrors }));
+    if (Object.keys(nextErrors).length) return;
     if (step === 1) {
       changeStep(2);
     } else if (!submitting.current) {
@@ -107,7 +120,6 @@ export function ProfileSetupScreen({ navigation }: Props) {
           <Input
             variant="underline"
             label="나이"
-            required
             placeholder="만 나이를 입력하세요"
             suffix="세"
             style={styles.age}
@@ -115,7 +127,6 @@ export function ProfileSetupScreen({ navigation }: Props) {
             onChangeText={(value) => update('age', value.replace(/[^0-9]/g, '').slice(0, 3))}
             keyboardType="number-pad"
             inputMode="numeric"
-            error={errors.age}
           />
           <ToggleGroup
             label="성별"
@@ -214,6 +225,7 @@ export function ProfileSetupScreen({ navigation }: Props) {
             onChangeText={(value) => update('introduction', value)}
             error={errors.introduction}
             minHeight={120}
+            style={styles.introduction}
           />
         </>
       )}
@@ -222,7 +234,8 @@ export function ProfileSetupScreen({ navigation }: Props) {
   );
 }
 const styles = StyleSheet.create({
-  age: { textAlign: 'left', fontSize: 20 },
+  introduction: { paddingTop: spacing.md },
+  age: { textAlign: 'right', fontSize: 20 },
   header: { width: '100%', maxWidth: metrics.contentMax, alignSelf: 'center' },
   progress: { paddingHorizontal: spacing.page, paddingBottom: spacing.lg },
   content: { gap: spacing.section, paddingTop: spacing.md, paddingBottom: spacing.xxl },

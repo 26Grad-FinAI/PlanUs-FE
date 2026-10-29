@@ -17,7 +17,7 @@ export interface ProfileDraft {
   introduction: string;
 }
 export interface UserProfile {
-  age: number;
+  age: number | null;
   gender: Gender;
   isEmployed: boolean;
   ownsHome: HomeOwnership;

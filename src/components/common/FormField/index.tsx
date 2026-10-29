@@ -19,21 +19,25 @@ export function FormField({
 }: PropsWithChildren<FieldProps>) {
   return (
     <View style={styles.field}>
-      {label && (
-        <Text variant="label" style={styles.label}>
-          {label}
-          {required && (
-            <Text variant="inherit" style={styles.error}>
-              {' '}
-              *
+      {(label || hint) && (
+        <View style={styles.heading}>
+          {label && (
+            <Text variant="label" style={styles.label}>
+              {label}
+              {required && (
+                <Text variant="inherit" style={styles.error}>
+                  {' '}
+                  *
+                </Text>
+              )}
             </Text>
           )}
-        </Text>
-      )}
-      {hint && !error && (
-        <Text variant="caption" style={styles.hint}>
-          {hint}
-        </Text>
+          {hint && (
+            <Text variant="caption" style={styles.hint}>
+              {hint}
+            </Text>
+          )}
+        </View>
       )}
       {children}
       {!!error && (
@@ -46,6 +50,7 @@ export function FormField({
 }
 const styles = StyleSheet.create({
   field: { gap: spacing.sm },
+  heading: { gap: spacing.xs },
   label: { color: colors.textSecondary },
   hint: { color: colors.textTertiary },
   error: { color: colors.error },

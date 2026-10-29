@@ -137,8 +137,9 @@ const styles = StyleSheet.create({
   },
   amount: { flexShrink: 1, textAlign: 'right' },
   edit: { width: '55%' },
-  editContainer: { minHeight: 28 },
+  editContainer: { minHeight: 28, backgroundColor: colors.transparent },
   editText: {
+    backgroundColor: colors.transparent,
     fontFamily: fontFamily.semibold,
     color: colors.primaryDark,
     textAlign: 'right',

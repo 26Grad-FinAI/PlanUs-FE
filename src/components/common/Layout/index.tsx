@@ -50,8 +50,8 @@ export function ScreenLayout({
         ) : (
           <View style={[styles.content, styles.flex, contentStyle]}>{children}</View>
         )}
-        {footer}
       </KeyboardAvoidingView>
+      {footer}
     </SafeAreaView>
   );
 }

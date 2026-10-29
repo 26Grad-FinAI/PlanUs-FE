@@ -55,7 +55,13 @@ export function FixedExpenseInput({
           />
         </View>
       ))}
-      <Button label="⊕ 항목 추가" variant="ghost" size="sm" onPress={onAdd} style={styles.add} />
+      <Button
+        label="⊕ 항목 추가"
+        variant="ghost"
+        size="sm"
+        onPress={onAdd}
+        style={[styles.add, !!error && styles.addWithError]}
+      />
     </FormField>
   );
 }
@@ -65,4 +71,5 @@ const styles = StyleSheet.create({
   amount: { flex: 1.3, minWidth: 0 },
   amountText: { fontSize: 18 },
   add: { alignSelf: 'flex-start', paddingHorizontal: 0 },
+  addWithError: { marginBottom: -spacing.sm },
 });

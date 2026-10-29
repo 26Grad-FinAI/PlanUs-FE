@@ -4,9 +4,6 @@ import { ProfileDraft, ProfileErrors, UserProfile } from '@/types/profile';
 export function validateProfileStep(draft: ProfileDraft, step: 1 | 2): ProfileErrors {
   const errors: ProfileErrors = {};
   if (step === 1) {
-    if (!/^\d+$/.test(draft.age) || Number(draft.age) < 1 || Number(draft.age) > 120) {
-      errors.age = '만 나이를 1~120세로 입력해주세요.';
-    }
     if (!draft.gender) errors.gender = '성별을 선택해주세요.';
     if (draft.isEmployed === null) errors.isEmployed = '취업 여부를 선택해주세요.';
     if (!draft.ownsHome) errors.ownsHome = '주택 소유 유무를 선택해주세요.';
@@ -39,7 +36,7 @@ export function normalizeProfile(draft: ProfileDraft): UserProfile {
     throw new Error('기본 정보를 확인해주세요.');
   }
   return {
-    age: Number(draft.age),
+    age: draft.age ? Number(draft.age) : null,
     gender: draft.gender,
     isEmployed: draft.isEmployed,
     ownsHome: draft.ownsHome,
