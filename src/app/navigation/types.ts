@@ -5,6 +5,8 @@
  * undefined: 파라미터 없음
  */
 
+import { UserProfile } from '@/types/profile';
+
 // 인증 스택 (로그인, 회원가입)
 export type AuthStackParamList = {
   Login: { email?: string } | undefined;
@@ -14,7 +16,7 @@ export type AuthStackParamList = {
 // 온보딩 스택 (프로필 입력 → AI 예산 추천)
 export type OnboardingStackParamList = {
   ProfileSetup: undefined;
-  BudgetRecommendation: undefined;
+  BudgetRecommendation: { profile: UserProfile };
 };
 
 // 메인 탭 (홈, 리포트, 소비기록 입력, AI분석, 설정)

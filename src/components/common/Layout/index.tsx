@@ -1,8 +1,9 @@
 /** 스크롤/키보드/안전 영역과 하단 고정 액션을 일관되게 배치한다. */
-import React, { PropsWithChildren, ReactNode } from 'react';
+import React, { PropsWithChildren, ReactNode, Ref } from 'react';
 import {
   View,
   ScrollView,
+  ScrollViewInstance,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -16,12 +17,14 @@ interface ScreenLayoutProps extends PropsWithChildren {
   header?: ReactNode;
   footer?: ReactNode;
   scroll?: boolean;
+  scrollRef?: Ref<ScrollViewInstance>;
   contentStyle?: StyleProp<ViewStyle>;
 }
 export function ScreenLayout({
   header,
   footer,
   scroll = true,
+  scrollRef,
   contentStyle,
   children,
 }: ScreenLayoutProps) {
@@ -37,6 +40,7 @@ export function ScreenLayout({
         {header}
         {scroll ? (
           <ScrollView
+            ref={scrollRef}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={[styles.content, contentStyle]}
           >
