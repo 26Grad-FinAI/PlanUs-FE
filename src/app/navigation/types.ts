@@ -6,6 +6,7 @@
  */
 
 import { UserProfile } from '@/types/profile';
+import { AIBudgetRecommendation } from '@/types/budget';
 
 // 인증 스택 (로그인, 회원가입)
 export type AuthStackParamList = {
@@ -16,7 +17,13 @@ export type AuthStackParamList = {
 // 온보딩 스택 (프로필 입력 → AI 예산 추천)
 export type OnboardingStackParamList = {
   ProfileSetup: undefined;
-  BudgetRecommendation: { profile: UserProfile };
+  BudgetLoading: { profile: UserProfile; year: number; month: number };
+  BudgetRecommendation: {
+    profile: UserProfile;
+    year: number;
+    month: number;
+    recommendation: AIBudgetRecommendation;
+  };
 };
 
 // 메인 탭 (홈, 리포트, 소비기록 입력, AI분석, 설정)

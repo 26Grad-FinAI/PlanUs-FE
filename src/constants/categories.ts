@@ -8,6 +8,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { SpendingCategory } from '@/types/record';
+import { BudgetCategory } from '@/types/budget';
 
 export interface CategoryItem {
   id: SpendingCategory;
@@ -58,4 +59,21 @@ export const CATEGORY_COLOR: Record<SpendingCategory, string> = {
   other: '#CBD5E1',
   salary: '#16A34A',
   allowance: '#22C55E',
+};
+
+/** 예산 시안의 분류. 소비 기록의 기존 식별자는 변경하지 않는다. */
+export const BUDGET_CATEGORY_META: Record<
+  BudgetCategory,
+  { label: string; icon: CategoryItem['icon'] }
+> = {
+  grocery: CATEGORY_META.grocery,
+  dining: CATEGORY_META.dining,
+  clothing: { ...CATEGORY_META.clothing, label: '의류/미용' },
+  leisure: { ...CATEGORY_META.leisure, label: '문화/운동/펫' },
+  medical: CATEGORY_META.medical,
+  education: CATEGORY_META.education,
+  travel: CATEGORY_META.travel,
+  transport: { label: '교통/운송', icon: 'bus-outline' },
+  telecom: CATEGORY_META.telecom,
+  other: CATEGORY_META.other,
 };

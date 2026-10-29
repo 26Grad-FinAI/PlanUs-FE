@@ -73,7 +73,12 @@ export function ProfileSetupScreen({ navigation }: Props) {
     } else if (!submitting.current) {
       submitting.current = true;
       Keyboard.dismiss();
-      navigation.navigate('BudgetRecommendation', { profile: normalizeProfile(draft) });
+      const now = new Date();
+      navigation.navigate('BudgetLoading', {
+        profile: normalizeProfile(draft),
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+      });
     }
   }
   return (

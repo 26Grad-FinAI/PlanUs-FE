@@ -10,7 +10,7 @@
 export type BudgetCategory =
   | 'grocery'
   | 'dining'
-  | 'alcohol'
+  | 'transport'
   | 'clothing'
   | 'leisure'
   | 'medical'

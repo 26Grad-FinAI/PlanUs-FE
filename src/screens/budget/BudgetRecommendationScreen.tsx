@@ -15,7 +15,7 @@ import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { ProgressBar } from '@/components/common/ProgressBar';
 import { Header } from '@/components/common/Header';
@@ -23,28 +23,24 @@ import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { colors } from '@/constants/colors';
 import { fontSize, fontFamily } from '@/constants/typography';
-import { CATEGORY_META } from '@/constants/categories';
+import { BUDGET_CATEGORY_META } from '@/constants/categories';
 import { OnboardingStackParamList } from '@/app/navigation/types';
 import { useAuthStore } from '@/store/useAuthStore';
-import { mockAIBudget } from '@/services/mock/budget.mock';
 import { BudgetCategory, CategoryBudget } from '@/types/budget';
 import { formatComma } from '@/utils/formatCurrency';
 
-type BudgetRecommendationNavigationProp = NativeStackNavigationProp<
+type BudgetRecommendationScreenProps = NativeStackScreenProps<
   OnboardingStackParamList,
   'BudgetRecommendation'
 >;
 
-interface BudgetRecommendationScreenProps {
-  navigation: BudgetRecommendationNavigationProp;
-}
-
-export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationScreenProps) {
+export function BudgetRecommendationScreen({ navigation, route }: BudgetRecommendationScreenProps) {
+  const { recommendation } = route.params;
   const { top: topInset, bottom: bottomInset } = useSafeAreaInsets();
   const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
 
   const [budgets, setBudgets] = useState<CategoryBudget[]>(
-    mockAIBudget.categories.map((c) => ({ ...c })),
+    recommendation.categories.map((c) => ({ ...c })),
   );
   const [editingCategoryId, setEditingCategoryId] = useState<BudgetCategory | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -52,7 +48,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
 
   const inputRef = useRef<TextInputInstance>(null);
 
-  const aiTotal = mockAIBudget.aiTotalAmount;
+  const aiTotal = recommendation.aiTotalAmount;
   const userTotal = budgets.reduce((sum, b) => sum + b.userAmount, 0);
   const isExceeded = userTotal > aiTotal;
   const exceededAmount = userTotal - aiTotal;
@@ -86,7 +82,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
   function handleResetAll() {
     setEditingCategoryId(null);
     setEditingText('');
-    setBudgets(mockAIBudget.categories.map((c) => ({ ...c })));
+    setBudgets(recommendation.categories.map((c) => ({ ...c })));
   }
 
   function handleConfirm() {
@@ -124,7 +120,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
         {/* 상단 행: 아이콘 + 카테고리명 + 금액 편집 */}
         <View style={styles.categoryRow}>
           <Ionicons
-            name={CATEGORY_META[budget.category].icon}
+            name={BUDGET_CATEGORY_META[budget.category].icon}
             size={19}
             color={colors.textTertiary}
           />
@@ -209,7 +205,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
               <Ionicons name="sparkles" size={15} color={colors.primary} />
               <Text style={styles.insightLabel}>AI 분석</Text>
             </View>
-            <Text style={styles.insightText}>{mockAIBudget.insight}</Text>
+            <Text style={styles.insightText}>{recommendation.insight}</Text>
           </View>
 
           {/* 예산 비교 카드 */}
