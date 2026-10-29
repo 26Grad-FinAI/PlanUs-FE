@@ -7,6 +7,7 @@
  */
 
 import { mockAIBudget } from './budget.mock';
+import { mockUserProfile } from './profile.mock';
 import { useRecordStore } from '@/store/useRecordStore';
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { HomeSummary } from '@/types/home';
@@ -20,22 +21,39 @@ import { HomeSummary } from '@/types/home';
  */
 export async function fetchHomeSummary(year: number, month: number): Promise<HomeSummary> {
   const confirmed = useBudgetStore.getState().confirmedBudget;
-  const budgetTotal =
-    confirmed?.year === year && confirmed.month === month
-      ? confirmed.recommendation.categories.reduce((sum, item) => sum + item.userAmount, 0)
-      : mockAIBudget.aiTotalAmount;
+  const isConfirmedMonth = confirmed?.year === year && confirmed.month === month;
+  const profile = isConfirmedMonth ? confirmed.profile : mockUserProfile;
+  const budgetTotal = isConfirmedMonth
+    ? confirmed.recommendation.categories.reduce((sum, item) => sum + item.userAmount, 0)
+    : mockAIBudget.aiTotalAmount;
 
-  const totalExpense = useRecordStore
-    .getState()
-    .records.filter((record) => {
-      const [recordYear, recordMonth] = record.date.split('-').map(Number);
-      return record.type === 'expense' && recordYear === year && recordMonth === month;
-    })
+  const monthRecords = useRecordStore.getState().records.filter((record) => {
+    const [recordYear, recordMonth] = record.date.split('-').map(Number);
+    return recordYear === year && recordMonth === month;
+  });
+  // 날짜 선택은 목록에만 적용하고 월 집계에는 영향을 주지 않는다.
+  const totalExpense = monthRecords
+    .filter((record) => record.type === 'expense')
     .reduce((sum, record) => sum + record.amount, 0);
+  // 월급은 프로필의 월 소득에 이미 포함되어 있으므로 추가 수입에서 제외한다.
+  const additionalIncome = monthRecords
+    .filter((record) => record.type === 'income' && record.category !== 'salary')
+    .reduce((sum, record) => sum + record.amount, 0);
+  const fixedExpense = profile.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
 
   const remaining = Math.max(budgetTotal - totalExpense, 0);
   const usageRate =
     budgetTotal > 0 ? Math.min(Math.round((totalExpense / budgetTotal) * 100), 100) : 0;
 
-  return { totalExpense, budgetTotal, remaining, usageRate };
+  return {
+    totalExpense,
+    budgetTotal,
+    remaining,
+    usageRate,
+    monthlyIncome: profile.monthlyIncome,
+    additionalIncome,
+    totalIncome: profile.monthlyIncome + additionalIncome,
+    fixedExpense,
+    totalOutflow: fixedExpense + totalExpense,
+  };
 }

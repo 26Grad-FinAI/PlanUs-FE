@@ -13,4 +13,9 @@ export interface HomeSummary {
   remaining: number;
   // 예산 소진율 (%), 0~100
   usageRate: number;
+  monthlyIncome: number;
+  additionalIncome: number;
+  totalIncome: number;
+  fixedExpense: number;
+  totalOutflow: number;
 }

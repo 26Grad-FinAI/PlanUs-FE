@@ -1,176 +1,106 @@
-/**
- * 홈 화면 — 최근 내역 (날짜별 그룹)
- *
- * 날짜별로 그룹화된 기록을 최근 날짜가 위로 오도록 렌더링한다.
- * 캘린더에서 날짜를 선택하면 groups가 해당 날짜 하나로 필터링되어 전달된다.
- */
-
+/** 시안처럼 날짜를 왼쪽에 한 번만 표시하는 기록 목록. 행 전체가 상세 진입 영역이다. */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { Text } from '@/components/common/Text';
-import Ionicons from '@expo/vector-icons/Ionicons';
-
 import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
+import { fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { DateGroup } from '@/hooks/useHomeCalendar';
 import { formatFullAmount } from '@/utils/formatCurrency';
-
-const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
 interface RecentRecordListProps {
   groups: DateGroup[];
   selectedDate: string | null;
   todayISO: string;
+  onPressRecord: (id: string) => void;
 }
-
-export function RecentRecordList({ groups, selectedDate, todayISO }: RecentRecordListProps) {
-  function renderDateGroup(group: DateGroup, isLast: boolean) {
-    const groupDate = new Date(`${group.date}T00:00:00`);
-    const isPlannedGroup = group.date > todayISO;
-    const isTodayGroup = group.date === todayISO;
-
-    return (
-      <View key={group.date} style={[styles.dateGroup, !isLast && styles.dateGroupDivider]}>
-        {/* 날짜 헤더 — 해당 날짜의 항목들이 그 아래에 리스트로 나온다 */}
-        <View style={styles.dateGroupHeader}>
-          {isTodayGroup && <Text style={styles.dateGroupToday}>오늘 · </Text>}
-          <Text style={styles.dateGroupTitle}>
-            {groupDate.getMonth() + 1}월 {groupDate.getDate()}일 (
-            {WEEKDAY_LABELS[groupDate.getDay()]})
-          </Text>
-          {isPlannedGroup && (
-            <View style={styles.plannedTag}>
-              <Text style={styles.plannedTagText}>예정</Text>
-            </View>
-          )}
-        </View>
-
-        {/* 날짜에 속한 항목 리스트 */}
-        {group.items.map((item) => {
-          const meta = CATEGORY_META[item.category];
-          const isIncome = item.type === 'income';
-          const amountColor = isPlannedGroup
-            ? colors.planned
-            : isIncome
-              ? colors.income
-              : colors.expense;
-
-          return (
-            <View key={item.id} style={styles.recordRow}>
-              <View style={[styles.recordIconWrap, isIncome && styles.recordIconWrapIncome]}>
-                <Ionicons
-                  name={meta.icon}
-                  size={18}
-                  color={isIncome ? colors.income : colors.textSecondary}
-                />
-              </View>
-              <View style={styles.recordTextWrap}>
-                <Text style={styles.recordDescription}>{item.description}</Text>
-                <Text style={styles.recordCategory}>{meta.label}</Text>
-              </View>
-              <Text style={[styles.recordAmount, { color: amountColor }]}>
-                {isIncome ? '+' : '-'}
-                {formatFullAmount(item.amount)}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    );
-  }
-
+export function RecentRecordList({
+  groups,
+  selectedDate,
+  todayISO,
+  onPressRecord,
+}: RecentRecordListProps) {
   return (
-    <View style={styles.recentSection}>
-      <Text style={styles.recentSectionTitle}>
+    <View style={styles.section}>
+      <Text style={styles.title} accessibilityRole="header" accessibilityLiveRegion="polite">
         {selectedDate
-          ? `${Number(selectedDate.split('-')[1])}월 ${Number(selectedDate.split('-')[2])}일 내역`
+          ? `${Number(selectedDate.slice(5, 7))}월 ${Number(selectedDate.slice(8, 10))}일 내역`
           : '최근 내역'}
       </Text>
-      {groups.length > 0 ? (
-        groups.map((group, index) => renderDateGroup(group, index === groups.length - 1))
+      {groups.length === 0 ? (
+        <Text style={styles.empty}>
+          {selectedDate ? '이 날짜에 기록된 내역이 없어요' : '이번 달에 기록된 내역이 없어요'}
+        </Text>
       ) : (
-        <Text style={styles.emptyText}>소비 기록이 없습니다.</Text>
+        groups.map((group, index) => (
+          <View
+            key={group.date}
+            style={[styles.group, index < groups.length - 1 && styles.groupDivider]}
+          >
+            <View style={styles.dateColumn}>
+              <Text style={[styles.date, group.date === todayISO && styles.today]}>
+                {Number(group.date.slice(5, 7))}.{Number(group.date.slice(8, 10))}
+              </Text>
+            </View>
+            <View style={styles.records}>
+              {group.items.map((item) => (
+                <Pressable
+                  key={item.id}
+                  style={styles.row}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.description}, ${item.type === 'income' ? '수입' : '지출'} ${formatFullAmount(item.amount)}, 상세 보기`}
+                  onPress={() => onPressRecord(item.id)}
+                >
+                  <View style={styles.description}>
+                    <Text style={styles.name}>{item.description}</Text>
+                    <Text style={styles.category}>{CATEGORY_META[item.category].label}</Text>
+                  </View>
+                  <Text
+                    style={[styles.amount, item.type === 'income' && styles.income]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.7}
+                  >
+                    {item.type === 'income' ? '+' : '-'}
+                    {formatFullAmount(item.amount)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ))
       )}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  recentSection: { gap: 18 },
-  recentSectionTitle: {
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.bold,
-    color: colors.textPrimary,
+  section: {
+    backgroundColor: colors.background,
+    padding: 20,
+    paddingTop: 24,
+    paddingBottom: 80,
+    minHeight: 250,
   },
-  emptyText: {
-    fontSize: fontSize.sm,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    paddingVertical: 24,
-  },
-
-  dateGroup: { gap: 12 },
-  // 날짜 그룹끼리 살짝 더 분명하게 구분되도록 여백 + 옅은 구분선 추가
-  dateGroupDivider: {
-    paddingBottom: 14,
-    marginBottom: 4,
+  title: { fontSize: 16, lineHeight: 26, fontFamily: fontFamily.bold, marginBottom: 14 },
+  group: { flexDirection: 'row', gap: 12, paddingVertical: 16 },
+  groupDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.surfaceMuted,
   },
-  dateGroupHeader: { flexDirection: 'row', alignItems: 'center' },
-  dateGroupToday: {
-    fontSize: fontSize.sm,
-    fontFamily: fontFamily.semibold,
-    color: colors.primary,
-  },
-  dateGroupTitle: {
-    fontSize: fontSize.sm,
-    fontFamily: fontFamily.semibold,
+  dateColumn: { width: 44, paddingTop: 4, gap: 2 },
+  date: {
+    fontSize: 14,
+    lineHeight: 20,
     color: colors.textSecondary,
-  },
-  plannedTag: {
-    marginLeft: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
-    backgroundColor: colors.plannedBg,
-  },
-  plannedTagText: {
-    fontSize: fontSize.xxs,
-    fontFamily: fontFamily.semibold,
-    color: colors.planned,
-  },
-
-  recordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  recordIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.backgroundAlt,
-  },
-  recordIconWrapIncome: { backgroundColor: colors.incomeBg },
-  recordTextWrap: { flex: 1, gap: 4 },
-  // lineHeight를 명시해야 텍스트 내용에 따라 행간이 미묘하게 달라 보이는 문제(브라우저/폰트별 기본 leading 차이)가 사라진다
-  recordDescription: {
-    fontSize: fontSize.sm,
-    lineHeight: 18,
-    fontFamily: fontFamily.semibold,
-    color: colors.textPrimary,
-  },
-  recordCategory: {
-    fontSize: fontSize.xs,
-    lineHeight: 16,
-    color: colors.textTertiary,
-  },
-  recordAmount: {
-    fontSize: fontSize.sm,
     fontFamily: fontFamily.semibold,
   },
+  today: { color: colors.primaryDark },
+  records: { flex: 1, gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
+  description: { flex: 1, gap: 2 },
+  name: { fontSize: 14, lineHeight: 20, fontFamily: fontFamily.medium },
+  category: { fontSize: 12, lineHeight: 18, color: colors.textDisabled },
+  amount: { maxWidth: '53%', fontSize: 14, lineHeight: 20, fontFamily: fontFamily.semibold },
+  income: { color: colors.income },
+  empty: { color: colors.textTertiary, fontSize: 14, textAlign: 'center', paddingVertical: 32 },
 });

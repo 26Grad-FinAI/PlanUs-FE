@@ -8,7 +8,7 @@
 import { SpendingRecord, CreateSpendingRecordParams } from '@/types/record';
 
 // 오늘 기준 상대 일수(offsetDays)로 ISO 날짜 문자열 생성
-// 항상 "오늘"을 중심으로 과거/미래 기록이 함께 보이도록 하기 위해
+// 실행 날짜가 달라져도 최근 기록이 보이도록
 // 절대 날짜 대신 상대 오프셋으로 mock 데이터를 구성한다.
 function dateWithOffset(offsetDays: number): string {
   const date = new Date();
@@ -21,7 +21,7 @@ function dateWithOffset(offsetDays: number): string {
 }
 
 // 소비 기록 샘플 데이터
-// offset < 0: 과거(확정) 기록, offset === 0: 오늘, offset > 0: 미래(예정) 기록
+// 오늘과 과거 날짜의 실제 수입·지출 기록만 제공한다.
 export const mockSpendingRecords: SpendingRecord[] = [
   {
     id: '1',
@@ -30,7 +30,9 @@ export const mockSpendingRecords: SpendingRecord[] = [
     description: '스타벅스',
     date: dateWithOffset(0),
     category: 'dining',
-    memo: '아이스 아메리카노',
+    memo: '팀 미팅 전에 아이스 아메리카노',
+    spendingNature: 'happy',
+    isRecurring: false,
     createdAt: `${dateWithOffset(0)}T09:30:00.000Z`,
   },
   {
@@ -38,6 +40,8 @@ export const mockSpendingRecords: SpendingRecord[] = [
     type: 'expense',
     amount: 45000,
     description: '이마트',
+    spendingNature: 'needed',
+    isRecurring: false,
     date: dateWithOffset(-1),
     category: 'grocery',
     createdAt: `${dateWithOffset(-1)}T18:20:00.000Z`,
@@ -47,6 +51,8 @@ export const mockSpendingRecords: SpendingRecord[] = [
     type: 'expense',
     amount: 12000,
     description: '카카오택시',
+    spendingNature: 'impulse',
+    isRecurring: false,
     date: dateWithOffset(-2),
     category: 'other',
     createdAt: `${dateWithOffset(-2)}T22:00:00.000Z`,
@@ -65,6 +71,8 @@ export const mockSpendingRecords: SpendingRecord[] = [
     type: 'expense',
     amount: 28000,
     description: 'CGV 영화관',
+    spendingNature: 'happy',
+    isRecurring: false,
     date: dateWithOffset(-4),
     category: 'leisure',
     createdAt: `${dateWithOffset(-4)}T20:10:00.000Z`,
@@ -74,6 +82,8 @@ export const mockSpendingRecords: SpendingRecord[] = [
     type: 'expense',
     amount: 32000,
     description: '호프집',
+    spendingNature: 'happy',
+    isRecurring: false,
     date: dateWithOffset(-6),
     category: 'alcohol',
     createdAt: `${dateWithOffset(-6)}T21:40:00.000Z`,
@@ -83,6 +93,8 @@ export const mockSpendingRecords: SpendingRecord[] = [
     type: 'expense',
     amount: 15000,
     description: '약국',
+    spendingNature: 'needed',
+    isRecurring: false,
     date: dateWithOffset(-9),
     category: 'medical',
     createdAt: `${dateWithOffset(-9)}T11:15:00.000Z`,
@@ -92,27 +104,33 @@ export const mockSpendingRecords: SpendingRecord[] = [
     type: 'expense',
     amount: 50000,
     description: '팀 회식',
-    date: dateWithOffset(2),
+    spendingNature: 'happy',
+    isRecurring: false,
+    date: dateWithOffset(-3),
     category: 'dining',
-    createdAt: `${dateWithOffset(2)}T08:00:00.000Z`,
+    createdAt: `${dateWithOffset(-3)}T08:00:00.000Z`,
   },
   {
     id: '9',
     type: 'expense',
     amount: 38000,
     description: '토익 응시료',
-    date: dateWithOffset(5),
+    spendingNature: 'needed',
+    isRecurring: true,
+    date: dateWithOffset(-5),
     category: 'education',
-    createdAt: `${dateWithOffset(5)}T08:00:00.000Z`,
+    createdAt: `${dateWithOffset(-5)}T08:00:00.000Z`,
   },
   {
     id: '10',
     type: 'expense',
     amount: 120000,
     description: '주말 여행 숙소',
-    date: dateWithOffset(8),
+    spendingNature: 'happy',
+    isRecurring: false,
+    date: dateWithOffset(-8),
     category: 'travel',
-    createdAt: `${dateWithOffset(8)}T08:00:00.000Z`,
+    createdAt: `${dateWithOffset(-8)}T08:00:00.000Z`,
   },
 ];
 

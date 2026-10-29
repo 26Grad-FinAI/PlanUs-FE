@@ -40,4 +40,5 @@ export type RootStackParamList = {
   Auth: undefined; // AuthStack
   Onboarding: undefined; // OnboardingStack
   Main: undefined; // MainTab
+  RecordDetail: { recordId: string };
 };

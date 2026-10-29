@@ -10,6 +10,8 @@
 // 지출 / 수입 구분
 export type SpendingType = 'expense' | 'income';
 
+export type SpendingNature = 'needed' | 'happy' | 'impulse';
+
 // 지출 카테고리 (10종)
 // 수입 카테고리: salary(월급), allowance(용돈), other(기타)
 export type SpendingCategory =
@@ -26,24 +28,23 @@ export type SpendingCategory =
   | 'allowance'
   | 'other';
 
-// 저장된 소비 기록 한 건
-export interface SpendingRecord {
-  id: string;
-  type: SpendingType;
+/** 수입과 지출의 공통 입력값. */
+interface RecordFields {
   amount: number;
   description: string;
   date: string;
   category: SpendingCategory;
   memo?: string;
-  createdAt: string; // ISO 8601
 }
 
-// 소비 기록 생성 시 전달하는 파라미터
-export interface CreateSpendingRecordParams {
-  type: SpendingType;
-  amount: number;
-  description: string;
-  date: string;
-  category: SpendingCategory;
-  memo?: string;
-}
+/** 지출 전용 필드는 저장 단계에서 반드시 제공하고, 수입에는 포함하지 않는다. */
+export type CreateSpendingRecordParams = RecordFields &
+  (
+    | { type: 'expense'; spendingNature: SpendingNature; isRecurring: boolean }
+    | { type: 'income'; spendingNature?: never; isRecurring?: never }
+  );
+
+export type SpendingRecord = CreateSpendingRecordParams & {
+  id: string;
+  createdAt: string;
+};

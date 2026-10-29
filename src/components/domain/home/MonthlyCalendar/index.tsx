@@ -1,27 +1,18 @@
-/**
- * 홈 화면 — 월별 캘린더
- *
- * 날짜별 박스 없이 숫자 + 순증감액(+/-)만 표시한다.
- * 예정(미래) 소비가 있는 날은 작은 점으로 구분하고, 날짜를 탭하면 onSelectDate가 호출된다.
- */
-
+/** 날짜 선택과 오늘 표시를 분리하고, 수입과 지출을 상쇄하지 않고 표시한다. */
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import { MonthNavigator } from '@/components/common/MonthNavigator';
 import { Text } from '@/components/common/Text';
-
 import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
+import { fontFamily } from '@/constants/typography';
 import { SpendingRecord } from '@/types/record';
 import { formatComma } from '@/utils/formatCurrency';
-import { isSameDay, toISODate } from '@/utils/formatDate';
+import { toISODate } from '@/utils/formatDate';
 
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
-
 interface MonthlyCalendarProps {
   monthCursor: Date;
   weeks: (Date | null)[][];
-  today: Date;
   todayISO: string;
   recordsByDate: Record<string, SpendingRecord[]>;
   selectedDate: string | null;
@@ -29,11 +20,9 @@ interface MonthlyCalendarProps {
   onNextMonth: () => void;
   onSelectDate: (dateKey: string) => void;
 }
-
 export function MonthlyCalendar({
   monthCursor,
   weeks,
-  today,
   todayISO,
   recordsByDate,
   selectedDate,
@@ -41,161 +30,128 @@ export function MonthlyCalendar({
   onNextMonth,
   onSelectDate,
 }: MonthlyCalendarProps) {
+  const { width } = useWindowDimensions();
+  // Web의 말줄임을 막기 위해 큰 금액도 날짜 셀 폭에 맞는 글자 크기로 표시한다.
+  const cellWidth = (Math.min(width, 640) - 64) / 7;
+  function amountSize(amount: number) {
+    return Math.min(10, Math.max(6, cellWidth / ((formatComma(amount).length + 1) * 0.6)));
+  }
   function renderDayCell(date: Date | null, key: string) {
     if (!date) return <View key={key} style={styles.dayCell} />;
-
     const dateKey = toISODate(date);
     const dayRecords = recordsByDate[dateKey] ?? [];
-    const isToday = isSameDay(date, today);
-    const isPlannedDay = dateKey > todayISO;
-    const isSunday = date.getDay() === 0;
-
-    let net = 0;
-    dayRecords.forEach((record) => {
-      net += record.type === 'income' ? record.amount : -record.amount;
-    });
-
-    const hasRecords = dayRecords.length > 0;
-    const amountColor = isPlannedDay ? colors.planned : net >= 0 ? colors.income : colors.expense;
+    const isToday = dateKey === todayISO;
     const isSelected = selectedDate === dateKey;
-
+    const income = dayRecords
+      .filter((r) => r.type === 'income')
+      .reduce((sum, r) => sum + r.amount, 0);
+    const expense = dayRecords
+      .filter((r) => r.type === 'expense')
+      .reduce((sum, r) => sum + r.amount, 0);
     return (
       <TouchableOpacity
         key={key}
         style={styles.dayCell}
         onPress={() => onSelectDate(dateKey)}
-        activeOpacity={0.6}
+        activeOpacity={0.65}
         accessibilityRole="button"
-        accessibilityLabel={`${date.getMonth() + 1}월 ${date.getDate()}일 내역 보기`}
+        accessibilityState={{ selected: isSelected }}
+        accessibilityLabel={`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일${isToday ? ', 오늘' : ''}, 수입 ${formatComma(income)}원, 지출 ${formatComma(expense)}원 내역 보기`}
       >
-        <View
-          style={[
-            styles.dayNumberWrap,
-            isSelected && !isToday && styles.dayNumberWrapSelected,
-            isToday && styles.dayNumberWrapToday,
-          ]}
-        >
+        <View style={[styles.dayNumberWrap, isSelected && styles.selected]}>
           <Text
             style={[
-              styles.dayNumberText,
-              isSunday && !isToday && styles.dayNumberTextSunday,
-              isToday && styles.dayNumberTextToday,
+              styles.dayNumber,
+              date.getDay() === 0 && styles.sunday,
+              isToday && styles.today,
+              isSelected && styles.selectedText,
             ]}
           >
             {date.getDate()}
           </Text>
-          {/* 예정(미래) 소비가 있는 날: 박스 대신 작은 점으로만 표시 */}
-          {isPlannedDay && hasRecords && <View style={styles.plannedDot} />}
         </View>
-        {hasRecords && (
-          <Text
-            style={[styles.dayAmountText, { color: amountColor }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.55}
-          >
-            {net >= 0 ? '+' : '-'}
-            {formatComma(Math.abs(net))}
-          </Text>
-        )}
+        <View style={styles.amounts}>
+          {income > 0 && (
+            <Text
+              style={[styles.dayAmount, styles.income, { fontSize: amountSize(income) }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
+              +{formatComma(income)}
+            </Text>
+          )}
+          {expense > 0 && (
+            <Text
+              style={[styles.dayAmount, styles.expense, { fontSize: amountSize(expense) }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
+              -{formatComma(expense)}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     );
   }
-
   return (
-    <View style={styles.calendarCard}>
+    <View style={styles.card}>
       <MonthNavigator
         year={monthCursor.getFullYear()}
         month={monthCursor.getMonth() + 1}
         onPrevious={onPrevMonth}
         onNext={onNextMonth}
       />
-
-      <View style={styles.weekdayRow}>
+      <View style={styles.weekdays}>
         {WEEKDAY_LABELS.map((label, index) => (
-          <Text key={label} style={[styles.weekdayText, index === 0 && styles.weekdayTextSunday]}>
+          <Text key={label} style={[styles.weekday, index === 0 && styles.sunday]}>
             {label}
           </Text>
         ))}
       </View>
-
-      {weeks.map((week, weekIndex) => (
-        <View key={`week-${weekIndex}`} style={styles.weekRow}>
-          {week.map((date, dayIndex) => renderDayCell(date, `${weekIndex}-${dayIndex}`))}
+      {weeks.map((week, index) => (
+        <View key={index} style={styles.week}>
+          {week.map((date, day) => renderDayCell(date, `${index}-${day}`))}
         </View>
       ))}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  calendarCard: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 20,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    gap: 4,
+  card: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 28,
   },
-
-  weekdayRow: { flexDirection: 'row' },
-  weekdayText: {
+  weekdays: { flexDirection: 'row', marginTop: 10, marginBottom: 12 },
+  weekday: {
     flex: 1,
     textAlign: 'center',
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.medium,
+    fontSize: 12,
+    lineHeight: 18,
     color: colors.textTertiary,
-    paddingBottom: 8,
+    fontFamily: fontFamily.medium,
   },
-  weekdayTextSunday: { color: colors.expense },
-
-  weekRow: { flexDirection: 'row' },
-  dayCell: {
-    flex: 1,
-    minHeight: 46,
-    alignItems: 'center',
-    paddingTop: 4,
-    gap: 3,
-  },
+  week: { flexDirection: 'row' },
+  dayCell: { flex: 1, minWidth: 0, minHeight: 50, alignItems: 'center', paddingTop: 4 },
   dayNumberWrap: {
-    width: 26,
-    height: 26,
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 14,
   },
-  dayNumberWrapToday: {
-    backgroundColor: colors.primary,
-    borderRadius: 13,
-  },
-  // 탭으로 선택한 날짜(오늘이 아닌 경우) — 채움 대신 테두리로만 가볍게 구분
-  dayNumberWrapSelected: {
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    borderRadius: 13,
-  },
-  dayNumberText: {
-    fontSize: fontSize.sm,
-    fontFamily: fontFamily.medium,
-    color: colors.textPrimary,
-  },
-  dayNumberTextSunday: { color: colors.expense },
-  dayNumberTextToday: {
-    color: colors.background,
-    fontFamily: fontFamily.bold,
-  },
-  // 예정(미래) 소비가 있는 날 표시용 작은 점 — 박스 대신 가볍게 구분
-  plannedDot: {
-    position: 'absolute',
-    top: -1,
-    right: -1,
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: colors.planned,
-    borderWidth: 1.5,
-    borderColor: colors.backgroundAlt,
-  },
-  dayAmountText: {
-    fontSize: 9,
-    fontFamily: fontFamily.semibold,
-  },
+  dayNumber: { fontSize: 14, lineHeight: 22, fontFamily: fontFamily.medium },
+  sunday: { color: colors.expense },
+  today: { color: colors.primary, fontFamily: fontFamily.bold },
+  selected: { backgroundColor: colors.primary },
+  selectedText: { color: colors.background, fontFamily: fontFamily.bold },
+  amounts: { alignSelf: 'stretch', alignItems: 'center', marginTop: 3 },
+  dayAmount: { fontSize: 10, lineHeight: 13, fontFamily: fontFamily.medium, maxWidth: '100%' },
+  income: { color: colors.income },
+  expense: { color: colors.expense },
 });

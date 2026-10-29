@@ -12,9 +12,20 @@ import { useRecordStore } from '@/store/useRecordStore';
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { HomeSummary } from '@/types/home';
 import { SpendingRecord } from '@/types/record';
-import { buildMonthWeeks, startOfDay, toISODate } from '@/utils/formatDate';
+import { buildMonthWeeks, toISODate } from '@/utils/formatDate';
+import { useToday } from '@/hooks/useToday';
 
-const EMPTY_SUMMARY: HomeSummary = { totalExpense: 0, budgetTotal: 0, remaining: 0, usageRate: 0 };
+const EMPTY_SUMMARY: HomeSummary = {
+  totalExpense: 0,
+  budgetTotal: 0,
+  remaining: 0,
+  usageRate: 0,
+  monthlyIncome: 0,
+  additionalIncome: 0,
+  totalIncome: 0,
+  fixedExpense: 0,
+  totalOutflow: 0,
+};
 
 export interface DateGroup {
   date: string;
@@ -22,7 +33,7 @@ export interface DateGroup {
 }
 
 export function useHomeCalendar() {
-  const today = useMemo(() => startOfDay(new Date()), []);
+  const today = useToday();
   const todayISO = useMemo(() => toISODate(today), [today]);
   const [monthCursor, setMonthCursor] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
@@ -60,7 +71,7 @@ export function useHomeCalendar() {
     return () => {
       cancelled = true;
     };
-  }, [monthCursor, records, confirmedBudget]);
+  }, [monthCursor, records, confirmedBudget, todayISO]);
 
   // 날짜별로 그룹화 후 최근 날짜가 먼저 오도록 정렬
   const dateGroups: DateGroup[] = useMemo(() => {
@@ -71,7 +82,10 @@ export function useHomeCalendar() {
     });
     return Object.entries(map)
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([date, items]) => ({ date, items }));
+      .map(([date, items]) => ({
+        date,
+        items: [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      }));
   }, [monthRecords]);
 
   // 캘린더에서 특정 날짜를 탭하면 해당 날짜의 내역만 아래 목록에 보여준다

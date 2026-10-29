@@ -19,6 +19,7 @@ import { toISODate } from '@/utils/formatDate';
 
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { ChipGroup } from '@/components/common/Chip';
+import { Checkbox } from '@/components/common/Checkbox';
 import { Header } from '@/components/common/Header';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -28,7 +29,7 @@ import { fontSize, fontFamily } from '@/constants/typography';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import { MainTabParamList } from '@/app/navigation/types';
 import { useRecordStore } from '@/store/useRecordStore';
-import { SpendingType, SpendingCategory } from '@/types/record';
+import { SpendingType, SpendingCategory, SpendingNature } from '@/types/record';
 
 type RecordAddNavigationProp = BottomTabNavigationProp<MainTabParamList, 'RecordAdd'>;
 
@@ -45,19 +46,13 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<SpendingCategory | null>(null);
   const [memo, setMemo] = useState('');
+  const [spendingNature, setSpendingNature] = useState<SpendingNature | null>(null);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [natureError, setNatureError] = useState('');
 
   const [amountError, setAmountError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
   const [categoryError, setCategoryError] = useState('');
-
-  // 오늘 자정 기준으로 선택된 날짜가 미래인지 확인 → 예정 소비 뱃지/안내 표시 여부 결정
-  const isPlannedDate = (() => {
-    const todayMidnight = new Date();
-    todayMidnight.setHours(0, 0, 0, 0);
-    const selected = new Date(selectedDate);
-    selected.setHours(0, 0, 0, 0);
-    return selected > todayMidnight;
-  })();
 
   useFocusEffect(
     useCallback(() => {
@@ -68,6 +63,9 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
       setSelectedDate(today);
       setSelectedCategory(null);
       setMemo('');
+      setSpendingNature(null);
+      setIsRecurring(false);
+      setNatureError('');
       setAmountError('');
       setDescriptionError('');
       setCategoryError('');
@@ -78,6 +76,9 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
     setRecordType(type);
     setSelectedCategory(null);
     setCategoryError('');
+    setSpendingNature(null);
+    setIsRecurring(false);
+    setNatureError('');
   }
 
   function handleAmountChange(text: string) {
@@ -115,18 +116,28 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
       setCategoryError('');
     }
 
+    if (recordType === 'expense' && !spendingNature) {
+      setNatureError('소비 성격을 선택해주세요');
+      isValid = false;
+    } else {
+      setNatureError('');
+    }
     if (!isValid) return;
 
     // record store에 추가 → 홈 화면 등 store를 구독하는 화면이 자동으로 갱신된다
     // TODO: API 연결 시 store 대신 createSpendingRecord(params) 호출 후 서버 응답으로 갱신
-    addRecord({
-      type: recordType,
+    const values = {
       amount: parsedAmount,
       description,
       date: toISODate(selectedDate),
       category: selectedCategory!,
       memo,
-    });
+    };
+    if (recordType === 'income') {
+      addRecord({ ...values, type: 'income' });
+    } else if (spendingNature) {
+      addRecord({ ...values, type: 'expense', spendingNature, isRecurring });
+    }
     navigation.navigate('HomeCalendar');
   }
 
@@ -185,12 +196,7 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
               error={descriptionError}
             />
 
-            <DateField
-              required
-              value={selectedDate}
-              onChange={setSelectedDate}
-              hint={isPlannedDate ? '아직 오지 않은 날짜예요. 예정 소비로 기록됩니다.' : undefined}
-            />
+            <DateField required value={selectedDate} onChange={setSelectedDate} />
 
             <ChipGroup
               label="카테고리"
@@ -207,6 +213,31 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
               }}
               error={categoryError}
             />
+
+            {recordType === 'expense' && (
+              <>
+                <ChipGroup
+                  label="소비 성격"
+                  required
+                  options={[
+                    { value: 'needed', label: '필요한 소비였어요' },
+                    { value: 'happy', label: '만족스러웠어요' },
+                    { value: 'impulse', label: '충동적이었어요' },
+                  ]}
+                  value={spendingNature}
+                  onChange={(value) => {
+                    setSpendingNature(value);
+                    setNatureError('');
+                  }}
+                  error={natureError}
+                />
+                <Checkbox
+                  label="반복되는 지출이에요"
+                  checked={isRecurring}
+                  onChange={setIsRecurring}
+                />
+              </>
+            )}
 
             {/* ── 메모 ── */}
             <TextArea
