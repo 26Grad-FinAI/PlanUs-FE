@@ -22,7 +22,7 @@ export function Checkbox({ label, description, checked, onChange, disabled }: Ch
       accessibilityState={{ checked, disabled: !!disabled }}
       disabled={disabled}
       onPress={() => onChange(!checked)}
-      style={[styles.row, disabled && styles.disabled]}
+      style={[styles.row, !!description && styles.withDescription, disabled && styles.disabled]}
     >
       <View style={[styles.box, checked && styles.checked]}>
         {checked && (
@@ -48,6 +48,7 @@ export function Checkbox({ label, description, checked, onChange, disabled }: Ch
 }
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: metrics.touch },
+  withDescription: { alignItems: 'flex-start' },
   box: {
     width: 20,
     height: 20,

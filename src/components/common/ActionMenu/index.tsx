@@ -19,7 +19,23 @@ interface ActionMenuProps {
 }
 export function ActionMenu({ visible, onClose, items }: ActionMenuProps) {
   return (
-    <ModalSurface visible={visible} onClose={onClose} placement="topRight" dim={false}>
+    <ModalSurface
+      visible={visible}
+      onClose={onClose}
+      placement="topRight"
+      dim={false}
+      animationType="none"
+      slideFromTop
+    >
+      <ActionMenuContent items={items} onClose={onClose} />
+    </ModalSurface>
+  );
+}
+
+/** 같은 Modal 안에서 삭제 확인으로 전환할 수 있도록 메뉴 본문을 분리한다. */
+export function ActionMenuContent({ onClose, items }: Omit<ActionMenuProps, 'visible'>) {
+  return (
+    <>
       {items.map((item) => (
         <TouchableOpacity
           key={item.id}
@@ -45,7 +61,7 @@ export function ActionMenu({ visible, onClose, items }: ActionMenuProps) {
           </Text>
         </TouchableOpacity>
       ))}
-    </ModalSurface>
+    </>
   );
 }
 const styles = StyleSheet.create({

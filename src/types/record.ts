@@ -10,21 +10,20 @@
 // 지출 / 수입 구분
 export type SpendingType = 'expense' | 'income';
 
-export type SpendingNature = 'needed' | 'happy' | 'impulse';
+export type SpendingNature = 'needed' | 'happy' | 'impulse' | 'relieved' | 'regret';
 
 // 지출 카테고리 (10종)
-// 수입 카테고리: salary(월급), allowance(용돈), other(기타)
+// 수입 카테고리: allowance(용돈), other(기타)
 export type SpendingCategory =
   | 'grocery'
   | 'dining'
-  | 'alcohol'
+  | 'transport'
   | 'clothing'
   | 'leisure'
   | 'medical'
   | 'education'
   | 'travel'
   | 'telecom'
-  | 'salary'
   | 'allowance'
   | 'other';
 

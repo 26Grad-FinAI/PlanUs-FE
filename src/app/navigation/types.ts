@@ -7,6 +7,7 @@
 
 import { UserProfile } from '@/types/profile';
 import { AIBudgetRecommendation } from '@/types/budget';
+import { NavigatorScreenParams } from '@react-navigation/native';
 
 // 인증 스택 (로그인, 회원가입)
 export type AuthStackParamList = {
@@ -26,11 +27,10 @@ export type OnboardingStackParamList = {
   };
 };
 
-// 메인 탭 (홈, 리포트, 소비기록 입력, AI분석, 설정)
+// 메인 탭. 기록 폼은 루트 스택에 두어 탭 이동과 입력 수명을 분리한다.
 export type MainTabParamList = {
   HomeCalendar: undefined;
   MonthlyReport: undefined;
-  RecordAdd: undefined;
   AIAnalysis: undefined;
   Settings: undefined;
 };
@@ -39,6 +39,8 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Auth: undefined; // AuthStack
   Onboarding: undefined; // OnboardingStack
-  Main: undefined; // MainTab
+  Main: NavigatorScreenParams<MainTabParamList> | undefined;
   RecordDetail: { recordId: string };
+  RecordAdd: undefined;
+  RecordEdit: { recordId: string };
 };

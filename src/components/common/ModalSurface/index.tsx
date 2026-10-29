@@ -1,6 +1,17 @@
 /** 플랫폼 Modal의 포커스 관리 위에 닫기 배경과 공통 표면을 조합한다. */
-import React, { PropsWithChildren } from 'react';
-import { Modal, View, Pressable, ScrollView, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
+import {
+  Animated,
+  Easing,
+  Modal,
+  Platform,
+  View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
 import { spacing, radius, metrics, shadows } from '@/constants/layout';
@@ -10,6 +21,9 @@ interface ModalSurfaceProps extends PropsWithChildren {
   placement?: 'center' | 'topRight';
   contentStyle?: StyleProp<ViewStyle>;
   dim?: boolean;
+  animationType?: 'none' | 'fade' | 'slide';
+  overlayStyle?: StyleProp<ViewStyle>;
+  slideFromTop?: boolean;
 }
 export function ModalSurface({
   visible,
@@ -17,11 +31,28 @@ export function ModalSurface({
   placement = 'center',
   contentStyle,
   dim = true,
+  animationType = 'fade',
+  overlayStyle,
+  slideFromTop = false,
   children,
 }: ModalSurfaceProps) {
   const insets = useSafeAreaInsets();
+  const [translateY] = useState(() => new Animated.Value(-spacing.lg));
+  useEffect(() => {
+    // 배경이나 상세 화면은 흐려지지 않고 메뉴 표면만 위에서 제자리로 내려온다.
+    translateY.setValue(-spacing.lg);
+    if (!visible || !slideFromTop) return;
+    const motion = Animated.timing(translateY, {
+      toValue: 0,
+      duration: 180,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== 'web',
+    });
+    motion.start();
+    return () => motion.stop();
+  }, [visible, slideFromTop, translateY]);
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={animationType} onRequestClose={onClose}>
       <View
         style={[
           styles.overlay,
@@ -32,6 +63,7 @@ export function ModalSurface({
             alignItems: 'flex-end',
             paddingTop: insets.top + metrics.header,
           },
+          overlayStyle,
         ]}
       >
         <Pressable
@@ -40,14 +72,19 @@ export function ModalSurface({
           onPress={onClose}
           style={StyleSheet.absoluteFill}
         />
-        <View
+        <Animated.View
           accessibilityViewIsModal
-          style={[styles.surface, placement === 'topRight' && styles.menu, contentStyle]}
+          style={[
+            styles.surface,
+            placement === 'topRight' && styles.menu,
+            contentStyle,
+            slideFromTop && { transform: [{ translateY }] },
+          ]}
         >
           <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
             {children}
           </ScrollView>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );

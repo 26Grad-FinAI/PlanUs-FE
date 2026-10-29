@@ -20,21 +20,20 @@ export interface CategoryItem {
 export const EXPENSE_CATEGORIES = [
   { id: 'grocery', label: '식료품', icon: 'cart-outline' },
   { id: 'dining', label: '외식', icon: 'restaurant-outline' },
-  { id: 'alcohol', label: '주류', icon: 'beer-outline' },
-  { id: 'clothing', label: '의류', icon: 'shirt-outline' },
-  { id: 'leisure', label: '여가/문화', icon: 'film-outline' },
+  { id: 'transport', label: '교통/운송', icon: 'bus-outline' },
+  { id: 'clothing', label: '의류/미용', icon: 'shirt-outline' },
+  { id: 'leisure', label: '문화/운동/펫', icon: 'film-outline' },
   { id: 'medical', label: '의료/건강', icon: 'medkit-outline' },
   { id: 'education', label: '교육', icon: 'book-outline' },
   { id: 'travel', label: '숙박/여행', icon: 'airplane-outline' },
   { id: 'telecom', label: '정보통신', icon: 'phone-portrait-outline' },
-  { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
+  { id: 'other', label: '기타', icon: 'ellipsis-horizontal' },
 ] satisfies CategoryItem[];
 
-// 수입 카테고리 (3종)
+// 신규 수입은 시안의 용돈·기타만 선택한다. 월급은 프로필 월 소득에서 관리한다.
 export const INCOME_CATEGORIES = [
-  { id: 'salary', label: '월급', icon: 'briefcase-outline' },
   { id: 'allowance', label: '용돈', icon: 'gift-outline' },
-  { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
+  { id: 'other', label: '기타', icon: 'ellipsis-horizontal' },
 ] satisfies CategoryItem[];
 
 // 카테고리 ID → {label, icon} 빠른 조회용 (지출 + 수입 전체)
@@ -55,25 +54,24 @@ export const CATEGORY_COLOR: Record<SpendingCategory, string> = {
   education: '#0EA5E9',
   clothing: '#F472B6',
   medical: '#14B8A6',
-  alcohol: '#F43F5E',
+  transport: '#F8A866',
   other: '#CBD5E1',
-  salary: '#16A34A',
   allowance: '#22C55E',
 };
 
-/** 예산 시안의 분류. 소비 기록의 기존 식별자는 변경하지 않는다. */
+/** 예산도 등록과 같은 카테고리 표시를 사용한다. */
 export const BUDGET_CATEGORY_META: Record<
   BudgetCategory,
   { label: string; icon: CategoryItem['icon'] }
 > = {
   grocery: CATEGORY_META.grocery,
   dining: CATEGORY_META.dining,
-  clothing: { ...CATEGORY_META.clothing, label: '의류/미용' },
-  leisure: { ...CATEGORY_META.leisure, label: '문화/운동/펫' },
+  clothing: CATEGORY_META.clothing,
+  leisure: CATEGORY_META.leisure,
   medical: CATEGORY_META.medical,
   education: CATEGORY_META.education,
   travel: CATEGORY_META.travel,
-  transport: { label: '교통/운송', icon: 'bus-outline' },
+  transport: CATEGORY_META.transport,
   telecom: CATEGORY_META.telecom,
   other: CATEGORY_META.other,
 };
