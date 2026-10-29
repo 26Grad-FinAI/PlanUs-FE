@@ -4,7 +4,7 @@
  * 현재는 mock 데이터를 반환하며, API 연결 시 주석 처리된 코드를 활성화한다.
  */
 
-import { LoginParams, SignupParams, AuthResponse } from '@/types/auth';
+import { LoginParams, SignupParams, AuthResponse, AuthError } from '@/types/auth';
 import { mockAuthResponse, MOCK_CREDENTIALS } from '@/services/mock/auth.mock';
 
 /**
@@ -15,7 +15,8 @@ export async function login(params: LoginParams): Promise<AuthResponse> {
   // const res = await apiClient.post<AuthResponse>('/auth/login', params);
   // return res.data;
 
-  const isValidEmail = params.email === MOCK_CREDENTIALS.email;
+  await mockRequestDelay();
+  const isValidEmail = params.email.trim().toLowerCase() === MOCK_CREDENTIALS.email;
   const isValidPassword = params.password === MOCK_CREDENTIALS.password;
 
   if (!isValidEmail || !isValidPassword) {
@@ -33,11 +34,20 @@ export async function signup(params: SignupParams): Promise<AuthResponse> {
   // const res = await apiClient.post<AuthResponse>('/auth/signup', params);
   // return res.data;
 
+  await mockRequestDelay();
+  if (params.email.trim().toLowerCase() === MOCK_CREDENTIALS.email) {
+    throw new AuthError('EMAIL_ALREADY_REGISTERED', '이미 가입된 계정이에요.');
+  }
   return {
     ...mockAuthResponse,
-    email: params.email,
-    nickname: params.nickname,
+    email: params.email.trim(),
+    nickname: params.nickname.trim(),
     // 회원가입 직후이므로 프로필 미완료 상태
     profileCompleted: false,
   };
+}
+
+/** 요청 중 입력 잠금과 로딩 상태를 UI에서 확인하기 위한 Mock 지연. */
+function mockRequestDelay(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 300));
 }

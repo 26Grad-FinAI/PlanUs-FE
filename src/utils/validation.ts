@@ -13,15 +13,31 @@ interface ValidationResult {
 /**
  * 이메일 형식 검사
  * - 빈 값 여부
- * - RFC 5322 기반 간소화 정규식으로 형식 확인
+ * - 일반적인 이메일 주소 형식만 검사하며 실제 수신 가능 여부는 확인하지 않는다.
  */
 export function validateEmail(email: string): ValidationResult {
-  if (!email.trim()) {
+  const normalized = email.trim();
+  if (!normalized) {
     return { isValid: false, message: '이메일을 입력해주세요.' };
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  const parts = normalized.split('@');
+  const [local = '', domain = ''] = parts;
+  const domainLabels = domain.split('.');
+  const localPattern = /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/i;
+  const domainLabelPattern = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
+  const valid =
+    parts.length === 2 &&
+    normalized.length <= 254 &&
+    local.length <= 64 &&
+    localPattern.test(local) &&
+    !local.startsWith('.') &&
+    !local.endsWith('.') &&
+    !local.includes('..') &&
+    domainLabels.length >= 2 &&
+    domainLabels.every((label) => domainLabelPattern.test(label)) &&
+    !/^\d+$/.test(domainLabels[domainLabels.length - 1]);
+  if (!valid) {
     return { isValid: false, message: '올바른 이메일 형식을 입력해주세요.' };
   }
 
@@ -87,6 +103,10 @@ export function validateNickname(nickname: string): ValidationResult {
 
   if (nickname.trim().length < 2) {
     return { isValid: false, message: '닉네임은 2자 이상이어야 합니다.' };
+  }
+
+  if (nickname.trim().length > 10) {
+    return { isValid: false, message: '닉네임은 10자 이하여야 합니다.' };
   }
 
   return { isValid: true, message: '' };

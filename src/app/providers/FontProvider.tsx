@@ -1,15 +1,18 @@
 /** 폰트가 준비된 뒤 앱을 표시하고 다운로드 실패는 재시도할 수 있게 한다. */
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import { colors } from '@/constants/colors';
 import { spacing } from '@/constants/layout';
+import { hideNativeSplash } from '@/app/startup/nativeSplash';
 
 const fonts = {
   'Pretendard-Regular': require('../../../assets/fonts/Pretendard-Regular.ttf'),
   'Pretendard-Medium': require('../../../assets/fonts/Pretendard-Medium.ttf'),
   'Pretendard-SemiBold': require('../../../assets/fonts/Pretendard-SemiBold.ttf'),
   'Pretendard-Bold': require('../../../assets/fonts/Pretendard-Bold.ttf'),
+  'Pretendard-ExtraBold': require('../../../assets/fonts/Pretendard-ExtraBold.otf'),
+  'Pretendard-Black': require('../../../assets/fonts/Pretendard-Black.otf'),
 };
 
 export function FontProvider({ children }: PropsWithChildren) {
@@ -22,6 +25,9 @@ export function FontProvider({ children }: PropsWithChildren) {
 }
 function FontAttempt({ children, onRetry }: PropsWithChildren<{ onRetry: () => void }>) {
   const [loaded, error] = useFonts(fonts);
+  useEffect(() => {
+    if (error) void hideNativeSplash();
+  }, [error]);
   if (loaded) return <>{children}</>;
   return (
     <View style={styles.center}>

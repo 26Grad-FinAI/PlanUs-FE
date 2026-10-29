@@ -34,3 +34,14 @@ export interface AuthResponse {
  * AuthResponse에서 토큰을 제외한 사용자 식별 정보만 포함
  */
 export type AuthUser = Omit<AuthResponse, 'accessToken' | 'refreshToken'>;
+
+/** 서버의 응답 형식과 분리한 화면용 인증 오류. */
+export class AuthError extends Error {
+  readonly code: 'EMAIL_ALREADY_REGISTERED';
+
+  constructor(code: 'EMAIL_ALREADY_REGISTERED', message: string) {
+    super(message);
+    this.name = 'AuthError';
+    this.code = code;
+  }
+}

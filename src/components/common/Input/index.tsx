@@ -1,6 +1,14 @@
 /** 박스·밑줄·플로팅 라벨 입력. */
-import React, { useState } from 'react';
-import { View, TextInputProps, TextStyle, ViewStyle, StyleProp, StyleSheet } from 'react-native';
+import React, { Ref, useState } from 'react';
+import {
+  View,
+  TextInputInstance,
+  TextInputProps,
+  TextStyle,
+  ViewStyle,
+  StyleProp,
+  StyleSheet,
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
@@ -11,6 +19,7 @@ import { fontSize } from '@/constants/typography';
 import { colors } from '@/constants/colors';
 import { spacing, radius, metrics } from '@/constants/layout';
 export interface InputProps extends TextInputProps, FieldProps {
+  ref?: Ref<TextInputInstance>;
   variant?: 'box' | 'underline' | 'floating';
   suffix?: string;
   suffixStyle?: StyleProp<TextStyle>;
@@ -66,6 +75,7 @@ export function Input({
           {...props}
           placeholder={floating && !raised ? undefined : props.placeholder}
           editable={editable}
+          aria-invalid={!!error}
           aria-disabled={!editable}
           accessibilityLabel={props.accessibilityLabel ?? label ?? props.placeholder}
           onChangeText={(text) => {
