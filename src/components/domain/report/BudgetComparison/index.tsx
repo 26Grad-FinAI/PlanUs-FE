@@ -10,7 +10,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ProgressBar } from '@/components/common/ProgressBar';
 import { Text } from '@/components/common/Text';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';

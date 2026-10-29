@@ -1,7 +1,7 @@
 /** 카테고리/소비 성격 선택에 공통으로 쓰는 칩. */
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { FormField, FieldProps } from '@/components/common/FormField';
 import { SelectOption, IconName } from '@/types/ui';
@@ -23,6 +23,8 @@ export function Chip({ label, icon, selected, disabled, onPress }: ChipProps) {
   return (
     <TouchableOpacity
       accessibilityRole="button"
+      aria-selected={!!selected}
+      aria-disabled={!!disabled}
       accessibilityLabel={label}
       accessibilityState={{ selected: !!selected, disabled: !!disabled }}
       disabled={disabled}
@@ -30,7 +32,9 @@ export function Chip({ label, icon, selected, disabled, onPress }: ChipProps) {
       activeOpacity={0.7}
       style={[styles.chip, selected && styles.selected, disabled && styles.disabled]}
     >
-      {icon && <Ionicons name={icon} size={18} color={color} />}
+      {icon && (
+        <Ionicons accessible={false} aria-hidden={true} name={icon} size={18} color={color} />
+      )}
       <Text variant="label" style={{ color }}>
         {label}
       </Text>

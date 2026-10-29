@@ -14,7 +14,7 @@ import type { TextInput as NativeTextInput } from 'react-native';
 import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { ProgressBar } from '@/components/common/ProgressBar';
@@ -270,9 +270,6 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
       {/* 초과 예산 확정 모달 */}
       <ConfirmModal
         visible={showOverBudgetModal}
-        iconName="trending-up-outline"
-        iconColor={colors.planned}
-        iconBg={colors.plannedBg}
         title="예산이 AI 제안을 초과했어요"
         description={`AI 제안보다 ${formatComma(exceededAmount)}원 더 많아요.\n이대로 확정하시겠어요?`}
         cancelLabel="다시 조정할게요"

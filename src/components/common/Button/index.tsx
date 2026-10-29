@@ -42,6 +42,8 @@ export function Button({
       activeOpacity={0.75}
       disabled={disabled || loading}
       accessibilityRole="button"
+      aria-busy={loading}
+      aria-disabled={!!disabled || loading}
       accessibilityLabel={props.accessibilityLabel ?? label}
       accessibilityState={{ ...accessibilityState, disabled: !!disabled || loading, busy: loading }}
       style={[

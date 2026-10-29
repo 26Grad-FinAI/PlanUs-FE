@@ -1,7 +1,7 @@
 /** 중앙 제목과 좌우 액션. 안전 영역은 화면 레이아웃이 담당한다. */
 import React, { ReactNode } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { IconButton } from '@/components/common/IconButton';
 import { colors } from '@/constants/colors';
@@ -28,7 +28,13 @@ export function Header({ title, onBack, onClose, backLabel, right, divider = tru
               style={styles.back}
               onPress={onBack}
             >
-              <Ionicons name="arrow-back" size={metrics.icon} color={colors.textSecondary} />
+              <Ionicons
+                accessible={false}
+                aria-hidden={true}
+                name="arrow-back"
+                size={metrics.icon}
+                color={colors.textSecondary}
+              />
               <Text style={styles.backLabel}>{backLabel}</Text>
             </TouchableOpacity>
           ) : (

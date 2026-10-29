@@ -33,6 +33,9 @@ export function ToggleGroup<T extends string>({
               key={option.value}
               accessibilityRole={segment ? 'tab' : 'radio'}
               accessibilityLabel={option.label}
+              aria-selected={segment ? selected : undefined}
+              aria-checked={!segment ? selected : undefined}
+              aria-disabled={!!unavailable}
               accessibilityState={{
                 selected,
                 checked: !segment ? selected : undefined,

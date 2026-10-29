@@ -1,7 +1,7 @@
 /** 열림 상태는 호출자가 소유해 다른 화면 상태와 동기화할 수 있다. */
 import React, { PropsWithChildren } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { spacing, metrics } from '@/constants/layout';
@@ -15,6 +15,8 @@ export function ExpandableSection({ label, expanded, onToggle, children }: Expan
     <View>
       <TouchableOpacity
         accessibilityRole="button"
+        accessibilityLabel={label}
+        aria-expanded={expanded}
         accessibilityState={{ expanded }}
         onPress={onToggle}
         style={styles.row}

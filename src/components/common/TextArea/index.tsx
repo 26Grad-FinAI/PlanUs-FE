@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { TextInputProps, StyleSheet } from 'react-native';
 import { TextInput } from '@/components/common/TextInput';
 import { FormField, FieldProps } from '@/components/common/FormField';
+import { fontSize } from '@/constants/typography';
 import { colors } from '@/constants/colors';
 import { spacing, radius } from '@/constants/layout';
 interface TextAreaProps extends TextInputProps, FieldProps {
@@ -27,6 +28,7 @@ export function TextArea({
         {...props}
         accessibilityLabel={props.accessibilityLabel ?? label ?? props.placeholder}
         editable={editable}
+        aria-disabled={!editable}
         multiline
         textAlignVertical="top"
         onFocus={(event) => {
@@ -57,7 +59,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     padding: spacing.lg,
-    fontSize: 16,
+    fontSize: fontSize.base,
     lineHeight: 24,
   },
   disabled: { color: colors.textDisabled },

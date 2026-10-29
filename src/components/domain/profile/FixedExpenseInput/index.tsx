@@ -9,7 +9,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 import { FixedExpenseItem } from '@/types/profile';

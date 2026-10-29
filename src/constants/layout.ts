@@ -23,6 +23,7 @@ export const metrics = {
   tabBar: 70,
   contentMax: 640,
   modalMax: 360,
+  dialogWidth: 310,
   hairline: 1,
 } as const;
 export const shadows = {

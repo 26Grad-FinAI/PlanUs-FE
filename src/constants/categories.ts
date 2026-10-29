@@ -5,7 +5,7 @@
  * 각자 다른 형태로 중복 정의하던 것을 하나로 모았다.
  */
 
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { SpendingCategory } from '@/types/record';
 

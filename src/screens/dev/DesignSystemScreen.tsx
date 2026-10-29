@@ -9,6 +9,7 @@ import { typography } from '@/constants/typography';
 import { InputExamples } from '@/screens/dev/InputExamples';
 import { SelectionExamples } from '@/screens/dev/SelectionExamples';
 import { LayoutExamples } from '@/screens/dev/LayoutExamples';
+import { OverlayExamples } from '@/screens/dev/OverlayExamples';
 import { Button } from '@/components/common/Button';
 
 export function DesignSystemScreen() {
@@ -56,6 +57,9 @@ export function DesignSystemScreen() {
         </View>
         <View style={styles.card}>
           <Button label="전체 화면 레이아웃 확인" onPress={() => setShowLayout(true)} />
+        </View>
+        <View style={styles.card}>
+          <OverlayExamples />
         </View>
       </ScrollView>
     </SafeAreaView>

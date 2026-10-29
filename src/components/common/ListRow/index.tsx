@@ -1,7 +1,7 @@
 /** 상세 정보의 라벨/값과 설정 메뉴의 화살표 행을 공유한다. */
 import React, { ReactNode } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { IconName } from '@/types/ui';
 import { colors } from '@/constants/colors';
@@ -16,7 +16,15 @@ interface ListRowProps {
 export function ListRow({ label, value, icon, onPress, destructive }: ListRowProps) {
   const content = (
     <>
-      {icon && <Ionicons name={icon} size={metrics.icon} color={colors.textTertiary} />}
+      {icon && (
+        <Ionicons
+          accessible={false}
+          aria-hidden={true}
+          name={icon}
+          size={metrics.icon}
+          color={colors.textTertiary}
+        />
+      )}
       <Text style={[styles.label, destructive && styles.danger]}>{label}</Text>
       {value !== undefined && (
         <View style={styles.value}>
@@ -27,11 +35,24 @@ export function ListRow({ label, value, icon, onPress, destructive }: ListRowPro
           )}
         </View>
       )}
-      {onPress && <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />}
+      {onPress && (
+        <Ionicons
+          accessible={false}
+          aria-hidden={true}
+          name="chevron-forward"
+          size={18}
+          color={colors.textDisabled}
+        />
+      )}
     </>
   );
   return onPress ? (
-    <TouchableOpacity accessibilityRole="button" onPress={onPress} style={styles.row}>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.row}
+    >
       {content}
     </TouchableOpacity>
   ) : (

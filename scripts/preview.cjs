@@ -4,7 +4,8 @@ const path = require('node:path');
 const cli = path.join(path.dirname(require.resolve('expo/package.json')), 'bin', 'cli');
 const child = spawn(process.execPath, [cli, 'start', '--web', ...process.argv.slice(2)], {
   stdio: 'inherit',
-  env: { ...process.env, EXPO_PUBLIC_DESIGN_SYSTEM_PREVIEW: '1' },
+  // UI 예시는 로컬 API 설정과 분리해 같은 mock 상태로 시작한다.
+  env: { ...process.env, EXPO_NO_DOTENV: '1', EXPO_PUBLIC_DESIGN_SYSTEM_PREVIEW: '1' },
 });
 child.on('error', (error) => {
   console.error(error.message);

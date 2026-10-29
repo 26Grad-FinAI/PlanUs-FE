@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { IconName } from '@/types/ui';
 import { colors } from '@/constants/colors';
@@ -29,6 +29,7 @@ export function TabBar({ items, value, onSelect, onAdd }: TabBarProps) {
         key={item.id}
         accessibilityRole="tab"
         accessibilityLabel={item.label}
+        aria-selected={selected}
         accessibilityState={{ selected }}
         onPress={() => onSelect(item.id)}
         style={styles.item}
@@ -55,7 +56,13 @@ export function TabBar({ items, value, onSelect, onAdd }: TabBarProps) {
             onPress={onAdd}
             style={styles.add}
           >
-            <Ionicons name="add" size={32} color={colors.background} />
+            <Ionicons
+              accessible={false}
+              aria-hidden={true}
+              name="add"
+              size={32}
+              color={colors.background}
+            />
           </TouchableOpacity>
         </View>
         {items.slice(2).map(renderItem)}

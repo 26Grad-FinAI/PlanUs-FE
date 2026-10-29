@@ -1,11 +1,12 @@
 /** 고정 라벨 박스/밑줄 입력. 오류는 포커스 색보다 우선한다. */
 import React, { useState } from 'react';
 import { View, TextInputProps, TextStyle, ViewStyle, StyleProp, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
 import { FormField, FieldProps } from '@/components/common/FormField';
 import { IconButton } from '@/components/common/IconButton';
+import { fontSize } from '@/constants/typography';
 import { colors } from '@/constants/colors';
 import { spacing, radius, metrics } from '@/constants/layout';
 export interface InputProps extends TextInputProps, FieldProps {
@@ -57,6 +58,7 @@ export function Input({
         <TextInput
           {...props}
           editable={editable}
+          aria-disabled={!editable}
           accessibilityLabel={props.accessibilityLabel ?? label ?? props.placeholder}
           onFocus={(event) => {
             setFocused(true);
@@ -78,7 +80,13 @@ export function Input({
               disabled={!editable}
             />
           ) : (
-            <Ionicons name={rightIcon} size={metrics.icon} color={colors.textTertiary} />
+            <Ionicons
+              accessible={false}
+              aria-hidden={true}
+              name={rightIcon}
+              size={metrics.icon}
+              color={colors.textTertiary}
+            />
           ))}
       </View>
     </FormField>
@@ -100,7 +108,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
     paddingVertical: spacing.md,
     paddingHorizontal: 0,
-    fontSize: 16,
+    fontSize: fontSize.base,
     color: colors.textPrimary,
   },
   withSuffix: { textAlign: 'right' },

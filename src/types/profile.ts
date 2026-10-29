@@ -56,7 +56,7 @@ export interface CreateProfileParams {
   age: number;
   gender: Gender;
   monthlyIncome: number;
-  fixedExpenses: Array<{ label: string; amount: number }>;
+  fixedExpenses: { label: string; amount: number }[];
   // 목표 저축액을 입력하지 않은 경우 null 허용
   savingsGoal: {
     targetYear: number;

@@ -22,6 +22,9 @@ export function ProgressBar({ value, max = 100, label, tone = 'primary' }: Progr
   return (
     <View
       accessibilityRole="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(ratio)}
       accessibilityLabel={label}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio) }}
       style={[styles.track, tone === 'inverse' && styles.inverseTrack]}

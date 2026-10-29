@@ -1,7 +1,7 @@
 /** 반복 지출 등 boolean 선택. 설명도 같은 터치 영역에 포함한다. */
 import React from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { spacing, radius, metrics } from '@/constants/layout';
@@ -16,6 +16,8 @@ export function Checkbox({ label, description, checked, onChange, disabled }: Ch
   return (
     <TouchableOpacity
       accessibilityRole="checkbox"
+      aria-checked={checked}
+      aria-disabled={!!disabled}
       accessibilityLabel={label}
       accessibilityState={{ checked, disabled: !!disabled }}
       disabled={disabled}
@@ -23,7 +25,15 @@ export function Checkbox({ label, description, checked, onChange, disabled }: Ch
       style={[styles.row, disabled && styles.disabled]}
     >
       <View style={[styles.box, checked && styles.checked]}>
-        {checked && <Ionicons name="checkmark" size={18} color={colors.background} />}
+        {checked && (
+          <Ionicons
+            accessible={false}
+            aria-hidden={true}
+            name="checkmark"
+            size={18}
+            color={colors.background}
+          />
+        )}
       </View>
       <View style={styles.copy}>
         <Text variant="label">{label}</Text>

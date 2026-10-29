@@ -14,7 +14,7 @@ import { TabBar } from '@/components/common/TabBar';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { HomeCalendarScreen } from '@/screens/home/HomeCalendarScreen';
 import { MonthlyReportScreen } from '@/screens/report/MonthlyReportScreen';
