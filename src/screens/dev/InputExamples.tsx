@@ -11,6 +11,8 @@ import { spacing } from '@/constants/layout';
 
 export function InputExamples() {
   const [email, setEmail] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [amount, setAmount] = useState('150000');
   const [memo, setMemo] = useState('');
   const [showError, setShowError] = useState(false);
@@ -79,6 +81,43 @@ export function InputExamples() {
         onChangeText={setMemo}
         placeholder="메모를 입력하세요"
         error={showError ? '10자 이상 입력해주세요.' : undefined}
+      />
+      <Text variant="section">로그인 · 플로팅 라벨</Text>
+      <Input
+        variant="floating"
+        label="이메일"
+        accessibilityLabel="로그인 이메일"
+        value={loginEmail}
+        onChangeText={setLoginEmail}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="email-address"
+        autoComplete="email"
+        error={showError ? '이메일을 확인해주세요.' : undefined}
+      />
+      <Input
+        variant="floating"
+        label="비밀번호"
+        accessibilityLabel="로그인 비밀번호"
+        value={loginPassword}
+        onChangeText={setLoginPassword}
+        secureTextEntry
+        autoComplete="current-password"
+        error={showError ? '비밀번호를 확인해주세요.' : undefined}
+      />
+      <Input
+        variant="floating"
+        label="비활성 플로팅 입력"
+        value="example@email.com"
+        editable={false}
+      />
+      <Button
+        label="로그인 입력값 초기화"
+        variant="ghost"
+        onPress={() => {
+          setLoginEmail('');
+          setLoginPassword('');
+        }}
       />
     </View>
   );

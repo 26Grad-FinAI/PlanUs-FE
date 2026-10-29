@@ -49,7 +49,7 @@ Pretendard는 공식 저장소의 **v1.3.9** 정적 TTF 4종을 로컬 번들에
 | 타이포    | `Text`: `variant`, `weight`, Native Text props. `TextInput`: `weight`, ref/이벤트/입력 props                                                                    |
 | 액션      | `Button`: `label`, `variant`, `size`, `disabled`, `loading`, `fullWidth`. `IconButton`: `name`, `label` 필수                                                    |
 | 폼        | `FormField`: `label`, `required`, `hint`, `error`. 오류는 도움말보다 우선                                                                                       |
-| 입력      | `Input`: `variant="box"/"underline"`, `suffix`, `rightIcon`, `onRightPress`. `style`은 입력 글자, `containerStyle`은 테두리 영역                                |
+| 입력      | `Input`: `variant="box"/"underline"/"floating"`, `suffix`, `rightIcon`, `onRightPress`. `style`은 입력 글자, `containerStyle`은 테두리 영역                     |
 | 금액      | `AmountInput`: `value`와 `onChangeText`는 콤마 없는 숫자 문자열. 화면에만 콤마 표시, 최대 15자리. 비어 있는 값과 0을 구분                                       |
 | 긴 글     | `TextArea`: 폼 속성·기본 입력 이벤트·`minHeight` 지원                                                                                                           |
 | 선택      | `ToggleGroup`: `options`, `selectedValue`, `onSelect`. `SegmentedControl`: `options`, `value`, `onChange`                                                       |
@@ -77,6 +77,24 @@ import { Text } from '@/components/common/Text';
   onChangeText={setAmount}
 />
 ```
+
+### 플로팅 라벨 입력
+
+로그인처럼 라벨을 입력창 안에 표시하려면 `Input`의 `variant="floating"`을 사용한다. 포커스하거나 값이 있으면 라벨이 테두리 위로 이동한다. 비어 있고 포커스를 잃으면 입력창 안으로 돌아온다. `label`은 접근성 이름으로도 사용하며, 명시적인 이름이 필요하면 `accessibilityLabel`로 지정한다.
+
+```tsx
+<Input
+  variant="floating"
+  label="이메일"
+  value={email}
+  onChangeText={setEmail}
+  autoCapitalize="none"
+  keyboardType="email-address"
+  autoComplete="email"
+/>
+```
+
+오류가 있으면 라벨과 테두리에 오류 색상을 표시한다. `editable={false}`이면 비활성 상태로 표시한다. 초기값·외부 값 초기화·`defaultValue`를 사용하는 입력에서도 같은 라벨 규칙을 적용한다.
 
 `ScreenLayout`의 footer에는 `BottomActionBar` 또는 `TabBar`를 전달한다. 두 컴포넌트 모두 하단 안전 영역을 처리하므로 같은 footer에 중첩하지 않는다. 미리보기의 TabBar 예시는 독립된 UI 확인용이며 업무 화면 이동을 수행하지 않는다.
 

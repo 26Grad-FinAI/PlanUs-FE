@@ -1,17 +1,4 @@
-/**
- * 로그인 화면
- *
- * 역할:
- * 1. 이메일/비밀번호 입력 받기
- * 2. 입력값 유효성 검사
- * 3. 로그인 API 호출
- * 4. 로그인 성공 시 전역 인증 상태 변경
- * 5. 로그인 실패 시 Alert 표시
- *
- * 로그인 성공 시 signIn() 호출 → RootNavigator가 스택 자동 전환
- * - hasCompletedOnboarding === false → Onboarding 스택
- * - hasCompletedOnboarding === true  → Main 스택
- */
+/** 이메일·비밀번호 입력과 mock 로그인을 연결하는 화면. */
 
 import React, { useState } from 'react';
 import {
@@ -97,6 +84,7 @@ export function LoginScreen({ navigation }: Props) {
 
         <View style={styles.formSection}>
           <Input
+            variant="floating"
             label="이메일"
             value={email}
             onChangeText={(text: string) => {
@@ -108,8 +96,10 @@ export function LoginScreen({ navigation }: Props) {
             autoCapitalize="none"
             autoCorrect={false}
             textContentType="emailAddress"
+            autoComplete="email"
           />
           <Input
+            variant="floating"
             label="비밀번호"
             value={password}
             onChangeText={(text: string) => {
@@ -119,6 +109,7 @@ export function LoginScreen({ navigation }: Props) {
             error={passwordError}
             secureTextEntry
             textContentType="password"
+            autoComplete="current-password"
           />
           <Button
             label="로그인"
