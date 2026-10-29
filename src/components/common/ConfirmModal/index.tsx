@@ -88,7 +88,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   cancel: {
-    backgroundColor: colors.backgroundAlt,
     borderRightWidth: 1,
     borderRightColor: colors.border,
   },
