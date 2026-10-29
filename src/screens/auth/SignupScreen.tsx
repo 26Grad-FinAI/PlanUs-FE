@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 회원가입 화면
  *
  * 역할:
@@ -12,7 +12,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -20,6 +19,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Button } from '@/components/common/Button';
@@ -33,7 +33,7 @@ import {
 } from '@/utils/validation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { AuthStackParamList } from '@/app/navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Signup'>;
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
     marginBottom: 8,
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.primary,
   },
 });

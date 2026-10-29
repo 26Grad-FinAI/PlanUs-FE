@@ -6,10 +6,12 @@
  */
 
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
+import { Text } from '@/components/common/Text';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { FixedExpenseItem } from '@/types/profile';
 
 interface FixedExpenseInputProps {
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
   labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   fieldLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textSecondary,
   },
   fieldHint: {
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
   },
   addLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.primary,
   },
 });

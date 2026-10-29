@@ -1,71 +1,66 @@
-/**
- * 공통 TextArea 컴포넌트
- *
- * 회색 배경 + 테두리 없음 스타일의 멀티라인 입력 필드
- * 메모, 자유 입력 등 긴 텍스트를 입력받는 곳에 사용
- *
- * @param label     - 입력란 상단 라벨
- * @param minHeight - 입력 박스 최소 높이 (기본값 120)
- */
-
+/** 메모/자기소개 입력. 기본 이벤트와 폼 오류 표시를 지원한다. */
 import React, { useState } from 'react';
-import { View, TextInput, TextInputProps, StyleSheet, Text } from 'react-native';
+import { TextInputProps, StyleSheet } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
+import { FormField, FieldProps } from '@/components/common/FormField';
+import { fontSize } from '@/constants/typography';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
-
-interface TextAreaProps extends TextInputProps {
-  label?: string;
+import { spacing, radius } from '@/constants/layout';
+interface TextAreaProps extends TextInputProps, FieldProps {
   minHeight?: number;
 }
-
 export function TextArea({
   label,
+  required,
+  hint,
+  error,
   minHeight = 120,
   style,
-  onFocus: externalOnFocus,
-  onBlur: externalOnBlur,
-  ...rest
+  editable = true,
+  onFocus,
+  onBlur,
+  ...props
 }: TextAreaProps) {
-  const [isFocused, setIsFocused] = useState(false);
-  const borderColor = isFocused ? colors.border : 'transparent';
-
+  const [focused, setFocused] = useState(false);
   return (
-    <View>
-      {label && <Text style={styles.label}>{label}</Text>}
-
+    <FormField label={label} required={required} hint={hint} error={error}>
       <TextInput
+        {...props}
+        accessibilityLabel={props.accessibilityLabel ?? label ?? props.placeholder}
+        editable={editable}
+        aria-disabled={!editable}
         multiline
         textAlignVertical="top"
-        placeholderTextColor={colors.textDisabled}
-        style={[styles.input, { minHeight, borderColor }, style]}
-        onFocus={(e) => {
-          setIsFocused(true);
-          externalOnFocus?.(e);
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
         }}
-        onBlur={(e) => {
-          setIsFocused(false);
-          externalOnBlur?.(e);
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
         }}
-        {...rest}
+        style={[
+          styles.input,
+          {
+            minHeight,
+            borderColor: error ? colors.error : focused ? colors.primary : colors.transparent,
+          },
+          !editable && styles.disabled,
+          style,
+        ]}
       />
-    </View>
+    </FormField>
   );
 }
-
 const styles = StyleSheet.create({
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-    marginBottom: 8,
-  },
   input: {
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: fontSize.base,
-    color: colors.textPrimary,
     backgroundColor: colors.backgroundAlt,
+    color: colors.textPrimary,
+    borderRadius: radius.card,
     borderWidth: 1,
+    padding: spacing.lg,
+    fontSize: fontSize.base,
+    lineHeight: 24,
   },
+  disabled: { color: colors.textDisabled },
 });

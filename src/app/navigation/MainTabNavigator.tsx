@@ -9,11 +9,12 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+import { TabBar } from '@/components/common/TabBar';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { HomeCalendarScreen } from '@/screens/home/HomeCalendarScreen';
 import { MonthlyReportScreen } from '@/screens/report/MonthlyReportScreen';
@@ -21,8 +22,6 @@ import { AIAnalysisScreen } from '@/screens/ai/AIAnalysisScreen';
 import { SettingsScreen } from '@/screens/settings/SettingsScreen';
 import { RecordAddScreen } from '@/screens/record/RecordAddScreen';
 import { MainTabParamList } from './types';
-import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
 
 /**
  * 각 탭의 아이콘 이름(Ionicons)과 라벨을 정의
@@ -69,196 +68,24 @@ const TAB_CONFIGS: TabConfig[] = [
  * state를 통해 현재 선택된 탭을 확인, navigation을 통해 탭 이동을 처리
  */
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
-  // iOS 홈 인디케이터, Android 제스처 바 등 기기별 하단 안전 영역 높이
-  const { bottom: bottomInset } = useSafeAreaInsets();
-
-  // RecordAdd 탭이 활성화된 경우 탭 바 전체를 숨겨 모달 느낌 연출
   if (state.routes[state.index].name === 'RecordAdd') return null;
-
-  // RecordAdd는 가운데 플로팅 + 버튼으로 별도 렌더링 → route를 직접 찾아 현재 활성 상태인지 확인
-  const recordAddRoute = state.routes.find((r) => r.name === 'RecordAdd');
-
-  // 현재 선택된 탭이 RecordAdd인지 확인
-  const isRecordAddFocused = recordAddRoute
-    ? state.index === state.routes.indexOf(recordAddRoute)
-    : false;
-
-  /**
-   * 탭 클릭 시 실행되는 공통 이동 함수
-   * React Navigation 이벤트 시스템을 통해 navigate 처리
-   */
-  function handleTabPress(routeName: string, routeKey: string) {
-    const isFocused = state.routes[state.index].name === routeName;
-    const event = navigation.emit({
-      type: 'tabPress',
-      target: routeKey,
-      canPreventDefault: true,
-    });
-    if (!isFocused && !event.defaultPrevented) {
-      navigation.navigate(routeName);
-    }
+  function selectRoute(name: string) {
+    const route = state.routes.find((item) => item.name === name);
+    if (!route) return;
+    // React Navigation의 tabPress 방지/구독 동작을 UI 분리 후에도 유지한다.
+    const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+    if (!event.defaultPrevented && state.routes[state.index].key !== route.key)
+      navigation.navigate(route.name);
   }
-
   return (
-    <View style={tabBarStyles.wrapper}>
-      <View style={tabBarStyles.container}>
-        {/* 왼쪽 탭 2개: 홈, 통계 */}
-        {TAB_CONFIGS.slice(0, 2).map((tabConfig) => {
-          const route = state.routes.find((r) => r.name === tabConfig.name);
-          if (!route) return null;
-          const isFocused = state.routes[state.index].name === tabConfig.name;
-
-          return (
-            <TouchableOpacity
-              key={tabConfig.name}
-              style={tabBarStyles.tabItem}
-              onPress={() => handleTabPress(tabConfig.name, route.key)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={tabConfig.label}
-              accessibilityState={{ selected: isFocused }}
-            >
-              <Ionicons
-                name={isFocused ? tabConfig.activeIcon : tabConfig.inactiveIcon}
-                size={24}
-                color={isFocused ? colors.primary : colors.textDisabled}
-              />
-              <Text
-                style={[
-                  tabBarStyles.label,
-                  { color: isFocused ? colors.primary : colors.textDisabled },
-                ]}
-              >
-                {tabConfig.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-
-        {/* 가운데 플로팅 "+" 버튼 (RecordAdd 탭) */}
-        <View style={tabBarStyles.centerTabArea}>
-          <TouchableOpacity
-            style={[
-              tabBarStyles.centerButton,
-              isRecordAddFocused && tabBarStyles.centerButtonActive,
-            ]}
-            onPress={() => {
-              if (recordAddRoute) {
-                handleTabPress('RecordAdd', recordAddRoute.key);
-              }
-            }}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="소비 기록 추가"
-          >
-            <Ionicons name="add" size={30} color={colors.background} />
-          </TouchableOpacity>
-        </View>
-
-        {/* 오른쪽 탭 2개: AI분석, 마이 */}
-        {TAB_CONFIGS.slice(2).map((tabConfig) => {
-          const route = state.routes.find((r) => r.name === tabConfig.name);
-          if (!route) return null;
-          const isFocused = state.routes[state.index].name === tabConfig.name;
-
-          return (
-            <TouchableOpacity
-              key={tabConfig.name}
-              style={tabBarStyles.tabItem}
-              onPress={() => handleTabPress(tabConfig.name, route.key)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={tabConfig.label}
-              accessibilityState={{ selected: isFocused }}
-            >
-              <Ionicons
-                name={isFocused ? tabConfig.activeIcon : tabConfig.inactiveIcon}
-                size={24}
-                color={isFocused ? colors.primary : colors.textDisabled}
-              />
-              <Text
-                style={[
-                  tabBarStyles.label,
-                  { color: isFocused ? colors.primary : colors.textDisabled },
-                ]}
-              >
-                {tabConfig.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-      <View style={[tabBarStyles.safeAreaFill, { height: bottomInset }]} />
-    </View>
+    <TabBar
+      items={TAB_CONFIGS.map((tab) => ({ ...tab, id: tab.name }))}
+      value={state.routes[state.index].name}
+      onSelect={selectRoute}
+      onAdd={() => selectRoute('RecordAdd')}
+    />
   );
 }
-
-const tabBarStyles = StyleSheet.create({
-  wrapper: {
-    backgroundColor: 'transparent',
-  },
-  container: {
-    flexDirection: 'row',
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-
-    // iOS 그림자
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-
-    // Android 그림자
-    elevation: 12,
-
-    height: 70,
-    alignItems: 'center',
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    gap: 2,
-  },
-  label: {
-    fontSize: fontSize.xxs,
-    fontWeight: fontWeight.medium,
-    marginTop: 2,
-  },
-  centerTabArea: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: -36,
-    overflow: 'visible',
-  },
-  centerButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    // iOS 그림자
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
-
-    // Android 그림자
-    elevation: 10,
-  },
-  centerButtonActive: {
-    borderWidth: 3,
-    borderColor: colors.background,
-  },
-  safeAreaFill: {
-    backgroundColor: colors.background,
-  },
-});
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 

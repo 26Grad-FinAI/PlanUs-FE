@@ -9,15 +9,20 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import type { TextInputInstance } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
+import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { ProgressBar } from '@/components/common/ProgressBar';
+import { Header } from '@/components/common/Header';
 import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { OnboardingStackParamList } from '@/app/navigation/types';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -45,7 +50,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
   const [editingText, setEditingText] = useState('');
   const [showOverBudgetModal, setShowOverBudgetModal] = useState(false);
 
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
 
   const aiTotal = mockAIBudget.aiTotalAmount;
   const userTotal = budgets.reduce((sum, b) => sum + b.userAmount, 0);
@@ -156,17 +161,12 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
         </View>
 
         {/* 비중 막대 */}
-        <View style={styles.progressTrack}>
-          <View
-            style={[
-              styles.progressFill,
-              {
-                width: `${barPct}%`,
-                backgroundColor: isCategoryOver ? colors.expense : colors.primary,
-              },
-            ]}
-          />
-        </View>
+        <ProgressBar
+          label={`${budget.label} 예산 비중`}
+          value={budget.userAmount}
+          max={userTotal}
+          tone={isCategoryOver ? 'danger' : 'primary'}
+        />
 
         {/* 하단 메타: AI 제안 / 초과 | 비중 % */}
         <View style={styles.categoryMeta}>
@@ -188,21 +188,8 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
     <>
       <View style={[styles.screen, { paddingTop: topInset }]}>
         {/* ── 헤더 ── */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="뒤로"
-          >
-            <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>AI 예산 추천</Text>
-          <View style={styles.backButton} />
-        </View>
+        <Header title="AI 예산 추천" onBack={() => navigation.goBack()} />
 
-        {/* ── 스크롤 영역 ── */}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomInset + 100 }]}
@@ -283,9 +270,6 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
       {/* 초과 예산 확정 모달 */}
       <ConfirmModal
         visible={showOverBudgetModal}
-        iconName="trending-up-outline"
-        iconColor={colors.planned}
-        iconBg={colors.plannedBg}
         title="예산이 AI 제안을 초과했어요"
         description={`AI 제안보다 ${formatComma(exceededAmount)}원 더 많아요.\n이대로 확정하시겠어요?`}
         cancelLabel="다시 조정할게요"
@@ -302,23 +286,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
-
-  // ── 헤더 ──
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    height: 52,
-  },
-  backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
-  },
 
   // ── 스크롤 ──
   scroll: { flex: 1 },
@@ -328,13 +296,13 @@ const styles = StyleSheet.create({
   titleSection: { gap: 2 },
   titleMain: {
     fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
     lineHeight: 34,
   },
   titleSub: {
     fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.primary,
     lineHeight: 34,
   },
@@ -349,7 +317,7 @@ const styles = StyleSheet.create({
   insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   insightLabel: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.primary,
   },
   insightText: { fontSize: fontSize.sm, color: colors.textSecondary, lineHeight: 20 },
@@ -368,30 +336,30 @@ const styles = StyleSheet.create({
   },
   summaryRowLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
   summaryAiAmount: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textSecondary,
   },
   summaryDivider: { height: 1, backgroundColor: colors.border },
   summaryUserRight: { alignItems: 'flex-end', gap: 2 },
   summaryUserAmount: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.primary,
   },
   summaryUserAmountOver: { color: colors.expense },
   summaryExcessLabel: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.expense,
   },
   summarySavingLabel: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.income,
   },
 
@@ -404,7 +372,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
   resetAllButton: {
@@ -416,7 +384,7 @@ const styles = StyleSheet.create({
   },
   resetAllText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
 
@@ -435,7 +403,7 @@ const styles = StyleSheet.create({
   categoryLabel: {
     flex: 1,
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
 
@@ -447,7 +415,7 @@ const styles = StyleSheet.create({
   },
   amountText: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
   amountTextOver: { color: colors.expense },
@@ -455,7 +423,7 @@ const styles = StyleSheet.create({
   // 금액 TextInput (편집 모드)
   amountInput: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.primary,
     textAlign: 'right',
     minWidth: 100,
@@ -463,15 +431,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: colors.primary,
   },
-
-  // ── 비중 막대 ──
-  progressTrack: {
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: { height: '100%', borderRadius: 2 },
 
   // ── 카테고리 하단 메타 ──
   categoryMeta: {
@@ -483,12 +442,12 @@ const styles = StyleSheet.create({
   aiHintText: { fontSize: fontSize.xs, color: colors.textDisabled },
   categoryOverText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.expense,
   },
   pctText: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textTertiary,
   },
   pctTextOver: { color: colors.expense },

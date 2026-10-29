@@ -7,11 +7,13 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { ProgressBar } from '@/components/common/ProgressBar';
+import { Text } from '@/components/common/Text';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { BudgetComparisonItem } from '@/types/report';
 import { formatFullAmount } from '@/utils/formatCurrency';
@@ -20,13 +22,6 @@ interface BudgetComparisonProps {
   items: BudgetComparisonItem[];
   totalBudget: number;
   totalExpense: number;
-}
-
-// 예산 대비 실제 지출이 차지한 비율(0~100%) — 초과 시 100%로 막힘
-// 예산이 0인 카테고리에 지출이 있으면 곧바로 초과이므로 100%로 채운다
-function fillWidth(budget: number, actual: number): string {
-  if (budget <= 0) return actual > 0 ? '100%' : '0%';
-  return `${Math.min((actual / budget) * 100, 100)}%`;
 }
 
 // 예산(트랙) 대비 지출(채움) 막대 하나 + 금액 표기
@@ -41,15 +36,12 @@ function BudgetBar({ budget, actual }: { budget: number; actual: number }) {
         </Text>
         <Text style={styles.budgetAmount}>예산 {formatFullAmount(budget)}</Text>
       </View>
-      <View style={styles.barTrack}>
-        <View
-          style={[
-            styles.barFill,
-            { width: fillWidth(budget, actual) },
-            isOver ? styles.barFillOver : styles.barFillUnder,
-          ]}
-        />
-      </View>
+      <ProgressBar
+        label="예산 대비 소비"
+        value={actual}
+        max={budget}
+        tone={isOver ? 'danger' : 'primary'}
+      />
     </>
   );
 }
@@ -93,7 +85,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
 
@@ -112,7 +104,7 @@ const styles = StyleSheet.create({
   categoryLabel: {
     flex: 1,
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
 
@@ -124,7 +116,7 @@ const styles = StyleSheet.create({
   },
   actualAmount: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   actualAmountOver: {
@@ -134,18 +126,4 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textTertiary,
   },
-
-  // ── 예산/지출 막대 ──
-  barTrack: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.border,
-    overflow: 'hidden',
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  barFillUnder: { backgroundColor: colors.primary },
-  barFillOver: { backgroundColor: colors.expense },
 });

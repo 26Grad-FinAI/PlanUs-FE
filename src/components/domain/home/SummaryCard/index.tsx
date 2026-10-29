@@ -6,10 +6,12 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { ProgressBar } from '@/components/common/ProgressBar';
+import { Text } from '@/components/common/Text';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { HomeSummary } from '@/types/home';
 import { formatComma, formatFullAmount } from '@/utils/formatCurrency';
 
@@ -28,9 +30,7 @@ export function SummaryCard({ summary }: SummaryCardProps) {
         </View>
         <Text style={styles.summaryBudgetText}>/ {formatFullAmount(summary.budgetTotal)}</Text>
       </View>
-      <View style={styles.summaryProgressTrack}>
-        <View style={[styles.summaryProgressFill, { width: `${summary.usageRate}%` }]} />
-      </View>
+      <ProgressBar label="예산 소진율" value={summary.usageRate} tone="inverse" />
 
       {/* 소진율 / 남은 예산 — 톤을 낮춘 내부 패널로 구분 */}
       <View style={styles.summaryInnerPanel}>
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.8)',
   },
   summaryAmountRow: {
@@ -67,32 +67,21 @@ const styles = StyleSheet.create({
   summaryAmountLeft: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   summaryAmountMain: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.background,
     lineHeight: 36,
   },
   summaryAmountUnit: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.85)',
     marginBottom: 4,
   },
   summaryBudgetText: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.75)',
     marginBottom: 4,
-  },
-  summaryProgressTrack: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    overflow: 'hidden',
-  },
-  summaryProgressFill: {
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: colors.background,
   },
 
   // ── 소진율/남은예산 내부 패널 ──
@@ -106,12 +95,12 @@ const styles = StyleSheet.create({
   usageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   usageLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.85)',
   },
   usageValue: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.background,
   },
   remainingRow: {
@@ -124,12 +113,12 @@ const styles = StyleSheet.create({
   },
   remainingLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: 'rgba(255,255,255,0.85)',
   },
   remainingValue: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.background,
   },
 });

@@ -7,20 +7,14 @@
  */
 
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { View, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
+import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button } from '@/components/common/Button';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 
 interface SavingsGoalInputProps {
   targetYear: string;
@@ -143,7 +137,7 @@ export function SavingsGoalInput({
       <Modal visible={showPicker} transparent animationType="fade" onRequestClose={handleCancel}>
         <View style={styles.pickerOverlay}>
           <TouchableOpacity
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             activeOpacity={1}
             onPress={handleCancel}
           />
@@ -234,12 +228,12 @@ const styles = StyleSheet.create({
   labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   fieldLabel: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textSecondary,
   },
   required: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.error,
   },
   fieldHint: {
@@ -319,7 +313,7 @@ const styles = StyleSheet.create({
   },
   pickerTitle: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 20,
@@ -353,11 +347,11 @@ const styles = StyleSheet.create({
   pickerItemText: {
     fontSize: fontSize.base,
     color: colors.textSecondary,
-    fontWeight: fontWeight.regular,
+    fontFamily: fontFamily.regular,
   },
   pickerItemTextSelected: {
     color: colors.primary,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
   },
   pickerItemTextDisabled: {
     color: colors.textDisabled,

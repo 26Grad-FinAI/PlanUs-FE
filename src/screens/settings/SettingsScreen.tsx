@@ -6,11 +6,12 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 
 export function SettingsScreen() {
   return (
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   subtitle: {

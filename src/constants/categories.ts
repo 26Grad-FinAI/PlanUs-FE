@@ -5,7 +5,7 @@
  * 각자 다른 형태로 중복 정의하던 것을 하나로 모았다.
  */
 
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { SpendingCategory } from '@/types/record';
 
@@ -16,7 +16,7 @@ export interface CategoryItem {
 }
 
 // 지출 카테고리 (10종) — 소비 등록 화면의 칩 노출 순서
-export const EXPENSE_CATEGORIES: CategoryItem[] = [
+export const EXPENSE_CATEGORIES = [
   { id: 'grocery', label: '식료품', icon: 'cart-outline' },
   { id: 'dining', label: '외식', icon: 'restaurant-outline' },
   { id: 'alcohol', label: '주류', icon: 'beer-outline' },
@@ -27,14 +27,14 @@ export const EXPENSE_CATEGORIES: CategoryItem[] = [
   { id: 'travel', label: '숙박/여행', icon: 'airplane-outline' },
   { id: 'telecom', label: '정보통신', icon: 'phone-portrait-outline' },
   { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
+] satisfies CategoryItem[];
 
 // 수입 카테고리 (3종)
-export const INCOME_CATEGORIES: CategoryItem[] = [
+export const INCOME_CATEGORIES = [
   { id: 'salary', label: '월급', icon: 'briefcase-outline' },
   { id: 'allowance', label: '용돈', icon: 'gift-outline' },
   { id: 'other', label: '기타', icon: 'ellipsis-horizontal-circle-outline' },
-];
+] satisfies CategoryItem[];
 
 // 카테고리 ID → {label, icon} 빠른 조회용 (지출 + 수입 전체)
 export const CATEGORY_META: Record<
@@ -46,11 +46,11 @@ export const CATEGORY_META: Record<
 
 // 카테고리별 차트 색상 — 통계 화면에서 카테고리를 시각적으로 구분할 때 사용
 export const CATEGORY_COLOR: Record<SpendingCategory, string> = {
-  dining: '#4F46E5',
-  grocery: '#8B5CF6',
-  leisure: '#06B6D4',
-  telecom: '#F59E0B',
-  travel: '#EC4899',
+  dining: '#1DA7E0',
+  grocery: '#A799F1',
+  leisure: '#7AD8C0',
+  telecom: '#F8C769',
+  travel: '#F79BC1',
   education: '#0EA5E9',
   clothing: '#F472B6',
   medical: '#14B8A6',

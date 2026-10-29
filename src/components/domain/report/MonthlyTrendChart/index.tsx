@@ -5,10 +5,11 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { MonthlyTrendItem } from '@/types/report';
 import { formatManwon } from '@/utils/formatCurrency';
 
@@ -64,12 +65,12 @@ const styles = StyleSheet.create({
   },
   amountLabel: {
     fontSize: fontSize.xxs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
   },
   amountLabelCurrent: {
     color: colors.primary,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
   },
   bar: {
     width: 26,
@@ -87,6 +88,6 @@ const styles = StyleSheet.create({
   },
   monthLabelCurrent: {
     color: colors.textPrimary,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
   },
 });

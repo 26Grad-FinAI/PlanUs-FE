@@ -1,10 +1,15 @@
+/** 화면의 표면·텍스트·액션·상태를 구분하는 의미별 색상. */
 export const colors = {
-  primary: '#4F46E5',
-  primaryDark: '#4338CA',
-  primaryLight: '#EEF2FF',
+  primary: '#1DA7E0',
+  primaryDark: '#087FB5',
+  primaryLight: '#E7F5FE',
 
   background: '#FFFFFF',
-  backgroundAlt: '#F9FAFB',
+  backgroundAlt: '#F8F9FA',
+  surfaceMuted: '#F3F4F6',
+  disabledBg: '#E5E7EB',
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  transparent: 'transparent',
 
   textPrimary: '#111827',
   textSecondary: '#374151',
@@ -14,12 +19,12 @@ export const colors = {
   border: '#E5E7EB',
   borderInput: '#D1D5DB',
 
-  error: '#EF4444',
+  error: '#F0445C',
   errorBg: '#FEF2F2',
 
-  income: '#16A34A',
+  income: '#0BAE84',
   incomeBg: '#F0FDF4',
-  expense: '#EF4444',
+  expense: '#F0445C',
   expenseBg: '#FEF2F2',
   planned: '#D97706',
   plannedBg: '#FFFBEB',

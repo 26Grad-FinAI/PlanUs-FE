@@ -1,22 +1,8 @@
-/**
- * 로그인 화면
- *
- * 역할:
- * 1. 이메일/비밀번호 입력 받기
- * 2. 입력값 유효성 검사
- * 3. 로그인 API 호출
- * 4. 로그인 성공 시 전역 인증 상태 변경
- * 5. 로그인 실패 시 Alert 표시
- *
- * 로그인 성공 시 signIn() 호출 → RootNavigator가 스택 자동 전환
- * - hasCompletedOnboarding === false → Onboarding 스택
- * - hasCompletedOnboarding === true  → Main 스택
- */
+/** 이메일·비밀번호 입력과 mock 로그인을 연결하는 화면. */
 
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -24,15 +10,16 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Button } from '@/components/common/Button';
-import { FloatingInput } from '@/components/common/FloatingInput';
+import { Input } from '@/components/common/Input';
 import { login } from '@/services/api/authApi';
 import { validateEmail, validatePassword } from '@/utils/validation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { AuthStackParamList } from '@/app/navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
@@ -96,7 +83,8 @@ export function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.formSection}>
-          <FloatingInput
+          <Input
+            variant="floating"
             label="이메일"
             value={email}
             onChangeText={(text: string) => {
@@ -108,8 +96,10 @@ export function LoginScreen({ navigation }: Props) {
             autoCapitalize="none"
             autoCorrect={false}
             textContentType="emailAddress"
+            autoComplete="email"
           />
-          <FloatingInput
+          <Input
+            variant="floating"
             label="비밀번호"
             value={password}
             onChangeText={(text: string) => {
@@ -119,6 +109,7 @@ export function LoginScreen({ navigation }: Props) {
             error={passwordError}
             secureTextEntry
             textContentType="password"
+            autoComplete="current-password"
           />
           <Button
             label="로그인"
@@ -166,7 +157,7 @@ const styles = StyleSheet.create({
   },
   appTitle: {
     fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
     marginBottom: 8,
   },
@@ -195,7 +186,7 @@ const styles = StyleSheet.create({
   },
   signupLink: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.primary,
   },
 });

@@ -11,11 +11,12 @@
  */
 
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { useHomeCalendar } from '@/hooks/useHomeCalendar';
 import { SummaryCard } from '@/components/domain/home/SummaryCard';
 import { MonthlyCalendar } from '@/components/domain/home/MonthlyCalendar';
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
   header: { paddingTop: 4, paddingBottom: 4 },
   headerTitle: {
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
 });

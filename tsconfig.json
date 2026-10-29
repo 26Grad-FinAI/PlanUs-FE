@@ -1,11 +1,10 @@
 {
   "extends": "expo/tsconfig.base",
+  "exclude": ["node_modules", "dist", ".expo"],
   "compilerOptions": {
     "strict": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

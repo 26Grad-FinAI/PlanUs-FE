@@ -6,11 +6,12 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import Svg, { Circle, G } from 'react-native-svg';
 
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
+import { fontSize, fontFamily } from '@/constants/typography';
 import { CATEGORY_COLOR } from '@/constants/categories';
 import { CategoryBreakdownItem } from '@/types/report';
 
@@ -53,7 +54,17 @@ export function CategoryDonut({ items }: CategoryDonutProps) {
   const topItem = items.reduce((max, item) => (item.amount > max.amount ? item : max), items[0]);
 
   // 누적 시작 비율을 추적하며 각 슬라이스의 dash 위치 계산
+  const segments: { item: CategoryBreakdownItem; dash: number; offset: number }[] = [];
   let accumulatedRatio = 0;
+  for (const item of items) {
+    const segmentRatio = item.ratio / 100;
+    segments.push({
+      item,
+      dash: Math.max(segmentRatio * CIRCUMFERENCE - GAP, 0),
+      offset: -accumulatedRatio * CIRCUMFERENCE,
+    });
+    accumulatedRatio += segmentRatio;
+  }
 
   return (
     <View style={styles.container}>
@@ -70,29 +81,20 @@ export function CategoryDonut({ items }: CategoryDonutProps) {
               strokeWidth={STROKE_WIDTH}
               fill="none"
             />
-            {items.map((item) => {
-              // ratio(0~100)를 0~1 비율로 환산해 dash 길이/시작 위치 계산
-              const segmentRatio = item.ratio / 100;
-              const segmentLength = segmentRatio * CIRCUMFERENCE;
-              const dash = Math.max(segmentLength - GAP, 0);
-              const offset = -accumulatedRatio * CIRCUMFERENCE;
-              accumulatedRatio += segmentRatio;
-
-              return (
-                <Circle
-                  key={item.category}
-                  cx={SIZE / 2}
-                  cy={SIZE / 2}
-                  r={RADIUS}
-                  stroke={CATEGORY_COLOR[item.category]}
-                  strokeWidth={STROKE_WIDTH}
-                  strokeDasharray={`${dash} ${CIRCUMFERENCE}`}
-                  strokeDashoffset={offset}
-                  strokeLinecap="butt"
-                  fill="none"
-                />
-              );
-            })}
+            {segments.map(({ item, dash, offset }) => (
+              <Circle
+                key={item.category}
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={RADIUS}
+                stroke={CATEGORY_COLOR[item.category]}
+                strokeWidth={STROKE_WIDTH}
+                strokeDasharray={`${dash} ${CIRCUMFERENCE}`}
+                strokeDashoffset={offset}
+                strokeLinecap="butt"
+                fill="none"
+              />
+            ))}
           </G>
         </Svg>
 
@@ -128,18 +130,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   centerLabel: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   centerRatio: {
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     color: colors.textPrimary,
   },
   centerCategory: {
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     color: colors.textTertiary,
     marginTop: 2,
   },
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
   },
   legendRatio: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     color: colors.textPrimary,
   },
 });
