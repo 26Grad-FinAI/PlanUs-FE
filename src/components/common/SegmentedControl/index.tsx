@@ -7,12 +7,14 @@ interface SegmentedControlProps<T extends string> {
   value: T;
   onChange: (value: T) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
   disabled,
+  compact,
 }: SegmentedControlProps<T>) {
   return (
     <ToggleGroup
@@ -21,6 +23,7 @@ export function SegmentedControl<T extends string>({
       selectedValue={value}
       onSelect={onChange}
       disabled={disabled}
+      compact={compact}
     />
   );
 }

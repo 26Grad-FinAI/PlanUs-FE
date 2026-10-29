@@ -13,6 +13,7 @@ interface ToggleGroupProps<T extends string> extends FieldProps {
   onSelect: (value: T) => void;
   disabled?: boolean;
   appearance?: 'buttons' | 'segment';
+  compact?: boolean;
 }
 export function ToggleGroup<T extends string>({
   options,
@@ -20,6 +21,7 @@ export function ToggleGroup<T extends string>({
   onSelect,
   disabled,
   appearance = 'buttons',
+  compact,
   ...field
 }: ToggleGroupProps<T>) {
   const segment = appearance === 'segment';
@@ -47,6 +49,7 @@ export function ToggleGroup<T extends string>({
               activeOpacity={0.7}
               style={[
                 styles.button,
+                segment && compact && styles.compact,
                 !segment && styles.outlined,
                 selected && (segment ? styles.segmentSelected : styles.selected),
                 unavailable && styles.disabled,
@@ -95,4 +98,5 @@ const styles = StyleSheet.create({
   activeLabel: { color: colors.primaryDark, fontFamily: fontFamily.semibold },
   segmentLabel: { color: colors.textPrimary, fontFamily: fontFamily.bold },
   disabled: { opacity: 0.5 },
+  compact: { minHeight: metrics.input - spacing.sm },
 });

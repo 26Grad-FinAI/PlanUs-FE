@@ -22,6 +22,7 @@ import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { RecordDetailScreen } from '@/screens/record/RecordDetailScreen';
+import { RecordFormScreen } from '@/screens/record/RecordFormScreen';
 import { RootStackParamList } from './types';
 
 const Root = createNativeStackNavigator<RootStackParamList>();
@@ -41,6 +42,16 @@ export function RootNavigator() {
         // 인증 + 온보딩 완료 → 메인 탭 화면
         <Root.Group>
           <Root.Screen name="Main" component={MainTabNavigator} />
+          <Root.Screen
+            name="RecordAdd"
+            component={RecordFormScreen}
+            options={{ animation: 'none' }}
+          />
+          <Root.Screen
+            name="RecordEdit"
+            component={RecordFormScreen}
+            options={{ animation: 'none' }}
+          />
           <Root.Screen
             name="RecordDetail"
             component={RecordDetailScreen}

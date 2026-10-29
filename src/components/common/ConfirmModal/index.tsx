@@ -1,7 +1,7 @@
 /** 제목/강조문/설명과 하단 두 버튼으로 구성된 공통 확인 모달. */
 import React from 'react';
 import { View, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { fontFamily } from '@/constants/typography';
+import { fontFamily, fontSize } from '@/constants/typography';
 import { Text } from '@/components/common/Text';
 import { ModalSurface } from '@/components/common/ModalSurface';
 import { colors } from '@/constants/colors';
@@ -18,8 +18,16 @@ interface ConfirmModalProps {
   onCancel: () => void;
   onConfirm: () => void;
 }
-export function ConfirmModal({
-  visible,
+export function ConfirmModal({ visible, ...props }: ConfirmModalProps) {
+  return (
+    <ModalSurface visible={visible} onClose={props.onCancel} contentStyle={styles.surface}>
+      <ConfirmModalContent {...props} />
+    </ModalSurface>
+  );
+}
+
+/** 확인 본문을 분리해 메뉴와 확인창을 하나의 네이티브 Modal에서 전환할 수 있게 한다. */
+export function ConfirmModalContent({
   title,
   emphasis,
   description,
@@ -29,10 +37,10 @@ export function ConfirmModal({
   loading,
   onCancel,
   onConfirm,
-}: ConfirmModalProps) {
+}: Omit<ConfirmModalProps, 'visible'>) {
   const color = confirmVariant === 'destructive' ? colors.error : colors.primaryDark;
   return (
-    <ModalSurface visible={visible} onClose={onCancel} contentStyle={styles.surface}>
+    <>
       <View style={styles.copy}>
         <Text variant="section" accessibilityRole="header" style={styles.center}>
           {title}
@@ -65,7 +73,7 @@ export function ConfirmModal({
           )}
         </TouchableOpacity>
       </View>
-    </ModalSurface>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -73,7 +81,7 @@ const styles = StyleSheet.create({
   copy: {
     alignItems: 'center',
     padding: spacing.xxl,
-    paddingVertical: spacing.section,
+    paddingVertical: spacing.xxl,
     gap: spacing.sm,
   },
   center: { textAlign: 'center' },
@@ -81,6 +89,7 @@ const styles = StyleSheet.create({
   description: { color: colors.textTertiary, textAlign: 'center', lineHeight: 24 },
   buttons: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border },
   button: {
+    backgroundColor: colors.background,
     flex: 1,
     minHeight: metrics.header,
     justifyContent: 'center',
@@ -91,6 +100,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: colors.border,
   },
-  cancelText: { color: colors.textTertiary, textAlign: 'center' },
-  confirmText: { fontFamily: fontFamily.semibold, textAlign: 'center' },
+  cancelText: { fontSize: fontSize.lg, color: colors.textTertiary, textAlign: 'center' },
+  confirmText: { fontSize: fontSize.lg, fontFamily: fontFamily.semibold, textAlign: 'center' },
 });

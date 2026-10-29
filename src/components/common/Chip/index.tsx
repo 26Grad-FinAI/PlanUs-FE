@@ -13,8 +13,9 @@ interface ChipProps {
   selected?: boolean;
   disabled?: boolean;
   onPress?: () => void;
+  compact?: boolean;
 }
-export function Chip({ label, icon, selected, disabled, onPress }: ChipProps) {
+export function Chip({ label, icon, selected, disabled, onPress, compact }: ChipProps) {
   const color = disabled
     ? colors.textDisabled
     : selected
@@ -30,10 +31,21 @@ export function Chip({ label, icon, selected, disabled, onPress }: ChipProps) {
       disabled={disabled}
       onPress={onPress}
       activeOpacity={0.7}
-      style={[styles.chip, selected && styles.selected, disabled && styles.disabled]}
+      style={[
+        styles.chip,
+        compact && styles.compact,
+        selected && styles.selected,
+        disabled && styles.disabled,
+      ]}
     >
       {icon && (
-        <Ionicons accessible={false} aria-hidden={true} name={icon} size={18} color={color} />
+        <Ionicons
+          accessible={false}
+          aria-hidden={true}
+          name={icon}
+          size={compact ? 14 : 18}
+          color={color}
+        />
       )}
       <Text variant="label" style={{ color }}>
         {label}
@@ -46,12 +58,14 @@ interface ChipGroupProps<T extends string> extends FieldProps {
   value: T | null;
   onChange: (value: T) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 export function ChipGroup<T extends string>({
   options,
   value,
   onChange,
   disabled,
+  compact,
   ...field
 }: ChipGroupProps<T>) {
   return (
@@ -64,6 +78,7 @@ export function ChipGroup<T extends string>({
             icon={option.icon}
             selected={option.value === value}
             disabled={disabled || option.disabled}
+            compact={compact}
             onPress={() => onChange(option.value)}
           />
         ))}
@@ -87,5 +102,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundAlt,
   },
   selected: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+  // 등록 시안의 칩은 34px. 다른 화면의 기존 44px 칩은 유지한다.
+  compact: { minHeight: 34, paddingVertical: 6, paddingHorizontal: 14 },
   disabled: { opacity: 0.5 },
 });

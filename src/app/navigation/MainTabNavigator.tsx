@@ -2,7 +2,7 @@
  * 메인 탭 네비게이터
  *
  * 기본 하단 탭바 대신 CustomTabBar를 사용
- * 가운데 RecordAdd 탭은 일반 탭 아이템이 아니라 플로팅 "+" 버튼으로 렌더링
+ * 가운데 플로팅 "+" 버튼은 루트 스택의 기록 폼을 연다.
  *
  * 하단 탭 바 구성:
  *   홈(HomeCalendar) · 통계(MonthlyReport) · [+ 소비 기록] · AI분석(AIAnalysis) · 마이(Settings)
@@ -20,8 +20,8 @@ import { HomeCalendarScreen } from '@/screens/home/HomeCalendarScreen';
 import { MonthlyReportScreen } from '@/screens/report/MonthlyReportScreen';
 import { AIAnalysisScreen } from '@/screens/ai/AIAnalysisScreen';
 import { SettingsScreen } from '@/screens/settings/SettingsScreen';
-import { RecordAddScreen } from '@/screens/record/RecordAddScreen';
-import { MainTabParamList } from './types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainTabParamList, RootStackParamList } from './types';
 
 /**
  * 각 탭의 아이콘 이름(Ionicons)과 라벨을 정의
@@ -68,7 +68,6 @@ const TAB_CONFIGS: TabConfig[] = [
  * state를 통해 현재 선택된 탭을 확인, navigation을 통해 탭 이동을 처리
  */
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
-  if (state.routes[state.index].name === 'RecordAdd') return null;
   function selectRoute(name: string) {
     const route = state.routes.find((item) => item.name === name);
     if (!route) return;
@@ -82,7 +81,9 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       items={TAB_CONFIGS.map((tab) => ({ ...tab, id: tab.name }))}
       value={state.routes[state.index].name}
       onSelect={selectRoute}
-      onAdd={() => selectRoute('RecordAdd')}
+      onAdd={() =>
+        navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('RecordAdd')
+      }
     />
   );
 }
@@ -107,7 +108,6 @@ export function MainTabNavigator() {
     >
       <Tab.Screen name="HomeCalendar" component={HomeCalendarScreen} />
       <Tab.Screen name="MonthlyReport" component={MonthlyReportScreen} />
-      <Tab.Screen name="RecordAdd" component={RecordAddScreen} />
       <Tab.Screen name="AIAnalysis" component={AIAnalysisScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>

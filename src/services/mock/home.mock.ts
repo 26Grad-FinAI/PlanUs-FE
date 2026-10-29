@@ -35,9 +35,9 @@ export async function fetchHomeSummary(year: number, month: number): Promise<Hom
   const totalExpense = monthRecords
     .filter((record) => record.type === 'expense')
     .reduce((sum, record) => sum + record.amount, 0);
-  // 월급은 프로필의 월 소득에 이미 포함되어 있으므로 추가 수입에서 제외한다.
+  // 프로필 월 소득과 별도로 입력한 용돈·기타 수입을 추가 수입으로 합산한다.
   const additionalIncome = monthRecords
-    .filter((record) => record.type === 'income' && record.category !== 'salary')
+    .filter((record) => record.type === 'income')
     .reduce((sum, record) => sum + record.amount, 0);
   const fixedExpense = profile.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
 

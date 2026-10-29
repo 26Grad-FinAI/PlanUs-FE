@@ -1,5 +1,5 @@
 /** 수입/지출의 상세 정보. ID로 스토어를 구독해 목록과 같은 기록을 표시한다. */
-import React from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -8,25 +8,32 @@ import { RootStackParamList } from '@/app/navigation/types';
 import { Header } from '@/components/common/Header';
 import { Text } from '@/components/common/Text';
 import { Button } from '@/components/common/Button';
+import { IconButton } from '@/components/common/IconButton';
+import { ActionMenuContent } from '@/components/common/ActionMenu';
+import { ConfirmModalContent } from '@/components/common/ConfirmModal';
+import { ModalSurface } from '@/components/common/ModalSurface';
 import { colors } from '@/constants/colors';
 import { fontFamily } from '@/constants/typography';
 import { CATEGORY_META } from '@/constants/categories';
 import { useRecordStore } from '@/store/useRecordStore';
-import { SpendingNature } from '@/types/record';
+import { SpendingRecord } from '@/types/record';
+import { SPENDING_NATURE_LABELS } from '@/constants/record';
+import { metrics, spacing } from '@/constants/layout';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
-const NATURE_LABELS: Record<SpendingNature, string> = {
-  needed: '필요한 소비였어요',
-  happy: '만족스러웠어요',
-  impulse: '충동적이었어요',
-};
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 type Props = NativeStackScreenProps<RootStackParamList, 'RecordDetail'>;
 
 export function RecordDetailScreen({ navigation, route }: Props) {
-  const record = useRecordStore((state) =>
+  const currentRecord = useRecordStore((state) =>
     state.records.find((item) => item.id === route.params.recordId),
   );
+  const deleteRecord = useRecordStore((state) => state.deleteRecord);
+  const [dialog, setDialog] = useState<'menu' | 'delete'>('menu');
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [deletedRecord, setDeletedRecord] = useState<SpendingRecord | null>(null);
+  // 삭제 직후 스택이 제거되기 전까지 상세를 유지해 '찾을 수 없음'이 깜빡이지 않게 한다.
+  const record = currentRecord ?? deletedRecord;
   function goBack() {
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate('Main');
@@ -59,7 +66,21 @@ export function RecordDetailScreen({ navigation, route }: Props) {
   }
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <Header title="내역 상세" onBack={goBack} />
+      <Header
+        title="내역 상세"
+        onBack={goBack}
+        right={
+          <IconButton
+            name="ellipsis-horizontal"
+            label="내역 더보기"
+            surface={dialogVisible && dialog === 'menu'}
+            onPress={() => {
+              setDialog('menu');
+              setDialogVisible(true);
+            }}
+          />
+        }
+      />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.icon}>
@@ -77,18 +98,68 @@ export function RecordDetailScreen({ navigation, route }: Props) {
           {row('날짜', dateLabel)}
           {!isIncome && (
             <>
-              {row('소비 성격', NATURE_LABELS[record.spendingNature], true)}
+              {row('소비 성격', SPENDING_NATURE_LABELS[record.spendingNature], true)}
               {row('반복 지출', record.isRecurring ? '예' : '아니요')}
             </>
           )}
           {row('메모', record.memo?.trim() || '메모 없음')}
         </View>
       </ScrollView>
+      {/* 메뉴→삭제 확인은 같은 Modal 안에서 전환해 iOS의 모달 중첩을 피한다. */}
+      <ModalSurface
+        visible={dialogVisible}
+        onClose={() => setDialogVisible(false)}
+        placement={dialog === 'menu' ? 'topRight' : 'center'}
+        dim={dialog === 'delete'}
+        animationType="none"
+        slideFromTop={dialog === 'menu'}
+        overlayStyle={dialog === 'menu' ? styles.menuOverlay : undefined}
+        contentStyle={dialog === 'menu' ? styles.menu : styles.confirm}
+      >
+        {dialog === 'menu' ? (
+          <ActionMenuContent
+            onClose={() => setDialogVisible(false)}
+            items={[
+              {
+                id: 'edit',
+                label: '수정',
+                onPress: () => navigation.navigate('RecordEdit', { recordId: record.id }),
+              },
+              {
+                id: 'delete',
+                label: '삭제',
+                destructive: true,
+                onPress: () => {
+                  setDialog('delete');
+                  setDialogVisible(true);
+                },
+              },
+            ]}
+          />
+        ) : (
+          <ConfirmModalContent
+            title="이 내역을 삭제할까요?"
+            description="삭제한 내역은 되돌릴 수 없어요."
+            confirmLabel="삭제"
+            confirmVariant="destructive"
+            onCancel={() => setDialogVisible(false)}
+            onConfirm={() => {
+              setDeletedRecord(record);
+              setDialogVisible(false);
+              deleteRecord(record.id);
+              navigation.popTo('Main', { screen: 'HomeCalendar' });
+            }}
+          />
+        )}
+      </ModalSurface>
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
+  menuOverlay: { paddingHorizontal: spacing.md },
+  menu: { maxWidth: 148, paddingVertical: spacing.xxs },
+  confirm: { maxWidth: metrics.dialogWidth },
   content: {
     width: '100%',
     maxWidth: 640,
