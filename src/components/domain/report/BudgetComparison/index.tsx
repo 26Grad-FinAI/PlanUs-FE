@@ -1,129 +1,122 @@
-/**
- * 소비 통계 — 카테고리별 예산 대비 실제 지출 비교
- *
- * (기존 디자인의 "또래 비교"를 대체)
- * 카테고리 예산을 100% 기준으로 두고, 실제 지출이 차지한 만큼을 막대 하나로 표시한다.
- * 예산을 초과하면 막대가 가득 차고 색이 빨강으로 바뀐다.
- */
-
+/** 월 전체와 카테고리의 소비·예산을 같은 카드 구성으로 비교한다. */
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Card } from '@/components/common/Card';
 import { ProgressBar } from '@/components/common/ProgressBar';
 import { Text } from '@/components/common/Text';
-import Ionicons from '@expo/vector-icons/Ionicons';
-
+import { ReportMoreButton } from '@/components/domain/report/ReportMoreButton';
+import { BUDGET_CATEGORY_META } from '@/constants/categories';
 import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
-import { CATEGORY_META } from '@/constants/categories';
+import { spacing } from '@/constants/layout';
+import { REPORT_VISIBLE_COUNT } from '@/constants/report';
 import { BudgetComparisonItem } from '@/types/report';
+import { IconName } from '@/types/ui';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
 interface BudgetComparisonProps {
   items: BudgetComparisonItem[];
   totalBudget: number;
   totalExpense: number;
+  expanded: boolean;
+  onToggle: () => void;
 }
 
-// 예산(트랙) 대비 지출(채움) 막대 하나 + 금액 표기
-function BudgetBar({ budget, actual }: { budget: number; actual: number }) {
-  const isOver = actual > budget;
+interface BudgetUsageCardProps {
+  label: string;
+  icon?: IconName;
+  budget: number;
+  actual: number;
+  summary?: boolean;
+}
 
+function BudgetUsageCard({ label, icon, budget, actual, summary = false }: BudgetUsageCardProps) {
+  const isOver = actual > budget;
+  // 예산이 없는 소비는 비율을 꾸며내지 않고 금액과 초과 상태로 표시한다.
+  const ratio = budget > 0 ? `${Math.round((actual / budget) * 100)}%` : '-';
   return (
-    <>
-      <View style={styles.amountRow}>
-        <Text style={[styles.actualAmount, isOver && styles.actualAmountOver]}>
+    <Card style={styles.card}>
+      <View style={styles.row}>
+        {icon && (
+          <Ionicons
+            name={icon}
+            size={18}
+            color={colors.textTertiary}
+            accessible={false}
+            aria-hidden
+          />
+        )}
+        <Text
+          variant={summary ? 'label' : 'body'}
+          weight={summary ? 'medium' : 'semibold'}
+          style={[styles.label, summary && styles.muted]}
+        >
+          {label}
+        </Text>
+        <Text
+          variant="label"
+          weight="bold"
+          style={[styles.ratio, budget === 0 && styles.muted, isOver && styles.over]}
+        >
+          {ratio}
+        </Text>
+      </View>
+      <View style={styles.row}>
+        <Text weight="bold" style={[styles.actual, isOver && styles.over]}>
           {formatFullAmount(actual)}
         </Text>
-        <Text style={styles.budgetAmount}>예산 {formatFullAmount(budget)}</Text>
+        <Text variant="label" weight="semibold" style={styles.budget}>
+          / {formatFullAmount(budget)}
+        </Text>
       </View>
       <ProgressBar
-        label="예산 대비 소비"
+        label={`${summary ? '월' : label} 예산 대비 소비`}
         value={actual}
         max={budget}
         tone={isOver ? 'danger' : 'primary'}
       />
-    </>
+    </Card>
   );
 }
 
-export function BudgetComparison({ items, totalBudget, totalExpense }: BudgetComparisonProps) {
+export function BudgetComparison({
+  items,
+  totalBudget,
+  totalExpense,
+  expanded,
+  onToggle,
+}: BudgetComparisonProps) {
+  const visible = expanded ? items : items.slice(0, REPORT_VISIBLE_COUNT);
   return (
     <View style={styles.container}>
-      {/* 총 예산 vs 총 지출 요약 카드 */}
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>이번 달 예산</Text>
-        <BudgetBar budget={totalBudget} actual={totalExpense} />
-      </View>
-
-      {/* 카테고리별 예산 대비 지출 */}
-      {items.map((item) => (
-        <View key={item.category} style={styles.categoryCard}>
-          <View style={styles.categoryHeader}>
-            <Ionicons
-              name={CATEGORY_META[item.category].icon}
-              size={18}
-              color={colors.textSecondary}
-            />
-            <Text style={styles.categoryLabel}>{item.label}</Text>
-          </View>
-          <BudgetBar budget={item.budget} actual={item.actual} />
-        </View>
+      <BudgetUsageCard label="월 예산" budget={totalBudget} actual={totalExpense} summary />
+      {visible.map((item) => (
+        <BudgetUsageCard
+          key={item.category}
+          label={item.label}
+          icon={BUDGET_CATEGORY_META[item.category].icon}
+          budget={item.budget}
+          actual={item.actual}
+        />
       ))}
+      <ReportMoreButton
+        count={items.length}
+        expanded={expanded}
+        section="예산 항목"
+        onToggle={onToggle}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 12 },
-
-  // ── 총 예산 요약 카드 ──
-  summaryCard: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 16,
-    padding: 18,
-    gap: 10,
-  },
-  summaryTitle: {
-    fontSize: fontSize.sm,
-    fontFamily: fontFamily.medium,
-    color: colors.textTertiary,
-  },
-
-  // ── 카테고리 카드 ──
-  categoryCard: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 16,
-    padding: 18,
-    gap: 10,
-  },
-  categoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  categoryLabel: {
-    flex: 1,
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    color: colors.textPrimary,
-  },
-
-  // ── 금액 표기 ──
-  amountRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-  },
-  actualAmount: {
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.bold,
-    color: colors.textPrimary,
-  },
-  actualAmountOver: {
-    color: colors.expense,
-  },
-  budgetAmount: {
-    fontSize: fontSize.xs,
-    color: colors.textTertiary,
-  },
+  container: { gap: spacing.md },
+  card: { gap: spacing.sm, padding: spacing.lg },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  label: { flex: 1, flexShrink: 1 },
+  ratio: { color: colors.primaryDark, textAlign: 'right', flexShrink: 1 },
+  actual: { flex: 1 },
+  budget: { flex: 1, color: colors.textTertiary, textAlign: 'right' },
+  muted: { color: colors.textTertiary },
+  over: { color: colors.expense },
 });

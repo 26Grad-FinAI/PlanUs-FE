@@ -1,93 +1,78 @@
-/**
- * 소비 통계 — 최근 6개월 지출 추이 막대 차트
- *
- * SVG 없이 View 높이만으로 막대를 그린다. 조회 월 막대는 진하게 강조한다.
- */
-
+/** 선택 월까지의 여섯 달을 공통 금액 척도로 표시한다. */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/common/Text';
-
 import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
+import { radius, spacing } from '@/constants/layout';
+import { fontSize } from '@/constants/typography';
 import { MonthlyTrendItem } from '@/types/report';
-import { formatManwon } from '@/utils/formatCurrency';
+import { formatFullAmount, formatManwon } from '@/utils/formatCurrency';
 
 interface MonthlyTrendChartProps {
   items: MonthlyTrendItem[];
 }
 
-// 막대 영역 최대 높이(px)
 const MAX_BAR_HEIGHT = 120;
 
 export function MonthlyTrendChart({ items }: MonthlyTrendChartProps) {
-  // 가장 큰 지출액을 기준으로 막대 높이를 정규화
+  const { fontScale } = useWindowDimensions();
   const maxAmount = Math.max(...items.map((item) => item.amount), 1);
-
   return (
-    <View style={styles.chart}>
-      {items.map((item) => {
-        const barHeight = Math.max((item.amount / maxAmount) * MAX_BAR_HEIGHT, 4);
-        return (
-          <View key={item.label} style={styles.column}>
-            <Text style={[styles.amountLabel, item.isCurrent && styles.amountLabelCurrent]}>
-              {formatManwon(item.amount)}
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.chart}
+    >
+      {items.map((item) => (
+        <View
+          key={item.label}
+          accessible
+          accessibilityLabel={`${item.label} 소비 ${formatFullAmount(item.amount)}${item.isCurrent ? ', 선택한 달' : ''}`}
+          style={[styles.column, { minWidth: 36 * fontScale }]}
+        >
+          <View
+            style={[styles.barArea, { minHeight: MAX_BAR_HEIGHT + 28 * fontScale + spacing.sm }]}
+          >
+            <Text
+              variant="caption"
+              weight={item.isCurrent ? 'bold' : 'medium'}
+              style={[styles.amount, item.isCurrent && styles.highlight]}
+            >
+              {item.amount === 0 ? '0원' : formatManwon(item.amount)}
             </Text>
             <View
               style={[
                 styles.bar,
-                { height: barHeight },
-                item.isCurrent ? styles.barCurrent : styles.barPast,
+                { height: (Math.max(0, item.amount) / maxAmount) * MAX_BAR_HEIGHT },
+                item.isCurrent && styles.currentBar,
               ]}
             />
-            <Text style={[styles.monthLabel, item.isCurrent && styles.monthLabelCurrent]}>
-              {item.label}
-            </Text>
           </View>
-        );
-      })}
-    </View>
+          <Text
+            variant="caption"
+            weight={item.isCurrent ? 'semibold' : 'regular'}
+            style={!item.isCurrent && styles.muted}
+          >
+            {item.label}
+          </Text>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  chart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: MAX_BAR_HEIGHT + 44,
-  },
-  column: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 8,
-  },
-  amountLabel: {
+  chart: { flexGrow: 1, alignItems: 'flex-end' },
+  column: { flex: 1, alignItems: 'center', gap: spacing.sm },
+  barArea: { justifyContent: 'flex-end', alignItems: 'center', gap: spacing.sm, width: '100%' },
+  amount: {
     fontSize: fontSize.xxs,
-    fontFamily: fontFamily.medium,
+    lineHeight: 14,
     color: colors.textTertiary,
+    textAlign: 'center',
   },
-  amountLabelCurrent: {
-    color: colors.primary,
-    fontFamily: fontFamily.bold,
-  },
-  bar: {
-    width: 26,
-    borderRadius: 8,
-  },
-  barPast: {
-    backgroundColor: colors.primaryLight,
-  },
-  barCurrent: {
-    backgroundColor: colors.primary,
-  },
-  monthLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textTertiary,
-  },
-  monthLabelCurrent: {
-    color: colors.textPrimary,
-    fontFamily: fontFamily.semibold,
-  },
+  highlight: { color: colors.primaryDark },
+  bar: { width: 26, borderRadius: radius.input, backgroundColor: colors.primaryLight },
+  currentBar: { backgroundColor: colors.primary },
+  muted: { color: colors.textTertiary },
 });
