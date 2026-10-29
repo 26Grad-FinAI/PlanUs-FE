@@ -21,6 +21,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
+import { RecordDetailScreen } from '@/screens/record/RecordDetailScreen';
 import { RootStackParamList } from './types';
 
 const Root = createNativeStackNavigator<RootStackParamList>();
@@ -38,7 +39,14 @@ export function RootNavigator() {
         <Root.Screen name="Onboarding" component={OnboardingNavigator} />
       ) : (
         // 인증 + 온보딩 완료 → 메인 탭 화면
-        <Root.Screen name="Main" component={MainTabNavigator} />
+        <Root.Group>
+          <Root.Screen name="Main" component={MainTabNavigator} />
+          <Root.Screen
+            name="RecordDetail"
+            component={RecordDetailScreen}
+            options={{ animation: 'none' }}
+          />
+        </Root.Group>
       )}
     </Root.Navigator>
   );

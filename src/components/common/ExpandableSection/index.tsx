@@ -1,6 +1,6 @@
 /** 열림 상태는 호출자가 소유해 다른 화면 상태와 동기화할 수 있다. */
 import React, { PropsWithChildren } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
@@ -13,7 +13,7 @@ interface ExpandableSectionProps extends PropsWithChildren {
 export function ExpandableSection({ label, expanded, onToggle, children }: ExpandableSectionProps) {
   return (
     <View>
-      <TouchableOpacity
+      <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
         aria-expanded={expanded}
@@ -29,7 +29,7 @@ export function ExpandableSection({ label, expanded, onToggle, children }: Expan
           size={20}
           color={colors.textSecondary}
         />
-      </TouchableOpacity>
+      </Pressable>
       {expanded && <View style={styles.content}>{children}</View>}
     </View>
   );

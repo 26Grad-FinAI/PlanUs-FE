@@ -1,28 +1,20 @@
-/**
- * 홈 캘린더 화면
- *
- * 구성:
- * - SummaryCard: 사용 금액 / 예산 진행바 / 소진율 / 남은 예산
- * - MonthlyCalendar: 날짜별 박스 없이 숫자 + 순증감액(+/-)만 표시, 예정 소비는 점으로 구분
- *   날짜를 탭하면 아래 최근 내역이 해당 날짜로 필터링되고, 같은 날짜를 다시 탭하면 전체로 복귀한다
- * - RecentRecordList: 날짜별로 그룹화해 최근 날짜가 위로 오도록 정렬
- *
- * 상태/파생 데이터는 useHomeCalendar 훅에 모아두고, 이 화면은 조합만 담당한다.
- */
-
+/** 홈은 조회 상태를 유지한 채 루트 스택의 상세 화면으로 이동한다. */
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text } from '@/components/common/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Text } from '@/components/common/Text';
+import { RootStackParamList } from '@/app/navigation/types';
 import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
+import { fontFamily } from '@/constants/typography';
 import { useHomeCalendar } from '@/hooks/useHomeCalendar';
 import { SummaryCard } from '@/components/domain/home/SummaryCard';
 import { MonthlyCalendar } from '@/components/domain/home/MonthlyCalendar';
 import { RecentRecordList } from '@/components/domain/home/RecentRecordList';
 
 export function HomeCalendarScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {
     today,
     todayISO,
@@ -36,47 +28,62 @@ export function HomeCalendarScreen() {
     handleNextMonth,
     handleDayPress,
   } = useHomeCalendar();
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>플래너스</Text>
+          <Text style={styles.logo}>planus</Text>
         </View>
-
-        <SummaryCard summary={summary} />
-
-        <MonthlyCalendar
-          monthCursor={monthCursor}
-          weeks={weeks}
-          today={today}
-          todayISO={todayISO}
-          recordsByDate={recordsByDate}
-          selectedDate={selectedDate}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
-          onSelectDate={handleDayPress}
+        <SummaryCard
+          summary={summary}
+          isCurrentMonth={
+            monthCursor.getFullYear() === today.getFullYear() &&
+            monthCursor.getMonth() === today.getMonth()
+          }
         />
-
-        <RecentRecordList groups={visibleGroups} selectedDate={selectedDate} todayISO={todayISO} />
+        <View style={styles.calendarSection}>
+          <MonthlyCalendar
+            monthCursor={monthCursor}
+            weeks={weeks}
+            todayISO={todayISO}
+            recordsByDate={recordsByDate}
+            selectedDate={selectedDate}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
+            onSelectDate={handleDayPress}
+          />
+          <RecentRecordList
+            groups={visibleGroups}
+            selectedDate={selectedDate}
+            todayISO={todayISO}
+            onPressRecord={(recordId) => navigation.navigate('RecordDetail', { recordId })}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.surfaceMuted },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32, gap: 20 },
-
-  header: { paddingTop: 4, paddingBottom: 4 },
-  headerTitle: {
-    fontSize: fontSize.lg,
-    fontFamily: fontFamily.bold,
-    color: colors.textPrimary,
+  content: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
+    paddingHorizontal: 12,
+    paddingBottom: 0,
   },
+  header: { height: 62, justifyContent: 'center' },
+  logo: {
+    color: colors.primary,
+    fontSize: 22,
+    lineHeight: 30,
+    letterSpacing: -0.8,
+    fontFamily: fontFamily.extrabold,
+  },
+  calendarSection: { marginTop: 12, gap: 8 },
 });

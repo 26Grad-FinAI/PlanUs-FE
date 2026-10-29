@@ -26,9 +26,6 @@ export const colors = {
   incomeBg: '#F0FDF4',
   expense: '#F0445C',
   expenseBg: '#FEF2F2',
-  planned: '#D97706',
-  plannedBg: '#FFFBEB',
-  plannedBorder: '#FCD34D',
 
   shadow: '#000000',
 } as const;
