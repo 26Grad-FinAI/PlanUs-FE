@@ -70,31 +70,22 @@ export function PeerComparison({ items, expanded, onToggle }: PeerComparisonProp
           </Text>
         </View>
       </View>
-      {visible.map((item) => {
-        const difference = item.actual - item.average;
-        const differenceLabel = `${difference > 0 ? '+' : ''}${formatFullAmount(difference)}`;
-        return (
-          <View
-            key={item.category}
-            accessible
-            accessibilityLabel={`${item.label}, 나 ${formatFullAmount(item.actual)}, 비슷한 사람들 ${formatFullAmount(item.average)}, 차이 ${differenceLabel}`}
-            style={styles.item}
-          >
-            <View style={styles.titleRow}>
-              <Text variant="label" weight="semibold" style={styles.label}>
-                {item.label}
-              </Text>
-              <Text variant="caption" style={styles.difference}>
-                {differenceLabel}
-              </Text>
-            </View>
-            <View style={styles.bars}>
-              <ComparisonBar amount={item.actual} max={maxAmount} />
-              <ComparisonBar amount={item.average} max={maxAmount} average />
-            </View>
+      {visible.map((item) => (
+        <View
+          key={item.category}
+          accessible
+          accessibilityLabel={`${item.label}, 나 ${formatFullAmount(item.actual)}, 비슷한 사람들 ${formatFullAmount(item.average)}`}
+          style={styles.item}
+        >
+          <Text variant="label" weight="semibold">
+            {item.label}
+          </Text>
+          <View style={styles.bars}>
+            <ComparisonBar amount={item.actual} max={maxAmount} />
+            <ComparisonBar amount={item.average} max={maxAmount} average />
           </View>
-        );
-      })}
+        </View>
+      ))}
       <ReportMoreButton
         count={items.length}
         expanded={expanded}
@@ -111,9 +102,6 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   dot: { width: 10, height: 10, borderRadius: spacing.xxs, backgroundColor: colors.primary },
   item: { gap: spacing.sm },
-  titleRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
-  label: { flex: 1 },
-  difference: { flexShrink: 1, color: colors.textTertiary, textAlign: 'right' },
   bars: { gap: spacing.xs },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   barSpace: { flex: 1, minWidth: spacing.xl },

@@ -33,7 +33,7 @@ interface BudgetUsageCardProps {
 function BudgetUsageCard({ label, icon, budget, actual, summary = false }: BudgetUsageCardProps) {
   const isOver = actual > budget;
   // 예산이 없는 소비는 비율을 꾸며내지 않고 금액과 초과 상태로 표시한다.
-  const ratio = budget > 0 ? `${Math.round((actual / budget) * 100)}%` : '예산 없음';
+  const ratio = budget > 0 ? `${Math.round((actual / budget) * 100)}%` : '-';
   return (
     <Card style={styles.card}>
       <View style={styles.row}>
@@ -99,11 +99,6 @@ export function BudgetComparison({
           actual={item.actual}
         />
       ))}
-      {items.length === 0 && (
-        <Text variant="label" style={styles.empty}>
-          등록된 예산과 소비 내역이 없어요.
-        </Text>
-      )}
       <ReportMoreButton
         count={items.length}
         expanded={expanded}
@@ -124,5 +119,4 @@ const styles = StyleSheet.create({
   budget: { flex: 1, color: colors.textTertiary, textAlign: 'right' },
   muted: { color: colors.textTertiary },
   over: { color: colors.expense },
-  empty: { color: colors.textTertiary, textAlign: 'center', paddingVertical: spacing.md },
 });

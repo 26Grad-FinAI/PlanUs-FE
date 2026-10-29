@@ -42,7 +42,7 @@ export function CategoryDonut({ items }: CategoryDonutProps) {
         accessible
         accessibilityRole="image"
         accessibilityLabel={
-          topItem ? `가장 큰 소비는 ${topItem.label}, ${topItem.ratio}%` : '지출 내역이 없어요'
+          topItem ? `가장 큰 소비는 ${topItem.label}, ${topItem.ratio}%` : '소비 내역이 없어요'
         }
         style={styles.chart}
       >
@@ -83,7 +83,7 @@ export function CategoryDonut({ items }: CategoryDonutProps) {
             </>
           ) : (
             <Text variant="caption" style={styles.emptyLabel} maxFontSizeMultiplier={1.5}>
-              지출 내역이 없어요
+              소비 내역이 없어요
             </Text>
           )}
         </View>
