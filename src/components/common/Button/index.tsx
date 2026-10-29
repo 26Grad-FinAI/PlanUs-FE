@@ -25,10 +25,10 @@ import {
   TouchableOpacityProps,
   StyleSheet,
   ActivityIndicator,
-  Text,
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 

@@ -11,7 +11,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Modal,
@@ -19,6 +18,7 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';

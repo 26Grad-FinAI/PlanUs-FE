@@ -18,15 +18,8 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import {
-  View,
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-  Text,
-  Animated,
-  Pressable,
-} from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, Animated, Pressable } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 

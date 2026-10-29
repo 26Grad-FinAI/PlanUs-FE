@@ -11,7 +11,8 @@
  */
 
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/colors';

@@ -9,7 +9,8 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

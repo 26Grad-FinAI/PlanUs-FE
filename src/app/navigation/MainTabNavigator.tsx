@@ -9,7 +9,8 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

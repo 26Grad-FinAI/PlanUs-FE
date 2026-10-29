@@ -21,13 +21,13 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

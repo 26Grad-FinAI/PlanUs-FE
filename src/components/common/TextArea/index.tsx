@@ -9,7 +9,8 @@
  */
 
 import React, { useState } from 'react';
-import { View, TextInput, TextInputProps, StyleSheet, Text } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 

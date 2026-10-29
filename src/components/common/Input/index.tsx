@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 공통 Input 컴포넌트
  *
  * 상태별 테두리:
@@ -25,11 +25,11 @@ import {
   TextInput,
   TextInputProps,
   StyleSheet,
-  Text,
   TextStyle,
   ViewStyle,
   StyleProp,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
 

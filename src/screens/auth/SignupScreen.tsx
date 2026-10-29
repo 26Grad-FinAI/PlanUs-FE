@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 회원가입 화면
  *
  * 역할:
@@ -12,7 +12,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -20,6 +19,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { Text } from '@/components/common/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Button } from '@/components/common/Button';
