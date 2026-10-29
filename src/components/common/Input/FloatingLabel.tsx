@@ -1,5 +1,5 @@
 /** 입력 테두리 위로 이동하는 라벨. */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Easing, Platform, StyleSheet } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
@@ -25,7 +25,7 @@ export function FloatingLabel({
   disabled,
   required,
 }: FloatingLabelProps) {
-  const progress = useRef(new Animated.Value(raised ? 1 : 0)).current;
+  const [progress] = useState(() => new Animated.Value(raised ? 1 : 0));
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: 0,
     height: typography.body.lineHeight,

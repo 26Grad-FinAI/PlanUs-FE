@@ -137,7 +137,7 @@ export function SavingsGoalInput({
       <Modal visible={showPicker} transparent animationType="fade" onRequestClose={handleCancel}>
         <View style={styles.pickerOverlay}>
           <TouchableOpacity
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             activeOpacity={1}
             onPress={handleCancel}
           />

@@ -3,9 +3,8 @@
   "exclude": ["node_modules", "dist", ".expo"],
   "compilerOptions": {
     "strict": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }
