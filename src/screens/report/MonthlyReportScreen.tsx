@@ -1,6 +1,6 @@
 /** 월별 조회 상태를 표시하고 통계 섹션을 시안 순서대로 배치한다. */
 import React from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
@@ -10,12 +10,15 @@ import { Text } from '@/components/common/Text';
 import { CategoryDonut } from '@/components/domain/report/CategoryDonut';
 import { MonthlyTrendChart } from '@/components/domain/report/MonthlyTrendChart';
 import { BudgetComparison } from '@/components/domain/report/BudgetComparison';
+import { PeerComparison } from '@/components/domain/report/PeerComparison';
 import { colors } from '@/constants/colors';
 import { metrics, spacing } from '@/constants/layout';
+import { fontSize } from '@/constants/typography';
 import { useMonthlyReport } from '@/hooks/useMonthlyReport';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
 export function MonthlyReportScreen() {
+  const { width, fontScale } = useWindowDimensions();
   const {
     monthCursor,
     report,
@@ -26,7 +29,15 @@ export function MonthlyReportScreen() {
     handleNextMonth,
     budgetExpanded,
     toggleBudget,
+    peersExpanded,
+    togglePeers,
   } = useMonthlyReport();
+  // 큰 글자나 긴 금액은 축약하지 않고 요약을 세로로 배치한다.
+  const stackSummary =
+    fontScale > 1.3 ||
+    [report?.totalExpense, report?.totalIncome].some(
+      (amount) => formatFullAmount(amount ?? 0).length > 12,
+    );
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Header title="소비 통계" />
@@ -55,14 +66,21 @@ export function MonthlyReportScreen() {
         )}
         {report && (
           <>
-            <View style={styles.summary}>
-              <View style={styles.summaryColumn}>
+            <View style={[styles.summary, stackSummary && styles.stackedSummary]}>
+              <View style={[styles.summaryColumn, stackSummary && styles.stackedColumn]}>
                 <Text variant="caption" style={styles.muted}>
                   지출
                 </Text>
-                <Text variant="title">{formatFullAmount(report.totalExpense)}</Text>
+                <Text variant="title" style={width < 360 && styles.compactAmount}>
+                  {formatFullAmount(report.totalExpense)}
+                </Text>
               </View>
-              <View style={[styles.summaryColumn, styles.incomeColumn]}>
+              <View
+                style={[
+                  styles.summaryColumn,
+                  stackSummary ? styles.stackedIncome : styles.incomeColumn,
+                ]}
+              >
                 <Text variant="caption" style={styles.muted}>
                   수입
                 </Text>
@@ -99,6 +117,21 @@ export function MonthlyReportScreen() {
                 <MonthlyTrendChart items={report.monthlyTrend} />
               </Card>
             </View>
+            <View style={styles.section}>
+              <View style={styles.sectionHeading}>
+                <Text variant="section" accessibilityRole="header">
+                  내 또래와 소비 비교
+                </Text>
+                <Text variant="caption" style={styles.muted}>
+                  나이·소득·환경이 비슷한 사람들의 소비 평균이에요
+                </Text>
+              </View>
+              <PeerComparison
+                items={report.peerComparison}
+                expanded={peersExpanded}
+                onToggle={togglePeers}
+              />
+            </View>
           </>
         )}
       </ScrollView>
@@ -126,12 +159,22 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   summaryColumn: { flex: 1, justifyContent: 'center', gap: spacing.xs },
+  stackedSummary: { flexDirection: 'column' },
+  stackedColumn: { flex: 0 },
+  compactAmount: { fontSize: fontSize.xl, lineHeight: 28 },
+  stackedIncome: {
+    flex: 0,
+    borderTopWidth: metrics.hairline,
+    borderTopColor: colors.border,
+    paddingTop: spacing.lg,
+  },
   incomeColumn: {
     borderLeftWidth: metrics.hairline,
     borderLeftColor: colors.border,
     paddingLeft: spacing.xl,
   },
   section: { gap: spacing.md },
+  sectionHeading: { gap: spacing.xs },
   notice: { minHeight: 168, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
   muted: { color: colors.textTertiary },
 });
