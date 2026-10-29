@@ -27,7 +27,7 @@ import { Text } from '@/components/common/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Button } from '@/components/common/Button';
-import { FloatingInput } from '@/components/common/FloatingInput';
+import { Input } from '@/components/common/Input';
 import { login } from '@/services/api/authApi';
 import { validateEmail, validatePassword } from '@/utils/validation';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -96,7 +96,7 @@ export function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.formSection}>
-          <FloatingInput
+          <Input
             label="이메일"
             value={email}
             onChangeText={(text: string) => {
@@ -109,7 +109,7 @@ export function LoginScreen({ navigation }: Props) {
             autoCorrect={false}
             textContentType="emailAddress"
           />
-          <FloatingInput
+          <Input
             label="비밀번호"
             value={password}
             onChangeText={(text: string) => {

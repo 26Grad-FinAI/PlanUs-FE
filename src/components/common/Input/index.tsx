@@ -1,133 +1,108 @@
-/**
- * 공통 Input 컴포넌트
- *
- * 상태별 테두리:
- * - 기본      : 회색 테두리 (borderInput)
- * - 포커스    : 파란 테두리 (primary)
- * - 에러      : 빨간 테두리 (error) - 포커스보다 우선
- *
- * 하단 텍스트:
- * - hint  : 안내 텍스트 — error가 없을 때만 표시
- * - error : 에러 메시지 — hint보다 우선
- *
- * @param label         - 인풋 상단 라벨
- * @param required      - true면 라벨 옆에 * 표시
- * @param error         - 에러 메시지
- * @param hint          - 안내 텍스트
- * @param suffix        - 인풋 우측 단위 텍스트 (예: "원", "%")
- * @param suffixStyle   - suffix 텍스트에 추가 스타일 적용
- * @param containerStyle - 컨테이너(테두리 박스)에 추가 스타일 적용
- */
-
+/** 고정 라벨 박스/밑줄 입력. 오류는 포커스 색보다 우선한다. */
 import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-  TextStyle,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { View, TextInputProps, TextStyle, ViewStyle, StyleProp, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
+import { FormField, FieldProps } from '@/components/common/FormField';
+import { IconButton } from '@/components/common/IconButton';
 import { colors } from '@/constants/colors';
-import { fontSize, fontWeight } from '@/constants/typography';
-
-interface InputProps extends TextInputProps {
-  label?: string;
-  required?: boolean;
-  error?: string;
-  hint?: string;
+import { spacing, radius, metrics } from '@/constants/layout';
+export interface InputProps extends TextInputProps, FieldProps {
+  variant?: 'box' | 'underline';
   suffix?: string;
   suffixStyle?: StyleProp<TextStyle>;
-  containerStyle?: ViewStyle;
+  containerStyle?: StyleProp<ViewStyle>;
+  rightIcon?: keyof typeof Ionicons.glyphMap;
+  onRightPress?: () => void;
+  rightLabel?: string;
 }
-
 export function Input({
   label,
   required,
-  error,
   hint,
+  error,
+  variant = 'box',
   suffix,
   suffixStyle,
-  style,
   containerStyle,
-  onFocus: externalOnFocus,
-  onBlur: externalOnBlur,
-  ...rest
+  rightIcon,
+  onRightPress,
+  rightLabel,
+  style,
+  editable = true,
+  onFocus,
+  onBlur,
+  ...props
 }: InputProps) {
-  const [isFocused, setIsFocused] = useState(false);
-  const borderColor = error ? colors.error : isFocused ? colors.primary : colors.borderInput;
-
+  const [focused, setFocused] = useState(false);
+  const borderColor = error
+    ? colors.error
+    : focused
+      ? colors.primary
+      : variant === 'underline'
+        ? colors.border
+        : colors.borderInput;
   return (
-    <View>
-      {label && (
-        <View style={styles.labelRow}>
-          <Text style={styles.label}>{label}</Text>
-          {required && <Text style={styles.required}> *</Text>}
-        </View>
-      )}
-
-      <View style={[styles.container, { borderColor }, containerStyle]}>
+    <FormField label={label} required={required} hint={hint} error={error}>
+      <View
+        style={[
+          styles.container,
+          styles[variant],
+          { borderColor },
+          !editable && styles.disabled,
+          containerStyle,
+        ]}
+      >
         <TextInput
-          style={[styles.input, suffix ? styles.inputWithSuffix : undefined, style]}
-          placeholderTextColor={colors.textDisabled}
-          onFocus={(e) => {
-            setIsFocused(true);
-            externalOnFocus?.(e); // 외부에서 onFocus를 넘겼을 때 같이 실행
+          {...props}
+          editable={editable}
+          accessibilityLabel={props.accessibilityLabel ?? label ?? props.placeholder}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
           }}
-          onBlur={(e) => {
-            setIsFocused(false);
-            externalOnBlur?.(e); // 외부에서 onBlur를 넘겼을 때 같이 실행
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
           }}
-          {...rest}
+          style={[styles.input, !!suffix && styles.withSuffix, style]}
         />
         {suffix && <Text style={[styles.suffix, suffixStyle]}>{suffix}</Text>}
+        {rightIcon &&
+          (onRightPress ? (
+            <IconButton
+              name={rightIcon}
+              label={rightLabel ?? label ?? '입력 작업'}
+              onPress={onRightPress}
+              disabled={!editable}
+            />
+          ) : (
+            <Ionicons name={rightIcon} size={metrics.icon} color={colors.textTertiary} />
+          ))}
       </View>
-
-      {!!hint && !error && <Text style={styles.hint}>{hint}</Text>}
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
-    </View>
+    </FormField>
   );
 }
-
 const styles = StyleSheet.create({
-  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-  },
-  required: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.error,
-  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 48,
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    gap: spacing.sm,
+    minHeight: metrics.input,
     backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.borderInput,
   },
+  box: { borderWidth: metrics.hairline, borderRadius: radius.input, paddingHorizontal: spacing.lg },
+  underline: { borderBottomWidth: 2, paddingHorizontal: spacing.xxs },
+  disabled: { backgroundColor: colors.backgroundAlt },
   input: {
     flex: 1,
-    fontSize: fontSize.base,
+    minWidth: 0,
+    paddingVertical: spacing.md,
+    paddingHorizontal: 0,
+    fontSize: 16,
     color: colors.textPrimary,
-    padding: 0,
   },
-  inputWithSuffix: {
-    textAlign: 'right',
-    paddingRight: 8,
-  },
-  suffix: {
-    fontSize: fontSize.base,
-    color: colors.textTertiary,
-  },
-
-  hint: { marginTop: 4, fontSize: fontSize.xs, color: colors.textTertiary },
-  errorText: { marginTop: 4, fontSize: fontSize.xs, color: colors.error },
+  withSuffix: { textAlign: 'right' },
+  suffix: { color: colors.textTertiary },
 });

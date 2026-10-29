@@ -6,6 +6,7 @@ import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { spacing, metrics, radius } from '@/constants/layout';
 import { typography } from '@/constants/typography';
+import { InputExamples } from '@/screens/dev/InputExamples';
 
 export function DesignSystemScreen() {
   return (
@@ -41,6 +42,9 @@ export function DesignSystemScreen() {
               </View>
             ))}
           </View>
+        </View>
+        <View style={styles.card}>
+          <InputExamples />
         </View>
       </ScrollView>
     </SafeAreaView>

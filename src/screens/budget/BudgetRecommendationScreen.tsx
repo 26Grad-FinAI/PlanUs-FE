@@ -9,7 +9,9 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { View, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import type { TextInput as NativeTextInput } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,7 +48,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
   const [editingText, setEditingText] = useState('');
   const [showOverBudgetModal, setShowOverBudgetModal] = useState(false);
 
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<NativeTextInput>(null);
 
   const aiTotal = mockAIBudget.aiTotalAmount;
   const userTotal = budgets.reduce((sum, b) => sum + b.userAmount, 0);

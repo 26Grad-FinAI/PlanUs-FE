@@ -7,7 +7,8 @@
  */
 
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';

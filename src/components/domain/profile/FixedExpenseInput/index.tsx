@@ -6,7 +6,8 @@
  */
 
 import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { TextInput } from '@/components/common/TextInput';
 import { Text } from '@/components/common/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
