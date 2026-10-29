@@ -7,22 +7,36 @@ import { DateField } from '@/components/common/DateField';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ActionMenu } from '@/components/common/ActionMenu';
 import { spacing } from '@/constants/layout';
+type DialogKind = 'delete' | 'budget' | 'account';
+
 export function OverlayExamples() {
   const [date, setDate] = useState(new Date(2026, 7, 24));
-  const [dialog, setDialog] = useState<'delete' | 'budget' | 'account' | null>(null);
+  // 퇴장 애니메이션 중에도 내용이 유지되도록 종류와 열림 상태를 분리한다.
+  const [dialog, setDialog] = useState<DialogKind>('delete');
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [menu, setMenu] = useState(false);
   const [result, setResult] = useState('아직 실행한 작업이 없어요.');
+
+  function openDialog(kind: DialogKind) {
+    setDialog(kind);
+    setDialogVisible(true);
+  }
+
   return (
     <View style={styles.section}>
       <Text variant="section">날짜 · 모달 · 메뉴</Text>
       <DateField label="거래 날짜" value={date} onChange={setDate} required />
       <DateField label="비활성 날짜" value={date} onChange={setDate} disabled />
-      <Button label="삭제 모달 열기" variant="destructive" onPress={() => setDialog('delete')} />
-      <Button label="예산 초과 모달 열기" variant="secondary" onPress={() => setDialog('budget')} />
+      <Button label="삭제 모달 열기" variant="destructive" onPress={() => openDialog('delete')} />
+      <Button
+        label="예산 초과 모달 열기"
+        variant="secondary"
+        onPress={() => openDialog('budget')}
+      />
       <Button
         label="이미 가입된 계정 모달 열기"
         variant="secondary"
-        onPress={() => setDialog('account')}
+        onPress={() => openDialog('account')}
       />
       <Button label="수정 · 삭제 메뉴 열기" variant="ghost" onPress={() => setMenu(true)} />
       <Text accessibilityLiveRegion="polite">{result}</Text>
@@ -31,11 +45,11 @@ export function OverlayExamples() {
         onClose={() => setMenu(false)}
         items={[
           { id: 'edit', label: '수정', onPress: () => setResult('수정을 선택했어요.') },
-          { id: 'delete', label: '삭제', destructive: true, onPress: () => setDialog('delete') },
+          { id: 'delete', label: '삭제', destructive: true, onPress: () => openDialog('delete') },
         ]}
       />
       <ConfirmModal
-        visible={dialog !== null}
+        visible={dialogVisible}
         title={
           dialog === 'delete'
             ? '이 내역을 삭제할까요?'
@@ -62,10 +76,10 @@ export function OverlayExamples() {
           dialog === 'delete' ? '삭제' : dialog === 'budget' ? '이대로 확정하기' : '로그인하기'
         }
         confirmVariant={dialog === 'delete' ? 'destructive' : 'primary'}
-        onCancel={() => setDialog(null)}
+        onCancel={() => setDialogVisible(false)}
         onConfirm={() => {
           setResult(dialog === 'delete' ? '삭제를 확인했어요. (미리보기)' : '확인을 선택했어요.');
-          setDialog(null);
+          setDialogVisible(false);
         }}
       />
     </View>
