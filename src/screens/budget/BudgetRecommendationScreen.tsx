@@ -1,463 +1,247 @@
-/**
- * AI 예산 추천 화면 (온보딩 2단계)
- *
- * 구성:
- * - AI 인사이트 카드: 예산 산정 근거
- * - 예산 비교 카드: AI 제안 총액 vs 사용자 설정 총액
- * - 카테고리별 예산: 항목별 편집 + 전체 초기화
- * - 확정 버튼: 초과 시 경고 모달 → 그래도 확정 or 취소
- */
-
-import React, { useState, useRef } from 'react';
-import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import type { TextInputInstance } from 'react-native';
-import { TextInput } from '@/components/common/TextInput';
-import { Text } from '@/components/common/Text';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+/** 추천 예산을 편집하고 최신 입력 스냅샷을 확정한다. */
+import React, { useRef, useState } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-import { ProgressBar } from '@/components/common/ProgressBar';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { OnboardingStackParamList } from '@/app/navigation/types';
+import { ScreenLayout, BottomActionBar } from '@/components/common/Layout';
 import { Header } from '@/components/common/Header';
+import { Text } from '@/components/common/Text';
+import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
-import { colors } from '@/constants/colors';
-import { fontSize, fontFamily } from '@/constants/typography';
-import { CATEGORY_META } from '@/constants/categories';
-import { OnboardingStackParamList } from '@/app/navigation/types';
-import { useAuthStore } from '@/store/useAuthStore';
-import { mockAIBudget } from '@/services/mock/budget.mock';
+import { BudgetCategoryCard } from '@/components/domain/budget/BudgetCategoryCard';
 import { BudgetCategory, CategoryBudget } from '@/types/budget';
-import { formatComma } from '@/utils/formatCurrency';
-
-type BudgetRecommendationNavigationProp = NativeStackNavigationProp<
-  OnboardingStackParamList,
-  'BudgetRecommendation'
->;
-
-interface BudgetRecommendationScreenProps {
-  navigation: BudgetRecommendationNavigationProp;
-}
-
-export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationScreenProps) {
-  const { top: topInset, bottom: bottomInset } = useSafeAreaInsets();
-  const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
-
-  const [budgets, setBudgets] = useState<CategoryBudget[]>(
-    mockAIBudget.categories.map((c) => ({ ...c })),
+import { useAuthStore } from '@/store/useAuthStore';
+import { useBudgetStore } from '@/store/useBudgetStore';
+import { formatFullAmount } from '@/utils/formatCurrency';
+import { colors } from '@/constants/colors';
+import { spacing } from '@/constants/layout';
+type Props = NativeStackScreenProps<OnboardingStackParamList, 'BudgetRecommendation'>;
+const sumBudgets = (budgets: CategoryBudget[]) =>
+  budgets.reduce((sum, item) => sum + item.userAmount, 0);
+export function BudgetRecommendationScreen({ navigation, route }: Props) {
+  const { profile, year, month, recommendation } = route.params;
+  const [budgets, setBudgets] = useState(() =>
+    recommendation.categories.map((item) => ({ ...item })),
   );
-  const [editingCategoryId, setEditingCategoryId] = useState<BudgetCategory | null>(null);
-  const [editingText, setEditingText] = useState('');
+  const [editing, setEditing] = useState<{ category: BudgetCategory; text: string } | null>(null);
+  const [editError, setEditError] = useState('');
   const [showOverBudgetModal, setShowOverBudgetModal] = useState(false);
-
-  const inputRef = useRef<TextInputInstance>(null);
-
-  const aiTotal = mockAIBudget.aiTotalAmount;
-  const userTotal = budgets.reduce((sum, b) => sum + b.userAmount, 0);
-  const isExceeded = userTotal > aiTotal;
-  const exceededAmount = userTotal - aiTotal;
-
-  // ── 편집 핸들러 ──────────────────────────────────────────────────────────
-
-  function handleEditStart(categoryId: BudgetCategory, currentAmount: number) {
-    if (editingCategoryId && editingCategoryId !== categoryId) {
-      commitEdit();
+  const [pendingBudget, setPendingBudget] = useState<CategoryBudget[] | null>(null);
+  const finished = useRef(false);
+  const confirmBudget = useBudgetStore((state) => state.confirmBudget);
+  const completeOnboarding = useAuthStore((state) => state.completeOnboarding);
+  const validEdit =
+    editing !== null && /^\d+$/.test(editing.text) && Number.isSafeInteger(Number(editing.text));
+  const preview = validEdit
+    ? budgets.map((item) =>
+        item.category === editing.category ? { ...item, userAmount: Number(editing.text) } : item,
+      )
+    : budgets;
+  const visibleBudgets = Number.isSafeInteger(sumBudgets(preview)) ? preview : budgets;
+  const total = sumBudgets(visibleBudgets);
+  const exceeded = total > recommendation.aiTotalAmount;
+  function commitEdit(expectedCategory?: BudgetCategory): CategoryBudget[] | null {
+    if (expectedCategory && editing?.category !== expectedCategory) return budgets;
+    if (!editing) return budgets;
+    if (!validEdit || !Number.isSafeInteger(sumBudgets(preview))) {
+      setEditError(
+        validEdit
+          ? '총예산이 너무 커요. 금액을 줄여주세요.'
+          : '금액을 입력해주세요. 0원도 입력할 수 있어요.',
+      );
+      return null;
     }
-    setEditingCategoryId(categoryId);
-    setEditingText(String(currentAmount));
+    setBudgets(preview);
+    setEditing((current) => (current?.category === editing.category ? null : current));
+    setEditError('');
+    return preview;
   }
-
-  // 편집 중인 항목을 커밋하고 변경 후의 budgets 배열을 동기적으로 반환
-  // handleConfirm에서 setBudgets 반영 전에 초과 여부를 정확히 판단하기 위해 필요
-  function commitEdit(): CategoryBudget[] {
-    if (!editingCategoryId) return budgets;
-    const parsed = parseInt(editingText.replace(/[^0-9]/g, ''), 10);
-    const newAmount = isNaN(parsed) ? 0 : parsed;
-    const nextBudgets = budgets.map((b) =>
-      b.category === editingCategoryId ? { ...b, userAmount: newAmount } : b,
-    );
-    setBudgets(nextBudgets);
-    setEditingCategoryId(null);
-    setEditingText('');
-    return nextBudgets;
+  function beginEdit(budget: CategoryBudget) {
+    if (editing && !commitEdit()) return;
+    setEditing({ category: budget.category, text: String(budget.userAmount) });
+    setEditError('');
   }
-
-  // 전체 카테고리를 AI 제안값으로 초기화
-  function handleResetAll() {
-    setEditingCategoryId(null);
-    setEditingText('');
-    setBudgets(mockAIBudget.categories.map((c) => ({ ...c })));
+  function reset() {
+    setEditing(null);
+    setEditError('');
+    setBudgets(recommendation.categories.map((item) => ({ ...item })));
   }
-
-  function handleConfirm() {
-    // commitEdit이 반환하는 nextBudgets로 초과 여부를 판단하여 모달 표시 여부 결정
-    const nextBudgets = commitEdit();
-    const nextTotal = nextBudgets.reduce((sum, b) => sum + b.userAmount, 0);
-    const nextIsExceeded = nextTotal > aiTotal;
-    if (nextIsExceeded) {
-      setShowOverBudgetModal(true);
-    } else {
-      finalize();
-    }
-  }
-
-  function finalize() {
-    // TODO: API 연결 시 예산 저장
-    // await saveBudget({ categories: budgets, totalAmount: userTotal });
-    console.log('[mock] 예산 확정:', { userTotal, budgets });
+  function finalize(snapshot: CategoryBudget[]) {
+    if (finished.current) return;
+    finished.current = true;
+    confirmBudget({
+      profile,
+      year,
+      month,
+      recommendation: { ...recommendation, categories: snapshot },
+    });
     completeOnboarding();
   }
-
-  // ── 카테고리 아이템 ────────────────────────────────────────────────────
-
-  function renderCategoryItem(budget: CategoryBudget) {
-    const isEditing = editingCategoryId === budget.category;
-    const isCategoryOver = budget.userAmount > budget.aiAmount;
-    const excess = budget.userAmount - budget.aiAmount;
-
-    // 사용자 총액 대비 이 카테고리의 비중 (0~100%)
-    const barPct = userTotal > 0 ? Math.min((budget.userAmount / userTotal) * 100, 100) : 0;
-    const barPctRounded = Math.round(barPct);
-
-    return (
-      <View key={budget.category} style={styles.categoryCard}>
-        {/* 상단 행: 아이콘 + 카테고리명 + 금액 편집 */}
-        <View style={styles.categoryRow}>
-          <Ionicons
-            name={CATEGORY_META[budget.category].icon}
-            size={19}
-            color={colors.textTertiary}
-          />
-          <Text style={styles.categoryLabel}>{budget.label}</Text>
-
-          {/* 금액 영역 — 탭 시 인라인 편집 모드 전환 */}
-          {isEditing ? (
-            <TextInput
-              ref={inputRef}
-              style={styles.amountInput}
-              value={editingText}
-              onChangeText={(t) => setEditingText(t.replace(/[^0-9]/g, ''))}
-              onBlur={commitEdit}
-              keyboardType="numeric"
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={commitEdit}
-              selectTextOnFocus
-            />
-          ) : (
-            <TouchableOpacity
-              style={styles.amountTouchable}
-              onPress={() => handleEditStart(budget.category, budget.userAmount)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`${budget.label} 예산 수정`}
-            >
-              <Text style={[styles.amountText, isCategoryOver && styles.amountTextOver]}>
-                {formatComma(budget.userAmount)}원
-              </Text>
-              <Ionicons name="create-outline" size={16} color={colors.textSecondary} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* 비중 막대 */}
-        <ProgressBar
-          label={`${budget.label} 예산 비중`}
-          value={budget.userAmount}
-          max={userTotal}
-          tone={isCategoryOver ? 'danger' : 'primary'}
-        />
-
-        {/* 하단 메타: AI 제안 / 초과 | 비중 % */}
-        <View style={styles.categoryMeta}>
-          <View style={styles.categoryMetaLeft}>
-            <Text style={styles.aiHintText}>AI 제안 {formatComma(budget.aiAmount)}원</Text>
-            {isCategoryOver && (
-              <Text style={styles.categoryOverText}> +{formatComma(excess)}원 초과</Text>
-            )}
-          </View>
-          <Text style={[styles.pctText, isCategoryOver && styles.pctTextOver]}>
-            {barPctRounded}%
-          </Text>
-        </View>
-      </View>
-    );
+  function confirm() {
+    const snapshot = commitEdit();
+    if (!snapshot) return;
+    // 편집 직후에도 계산과 저장에 같은 스냅샷을 사용해 마지막 입력을 놓치지 않는다.
+    if (sumBudgets(snapshot) > recommendation.aiTotalAmount) {
+      setPendingBudget(snapshot);
+      setShowOverBudgetModal(true);
+    } else finalize(snapshot);
   }
-
+  const pendingExcess = pendingBudget
+    ? sumBudgets(pendingBudget) - recommendation.aiTotalAmount
+    : 0;
   return (
     <>
-      <View style={[styles.screen, { paddingTop: topInset }]}>
-        {/* ── 헤더 ── */}
-        <Header title="AI 예산 추천" onBack={() => navigation.goBack()} />
-
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomInset + 100 }]}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
-          {/* 페이지 제목 */}
-          <View style={styles.titleSection}>
-            <Text style={styles.titleMain}>AI가 제안하는</Text>
-            <Text style={styles.titleSub}>이번 달 예산이에요</Text>
-          </View>
-
-          {/* AI 인사이트 카드 */}
-          <View style={styles.insightCard}>
-            <View style={styles.insightHeader}>
-              <Ionicons name="sparkles" size={15} color={colors.primary} />
-              <Text style={styles.insightLabel}>AI 분석</Text>
-            </View>
-            <Text style={styles.insightText}>{mockAIBudget.insight}</Text>
-          </View>
-
-          {/* 예산 비교 카드 */}
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryRowLabel}>AI 제안 예산</Text>
-              <Text style={styles.summaryAiAmount}>{formatComma(aiTotal)}원</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryRowLabel}>현재 설정</Text>
-              <View style={styles.summaryUserRight}>
-                <Text
-                  style={[styles.summaryUserAmount, isExceeded && styles.summaryUserAmountOver]}
-                >
-                  {formatComma(userTotal)}원
-                </Text>
-                {isExceeded && (
-                  <Text style={styles.summaryExcessLabel}>+{formatComma(exceededAmount)} 초과</Text>
-                )}
-                {!isExceeded && userTotal < aiTotal && (
-                  <Text style={styles.summarySavingLabel}>
-                    -{formatComma(aiTotal - userTotal)} 절약
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* 카테고리별 예산 섹션 */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>카테고리별 예산</Text>
-            <TouchableOpacity
-              onPress={handleResetAll}
-              activeOpacity={0.7}
-              style={styles.resetAllButton}
-            >
-              <Ionicons name="refresh-outline" size={13} color={colors.textTertiary} />
-              <Text style={styles.resetAllText}>전체 초기화</Text>
-            </TouchableOpacity>
-          </View>
-
-          {budgets.map(renderCategoryItem)}
-        </ScrollView>
-
-        {/* 하단 확정 버튼 */}
-        <View style={[styles.bottomBar, { paddingBottom: bottomInset + 12 }]}>
-          <Button
-            label="예산 확정하기"
-            variant="primary"
-            size="lg"
-            fullWidth
-            onPress={handleConfirm}
+      <ScreenLayout
+        header={<Header onBack={() => navigation.goBack()} backLabel="뒤로" divider={false} />}
+        footer={
+          <BottomActionBar>
+            <Button label="예산 확정하기" onPress={confirm} />
+          </BottomActionBar>
+        }
+      >
+        <View style={styles.heading}>
+          <Text variant="title" accessibilityRole="header" style={styles.title}>
+            AI가 제안하는{'\n'}
+            <Text variant="inherit" style={styles.emphasis}>
+              이번 달 예산
+            </Text>
+            이에요
+          </Text>
+          <Image
+            source={require('../../../assets/images/illustrations/budget-calendar-3d.png')}
+            resizeMode="contain"
+            style={styles.image}
+            accessibilityLabel="예산 달력"
           />
         </View>
-      </View>
-
-      {/* 초과 예산 확정 모달 */}
+        <Card tone="info" style={styles.insightCard}>
+          <View style={styles.insightHeading}>
+            <Ionicons
+              name="sparkles"
+              size={18}
+              color={colors.primaryDark}
+              accessible={false}
+              aria-hidden
+            />
+            <Text variant="label" weight="semibold" style={styles.emphasis}>
+              AI 분석
+            </Text>
+          </View>
+          <Text style={styles.insight}>{recommendation.insight}</Text>
+        </Card>
+        <Card>
+          <View style={styles.summaryRow}>
+            <Text variant="label" style={styles.muted}>
+              AI 제안 예산
+            </Text>
+            <Text weight="semibold" style={styles.summaryAmount}>
+              {formatFullAmount(recommendation.aiTotalAmount)}
+            </Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.summaryRow}>
+            <Text variant="label" style={styles.muted}>
+              현재 설정
+            </Text>
+            <View style={styles.current}>
+              <Text
+                variant="section"
+                style={[styles.emphasis, styles.summaryAmount, exceeded && styles.exceeded]}
+              >
+                {formatFullAmount(total)}
+              </Text>
+              {exceeded && (
+                <Text variant="caption" style={styles.exceeded}>
+                  +{formatFullAmount(total - recommendation.aiTotalAmount)} 초과
+                </Text>
+              )}
+            </View>
+          </View>
+        </Card>
+        <View style={styles.sectionHeading}>
+          <Text variant="section">카테고리별 예산</Text>
+          <Button
+            label="↻ 전체 초기화"
+            variant="ghost"
+            size="sm"
+            onPress={reset}
+            style={styles.reset}
+          />
+        </View>
+        <View style={styles.categories}>
+          {visibleBudgets.map((budget) => (
+            <BudgetCategoryCard
+              key={budget.category}
+              budget={budget}
+              total={total}
+              editingValue={editing?.category === budget.category ? editing.text : null}
+              error={editing?.category === budget.category ? editError : undefined}
+              onEdit={() => beginEdit(budget)}
+              onChange={(text) => {
+                setEditing({
+                  category: budget.category,
+                  text: text
+                    .replace(/[^0-9]/g, '')
+                    .replace(/^0+(?=\d)/, '')
+                    .slice(0, 15),
+                });
+                setEditError('');
+              }}
+              onCommit={() => commitEdit(budget.category)}
+              onCancel={() => {
+                setEditing(null);
+                setEditError('');
+              }}
+            />
+          ))}
+        </View>
+      </ScreenLayout>
       <ConfirmModal
         visible={showOverBudgetModal}
         title="예산이 AI 제안을 초과했어요"
-        description={`AI 제안보다 ${formatComma(exceededAmount)}원 더 많아요.\n이대로 확정하시겠어요?`}
+        description={`AI 제안보다 ${formatFullAmount(Math.max(0, pendingExcess))} 더 많아요.\n이대로 확정하시겠어요?`}
         cancelLabel="다시 조정할게요"
         confirmLabel="이대로 확정하기"
-        confirmVariant="primary"
         onCancel={() => setShowOverBudgetModal(false)}
         onConfirm={() => {
-          setShowOverBudgetModal(false);
-          finalize();
+          if (pendingBudget) finalize(pendingBudget);
         }}
       />
     </>
   );
 }
-
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-
-  // ── 스크롤 ──
-  scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 8, gap: 16 },
-
-  // ── 페이지 제목 ──
-  titleSection: { gap: 2 },
-  titleMain: {
-    fontSize: fontSize['2xl'],
-    fontFamily: fontFamily.bold,
-    color: colors.textPrimary,
-    lineHeight: 34,
+  categories: { gap: spacing.lg },
+  insightCard: { padding: spacing.lg, gap: spacing.sm },
+  heading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
   },
-  titleSub: {
-    fontSize: fontSize['2xl'],
-    fontFamily: fontFamily.bold,
-    color: colors.primary,
-    lineHeight: 34,
-  },
-
-  // ── AI 인사이트 카드 ──
-  insightCard: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-  },
-  insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  insightLabel: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.semibold,
-    color: colors.primary,
-  },
-  insightText: { fontSize: fontSize.sm, color: colors.textSecondary, lineHeight: 20 },
-
-  // ── 예산 비교 카드 ──
-  summaryCard: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 16,
-    padding: 20,
-    gap: 14,
-  },
+  title: { flex: 1, fontSize: 22, lineHeight: 34 },
+  image: { width: 80, height: 80 },
+  emphasis: { color: colors.primaryDark },
+  insightHeading: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  insight: { color: colors.textSecondary, fontSize: 14, lineHeight: 22 },
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: spacing.md,
   },
-  summaryRowLabel: {
-    fontSize: fontSize.sm,
-    fontFamily: fontFamily.medium,
-    color: colors.textTertiary,
-  },
-  summaryAiAmount: {
-    fontSize: fontSize.lg,
-    fontFamily: fontFamily.semibold,
-    color: colors.textSecondary,
-  },
-  summaryDivider: { height: 1, backgroundColor: colors.border },
-  summaryUserRight: { alignItems: 'flex-end', gap: 2 },
-  summaryUserAmount: {
-    fontSize: fontSize.xl,
-    fontFamily: fontFamily.bold,
-    color: colors.primary,
-  },
-  summaryUserAmountOver: { color: colors.expense },
-  summaryExcessLabel: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.medium,
-    color: colors.expense,
-  },
-  summarySavingLabel: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.medium,
-    color: colors.income,
-  },
-
-  // ── 섹션 헤더 ──
-  sectionHeader: {
+  summaryAmount: { flexShrink: 1, textAlign: 'right' },
+  current: { flexShrink: 1, alignItems: 'flex-end', gap: spacing.xs },
+  divider: { height: 1, backgroundColor: colors.border },
+  sectionHeading: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  sectionTitle: {
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    color: colors.textPrimary,
-  },
-  resetAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  resetAllText: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.medium,
-    color: colors.textTertiary,
-  },
-
-  // ── 카테고리 카드 ──
-  categoryCard: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  categoryLabel: {
-    flex: 1,
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    color: colors.textPrimary,
-  },
-
-  // 금액 터치 영역 (뷰 모드)
-  amountTouchable: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  amountText: {
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    color: colors.textPrimary,
-  },
-  amountTextOver: { color: colors.expense },
-
-  // 금액 TextInput (편집 모드)
-  amountInput: {
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    color: colors.primary,
-    textAlign: 'right',
-    minWidth: 100,
-    padding: 0,
-    borderBottomWidth: 1.5,
-    borderBottomColor: colors.primary,
-  },
-
-  // ── 카테고리 하단 메타 ──
-  categoryMeta: {
-    flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  categoryMetaLeft: { flexDirection: 'row', alignItems: 'center' },
-  aiHintText: { fontSize: fontSize.xs, color: colors.textDisabled },
-  categoryOverText: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.medium,
-    color: colors.expense,
-  },
-  pctText: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.semibold,
-    color: colors.textTertiary,
-  },
-  pctTextOver: { color: colors.expense },
-
-  // ── 하단 버튼바 ──
-  bottomBar: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
+  muted: { color: colors.textTertiary },
+  exceeded: { color: colors.error },
+  reset: { paddingHorizontal: 0 },
 });

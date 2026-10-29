@@ -8,6 +8,7 @@
 
 import { mockAIBudget } from './budget.mock';
 import { useRecordStore } from '@/store/useRecordStore';
+import { useBudgetStore } from '@/store/useBudgetStore';
 import { HomeSummary } from '@/types/home';
 
 /**
@@ -18,7 +19,11 @@ import { HomeSummary } from '@/types/home';
  * return res.data;
  */
 export async function fetchHomeSummary(year: number, month: number): Promise<HomeSummary> {
-  const budgetTotal = mockAIBudget.aiTotalAmount;
+  const confirmed = useBudgetStore.getState().confirmedBudget;
+  const budgetTotal =
+    confirmed?.year === year && confirmed.month === month
+      ? confirmed.recommendation.categories.reduce((sum, item) => sum + item.userAmount, 0)
+      : mockAIBudget.aiTotalAmount;
 
   const totalExpense = useRecordStore
     .getState()

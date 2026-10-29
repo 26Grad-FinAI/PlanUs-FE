@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { fetchHomeSummary } from '@/services/mock/home.mock';
 import { useRecordStore } from '@/store/useRecordStore';
+import { useBudgetStore } from '@/store/useBudgetStore';
 import { HomeSummary } from '@/types/home';
 import { SpendingRecord } from '@/types/record';
 import { buildMonthWeeks, startOfDay, toISODate } from '@/utils/formatDate';
@@ -29,6 +30,7 @@ export function useHomeCalendar() {
 
   // 소비 기록 store 구독 — 기록이 추가되면 records가 바뀌어 아래 값들이 자동으로 다시 계산된다
   const records = useRecordStore((s) => s.records);
+  const confirmedBudget = useBudgetStore((state) => state.confirmedBudget);
 
   // 날짜 문자열 → 해당 날짜의 기록 목록 매핑 (캘린더 셀에서 빠르게 조회하기 위함)
   const recordsByDate = useMemo(() => {
@@ -58,7 +60,7 @@ export function useHomeCalendar() {
     return () => {
       cancelled = true;
     };
-  }, [monthCursor, records]);
+  }, [monthCursor, records, confirmedBudget]);
 
   // 날짜별로 그룹화 후 최근 날짜가 먼저 오도록 정렬
   const dateGroups: DateGroup[] = useMemo(() => {

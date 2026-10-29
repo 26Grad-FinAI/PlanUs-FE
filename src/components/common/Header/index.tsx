@@ -42,9 +42,13 @@ export function Header({ title, onBack, onClose, backLabel, right, divider = tru
           )
         ) : null}
       </View>
-      <Text variant="section" accessibilityRole="header" style={styles.title}>
-        {title}
-      </Text>
+      {title ? (
+        <Text variant="section" accessibilityRole="header" style={styles.title}>
+          {title}
+        </Text>
+      ) : (
+        <View style={styles.title} />
+      )}
       <View style={[styles.side, backLabel && styles.wide]}>{right}</View>
     </View>
   );

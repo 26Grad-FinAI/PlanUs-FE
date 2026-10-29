@@ -22,6 +22,7 @@ export interface InputProps extends TextInputProps, FieldProps {
   ref?: Ref<TextInputInstance>;
   variant?: 'box' | 'underline' | 'floating';
   suffix?: string;
+  prefix?: string;
   suffixStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   rightIcon?: keyof typeof Ionicons.glyphMap;
@@ -35,6 +36,7 @@ export function Input({
   error,
   variant = 'box',
   suffix,
+  prefix,
   suffixStyle,
   containerStyle,
   rightIcon,
@@ -71,6 +73,7 @@ export function Input({
           containerStyle,
         ]}
       >
+        {prefix && <Text style={styles.prefix}>{prefix}</Text>}
         <TextInput
           {...props}
           placeholder={floating && !raised ? undefined : props.placeholder}
@@ -125,6 +128,7 @@ export function Input({
   );
 }
 const styles = StyleSheet.create({
+  prefix: { color: colors.textSecondary, marginRight: spacing.sm },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
