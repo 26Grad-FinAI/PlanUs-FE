@@ -4,6 +4,8 @@ export const fontFamily = {
   medium: 'Pretendard-Medium',
   semibold: 'Pretendard-SemiBold',
   bold: 'Pretendard-Bold',
+  extrabold: 'Pretendard-ExtraBold',
+  black: 'Pretendard-Black',
 } as const;
 
 export const fontSize = {
@@ -27,4 +29,16 @@ export const typography = {
   section: { fontSize: 18, lineHeight: 26, fontFamily: fontFamily.bold },
   title: { fontSize: 24, lineHeight: 34, fontFamily: fontFamily.bold },
   amount: { fontSize: 32, lineHeight: 42, fontFamily: fontFamily.bold },
+  splashHeadline: {
+    fontSize: 36,
+    lineHeight: 50,
+    letterSpacing: -0.75,
+    fontFamily: fontFamily.extrabold,
+  },
+  splashWordmark: {
+    fontSize: 44,
+    lineHeight: 54,
+    letterSpacing: -1.5,
+    fontFamily: fontFamily.black,
+  },
 } as const;

@@ -11,6 +11,8 @@ const fonts = {
   'Pretendard-Medium': require('../../../assets/fonts/Pretendard-Medium.ttf'),
   'Pretendard-SemiBold': require('../../../assets/fonts/Pretendard-SemiBold.ttf'),
   'Pretendard-Bold': require('../../../assets/fonts/Pretendard-Bold.ttf'),
+  'Pretendard-ExtraBold': require('../../../assets/fonts/Pretendard-ExtraBold.otf'),
+  'Pretendard-Black': require('../../../assets/fonts/Pretendard-Black.otf'),
 };
 
 export function FontProvider({ children }: PropsWithChildren) {
