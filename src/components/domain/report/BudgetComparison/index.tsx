@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { ProgressBar } from '@/components/common/ProgressBar';
 import { Text } from '@/components/common/Text';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -23,13 +24,6 @@ interface BudgetComparisonProps {
   totalExpense: number;
 }
 
-// 예산 대비 실제 지출이 차지한 비율(0~100%) — 초과 시 100%로 막힘
-// 예산이 0인 카테고리에 지출이 있으면 곧바로 초과이므로 100%로 채운다
-function fillWidth(budget: number, actual: number): `${number}%` {
-  if (budget <= 0) return actual > 0 ? '100%' : '0%';
-  return `${Math.min((actual / budget) * 100, 100)}%`;
-}
-
 // 예산(트랙) 대비 지출(채움) 막대 하나 + 금액 표기
 function BudgetBar({ budget, actual }: { budget: number; actual: number }) {
   const isOver = actual > budget;
@@ -42,15 +36,12 @@ function BudgetBar({ budget, actual }: { budget: number; actual: number }) {
         </Text>
         <Text style={styles.budgetAmount}>예산 {formatFullAmount(budget)}</Text>
       </View>
-      <View style={styles.barTrack}>
-        <View
-          style={[
-            styles.barFill,
-            { width: fillWidth(budget, actual) },
-            isOver ? styles.barFillOver : styles.barFillUnder,
-          ]}
-        />
-      </View>
+      <ProgressBar
+        label="예산 대비 소비"
+        value={actual}
+        max={budget}
+        tone={isOver ? 'danger' : 'primary'}
+      />
     </>
   );
 }

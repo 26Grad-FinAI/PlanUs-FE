@@ -25,6 +25,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 
+import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { ChipGroup } from '@/components/common/Chip';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { TextArea } from '@/components/common/TextArea';
@@ -241,36 +243,14 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
             keyboardShouldPersistTaps="handled"
           >
             {/* ── 유형 토글: 슬라이딩 pill ── */}
-            <View style={styles.typeToggleContainer}>
-              <TouchableOpacity
-                style={[styles.typeButton, recordType === 'expense' && styles.typeButtonActive]}
-                onPress={() => handleTypeChange('expense')}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.typeButtonLabel,
-                    recordType === 'expense' && styles.typeButtonLabelActive,
-                  ]}
-                >
-                  지출
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.typeButton, recordType === 'income' && styles.typeButtonActive]}
-                onPress={() => handleTypeChange('income')}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.typeButtonLabel,
-                    recordType === 'income' && styles.typeButtonLabelActive,
-                  ]}
-                >
-                  수입
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <SegmentedControl
+              options={[
+                { value: 'expense', label: '지출' },
+                { value: 'income', label: '수입' },
+              ]}
+              value={recordType}
+              onChange={handleTypeChange}
+            />
 
             {/* ── 금액 ── */}
             <Input
@@ -340,40 +320,21 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
               )}
             </View>
 
-            {/* ── 카테고리 ── */}
-            <View>
-              <Text style={styles.sectionTitle}>
-                카테고리 <Text style={styles.required}>*</Text>
-              </Text>
-              <View style={styles.chipGrid}>
-                {currentCategories.map((cat) => {
-                  const isSelected = selectedCategory === cat.id;
-                  return (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={[styles.chip, isSelected && styles.chipSelected]}
-                      onPress={() => {
-                        setSelectedCategory(cat.id);
-                        setCategoryError('');
-                      }}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: isSelected }}
-                    >
-                      <Ionicons
-                        name={cat.icon}
-                        size={13}
-                        color={isSelected ? colors.background : colors.textSecondary}
-                      />
-                      <Text style={[styles.chipLabel, isSelected && styles.chipLabelSelected]}>
-                        {cat.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-              {!!categoryError && <Text style={styles.errorText}>{categoryError}</Text>}
-            </View>
+            <ChipGroup
+              label="카테고리"
+              required
+              options={currentCategories.map((category) => ({
+                value: category.id,
+                label: category.label,
+                icon: category.icon,
+              }))}
+              value={selectedCategory}
+              onChange={(category) => {
+                setSelectedCategory(category);
+                setCategoryError('');
+              }}
+              error={categoryError}
+            />
 
             {/* ── 메모 ── */}
             <TextArea

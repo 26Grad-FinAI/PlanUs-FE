@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { ProgressBar } from '@/components/common/ProgressBar';
 import { Text } from '@/components/common/Text';
 
 import { colors } from '@/constants/colors';
@@ -29,9 +30,7 @@ export function SummaryCard({ summary }: SummaryCardProps) {
         </View>
         <Text style={styles.summaryBudgetText}>/ {formatFullAmount(summary.budgetTotal)}</Text>
       </View>
-      <View style={styles.summaryProgressTrack}>
-        <View style={[styles.summaryProgressFill, { width: `${summary.usageRate}%` }]} />
-      </View>
+      <ProgressBar label="예산 소진율" value={summary.usageRate} tone="inverse" />
 
       {/* 소진율 / 남은 예산 — 톤을 낮춘 내부 패널로 구분 */}
       <View style={styles.summaryInnerPanel}>
