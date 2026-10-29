@@ -83,17 +83,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)',
     marginBottom: 4,
   },
-  summaryProgressTrack: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    overflow: 'hidden',
-  },
-  summaryProgressFill: {
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: colors.background,
-  },
 
   // ── 소진율/남은예산 내부 패널 ──
   summaryInnerPanel: {

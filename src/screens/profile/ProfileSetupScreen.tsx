@@ -19,19 +19,12 @@
  */
 
 import React, { useState } from 'react';
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  KeyboardAvoidingView,
-} from 'react-native';
+import { View, ScrollView, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { Header } from '@/components/common/Header';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { ToggleGroup } from '@/components/common/ToggleGroup';
@@ -274,18 +267,7 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
     >
       <View style={[styles.container, { paddingTop: topInset }]}>
         {/* ── 헤더 ── */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="뒤로 가기"
-          >
-            <Ionicons name="arrow-back" size={20} color={colors.textSecondary} />
-            <Text style={styles.backText}>뒤로</Text>
-          </TouchableOpacity>
-        </View>
+        <Header onBack={() => navigation.goBack()} backLabel="뒤로" divider={false} />
 
         <ScrollView
           style={styles.scrollView}
@@ -425,23 +407,6 @@ export function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { flex: 1, backgroundColor: colors.background },
-
-  // ── 헤더 ──
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    height: 52,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  backText: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-  },
 
   // ── 스크롤 ──
   scrollView: { flex: 1 },

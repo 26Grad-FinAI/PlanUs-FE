@@ -126,18 +126,4 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textTertiary,
   },
-
-  // ── 예산/지출 막대 ──
-  barTrack: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.border,
-    overflow: 'hidden',
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  barFillUnder: { backgroundColor: colors.primary },
-  barFillOver: { backgroundColor: colors.expense },
 });

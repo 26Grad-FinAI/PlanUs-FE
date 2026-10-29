@@ -17,6 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { ProgressBar } from '@/components/common/ProgressBar';
+import { Header } from '@/components/common/Header';
 import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { colors } from '@/constants/colors';
@@ -159,17 +161,12 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
         </View>
 
         {/* 비중 막대 */}
-        <View style={styles.progressTrack}>
-          <View
-            style={[
-              styles.progressFill,
-              {
-                width: `${barPct}%`,
-                backgroundColor: isCategoryOver ? colors.expense : colors.primary,
-              },
-            ]}
-          />
-        </View>
+        <ProgressBar
+          label={`${budget.label} 예산 비중`}
+          value={budget.userAmount}
+          max={userTotal}
+          tone={isCategoryOver ? 'danger' : 'primary'}
+        />
 
         {/* 하단 메타: AI 제안 / 초과 | 비중 % */}
         <View style={styles.categoryMeta}>
@@ -191,21 +188,8 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
     <>
       <View style={[styles.screen, { paddingTop: topInset }]}>
         {/* ── 헤더 ── */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="뒤로"
-          >
-            <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>AI 예산 추천</Text>
-          <View style={styles.backButton} />
-        </View>
+        <Header title="AI 예산 추천" onBack={() => navigation.goBack()} />
 
-        {/* ── 스크롤 영역 ── */}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomInset + 100 }]}
@@ -305,23 +289,7 @@ export function BudgetRecommendationScreen({ navigation }: BudgetRecommendationS
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
-
-  // ── 헤더 ──
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    height: 52,
-  },
-  backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
-  },
 
   // ── 스크롤 ──
   scroll: { flex: 1 },
@@ -466,15 +434,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: colors.primary,
   },
-
-  // ── 비중 막대 ──
-  progressTrack: {
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: { height: '100%', borderRadius: 2 },
 
   // ── 카테고리 하단 메타 ──
   categoryMeta: {

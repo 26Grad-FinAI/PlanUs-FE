@@ -1,5 +1,5 @@
 /** 업무 상태와 분리된 개발용 컴포넌트 전시. 실제 API는 호출하지 않는다. */
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/common/Text';
@@ -8,8 +8,12 @@ import { spacing, metrics, radius } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 import { InputExamples } from '@/screens/dev/InputExamples';
 import { SelectionExamples } from '@/screens/dev/SelectionExamples';
+import { LayoutExamples } from '@/screens/dev/LayoutExamples';
+import { Button } from '@/components/common/Button';
 
 export function DesignSystemScreen() {
+  const [showLayout, setShowLayout] = useState(false);
+  if (showLayout) return <LayoutExamples onClose={() => setShowLayout(false)} />;
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -49,6 +53,9 @@ export function DesignSystemScreen() {
         </View>
         <View style={styles.card}>
           <SelectionExamples />
+        </View>
+        <View style={styles.card}>
+          <Button label="전체 화면 레이아웃 확인" onPress={() => setShowLayout(true)} />
         </View>
       </ScrollView>
     </SafeAreaView>

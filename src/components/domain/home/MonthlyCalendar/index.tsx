@@ -7,8 +7,8 @@
 
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { MonthNavigator } from '@/components/common/MonthNavigator';
 import { Text } from '@/components/common/Text';
-import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '@/constants/colors';
 import { fontSize, fontWeight } from '@/constants/typography';
@@ -104,29 +104,12 @@ export function MonthlyCalendar({
 
   return (
     <View style={styles.calendarCard}>
-      <View style={styles.monthNavRow}>
-        <TouchableOpacity
-          onPress={onPrevMonth}
-          style={styles.monthNavButton}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="이전 달"
-        >
-          <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
-        </TouchableOpacity>
-        <Text style={styles.monthNavTitle}>
-          {monthCursor.getFullYear()}년 {monthCursor.getMonth() + 1}월
-        </Text>
-        <TouchableOpacity
-          onPress={onNextMonth}
-          style={styles.monthNavButton}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="다음 달"
-        >
-          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
+      <MonthNavigator
+        year={monthCursor.getFullYear()}
+        month={monthCursor.getMonth() + 1}
+        onPrevious={onPrevMonth}
+        onNext={onNextMonth}
+      />
 
       <View style={styles.weekdayRow}>
         {WEEKDAY_LABELS.map((label, index) => (
@@ -152,24 +135,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
     gap: 4,
-  },
-  monthNavRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-    marginBottom: 8,
-  },
-  monthNavButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  monthNavTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
   },
 
   weekdayRow: { flexDirection: 'row' },

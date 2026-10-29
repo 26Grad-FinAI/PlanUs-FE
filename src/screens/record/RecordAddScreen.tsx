@@ -27,6 +27,7 @@ import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { ChipGroup } from '@/components/common/Chip';
+import { Header } from '@/components/common/Header';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { TextArea } from '@/components/common/TextArea';
@@ -220,21 +221,7 @@ export function RecordAddScreen({ navigation }: RecordAddScreenProps) {
       >
         <View style={[styles.container, { paddingTop: topInset }]}>
           {/* ── 헤더 ── */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleClose}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="닫기"
-            >
-              <Ionicons name="close" size={24} color={colors.textSecondary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>소비 등록</Text>
-            <View style={styles.closeButton} />
-          </View>
-
-          <View style={styles.divider} />
+          <Header title="소비 등록" onClose={handleClose} />
 
           <ScrollView
             style={styles.scrollView}
@@ -424,57 +411,9 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { flex: 1, backgroundColor: colors.background },
 
-  // ── 헤더 ──
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    height: 52,
-  },
-  closeButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
-  },
-  divider: { height: 1, backgroundColor: colors.border },
-
   // ── 스크롤 ──
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: 20, paddingTop: 24, gap: 24 },
-
-  // ── 유형 토글: 슬라이딩 pill ──
-  typeToggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 12,
-    padding: 4,
-  },
-  typeButton: {
-    flex: 1,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9,
-  },
-  typeButtonActive: {
-    backgroundColor: colors.background,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  typeButtonLabel: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-    color: colors.textDisabled,
-  },
-  typeButtonLabelActive: {
-    color: colors.textPrimary,
-    fontWeight: fontWeight.semibold,
-  },
 
   amountContainer: {
     height: 72,
@@ -494,7 +433,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  labelWithRequired: { flexDirection: 'row', alignItems: 'center' },
   fieldLabel: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
@@ -555,46 +493,8 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
   },
 
-  // ── 카테고리 섹션 라벨 ──
-  sectionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-    marginBottom: 12,
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.backgroundAlt,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  chipSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-  },
-  chipLabelSelected: {
-    color: colors.background,
-    fontWeight: fontWeight.semibold,
-  },
-
   // ── 공통 ──
   required: { color: colors.error },
-  errorText: { marginTop: 6, fontSize: fontSize.xs, color: colors.error },
   saveButton: { borderRadius: 12, marginTop: 4 },
 
   // ── 캘린더 모달 ──
