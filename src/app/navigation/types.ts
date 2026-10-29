@@ -7,7 +7,7 @@
 
 // 인증 스택 (로그인, 회원가입)
 export type AuthStackParamList = {
-  Login: undefined;
+  Login: { email?: string } | undefined;
   Signup: undefined;
 };
 
