@@ -19,7 +19,7 @@ export function DesignSystemScreen() {
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text variant="title">planus 디자인 시스템</Text>
-        <Text variant="body">#19 · Pretendard · 컴포넌트 미리보기</Text>
+        <Text variant="body">Pretendard · 컴포넌트 미리보기</Text>
         <View style={styles.card}>
           <Text variant="section">타이포그래피</Text>
           {(Object.keys(typography) as (keyof typeof typography)[]).map((variant) => (

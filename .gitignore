@@ -43,3 +43,6 @@ yarn-error.*
 # claude
 CLAUDE.md
 .claude/agents/
+
+# local AI working notes
+/ai-context/
