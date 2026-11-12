@@ -16,6 +16,7 @@ import { Button } from '@/components/common/Button';
 import { FixedExpenseInput } from '@/components/domain/profile/FixedExpenseInput';
 import { ProfileDraft, ProfileErrors } from '@/types/profile';
 import { validateProfileStep, normalizeProfile } from '@/utils/profile';
+import { AuthApiCheck } from '@/screens/dev/AuthApiCheck';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
 import { metrics, spacing } from '@/constants/layout';
@@ -230,6 +231,7 @@ export function ProfileSetupScreen({ navigation }: Props) {
         </>
       )}
       <Button label={step === 1 ? '다음' : 'AI 예산 산출 시작'} onPress={submit} />
+      <AuthApiCheck />
     </ScreenLayout>
   );
 }

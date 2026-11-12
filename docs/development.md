@@ -30,6 +30,19 @@ npm run preview -- --go --lan --port 8083
 
 미리보기는 mock UI이며, 실제 백엔드를 호출하지 않는다. 폰트는 앱에 포함된 Pretendard 파일을 사용한다.
 
+## Expo Go에서 개발 서버 인증 확인
+
+PC와 휴대폰을 같은 Wi-Fi에 연결하고 프론트 폴더에서 실행한다.
+
+```powershell
+$env:EXPO_PUBLIC_AUTH_API_CHECK = '1'
+npm.cmd start -- --go --lan
+```
+
+QR 코드를 Expo Go로 열고 개발용 이메일로 회원가입한다. 가입 후 프로필 화면의 **토큰 재발급 확인 (개발용)** 버튼을 누르면 토큰 재발급과 인증 요청을 바로 확인할 수 있다. 프로필을 완료한 계정에서는 마이페이지에 같은 버튼이 표시된다. 프로필 입력 첫 화면에서 뒤로 가거나 앱을 다시 열어 같은 계정으로 로그인해 본다. 토큰은 앱을 실행하는 동안 메모리에 보관한다.
+
+프론트 루트의 `.env.local`에 `EXPO_PUBLIC_API_BASE_URL=https://planus-dev.p-e.kr/api`를 추가한다. `.env.local`은 Git에서 제외된다. 현재 개발 서버 회원가입 요청에는 별도 체크박스 없이 `agreeToTerms: true`를 전달한다. 확인 버튼이 필요 없으면 `EXPO_PUBLIC_AUTH_API_CHECK` 설정 없이 실행한다.
+
 ## 검사
 
 ```sh

@@ -14,6 +14,7 @@ const child = spawn(
       ...process.env,
       EXPO_NO_DOTENV: '1',
       EXPO_PUBLIC_DESIGN_SYSTEM_PREVIEW: auth ? '0' : '1',
+      EXPO_PUBLIC_AUTH_PREVIEW: auth ? '1' : '0',
     },
   },
 );

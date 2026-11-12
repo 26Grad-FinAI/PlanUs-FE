@@ -28,7 +28,8 @@ import { RootStackParamList } from './types';
 const Root = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { isAuthenticated, hasCompletedOnboarding } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasCompletedOnboarding = useAuthStore((state) => state.hasCompletedOnboarding);
 
   return (
     <Root.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
