@@ -230,6 +230,7 @@ export function SignupScreen({ navigation }: SignupScreenProps) {
         description="로그인 화면으로 이동할까요?"
         cancelLabel="다른 이메일로 가입"
         confirmLabel="로그인하기"
+        buttonLabelSize={fontSize.base}
         onCancel={() => setDuplicateVisible(false)}
         onConfirm={() => {
           setDuplicateVisible(false);

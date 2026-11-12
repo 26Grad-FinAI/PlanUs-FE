@@ -13,6 +13,7 @@ interface ConfirmModalProps {
   description?: string;
   cancelLabel?: string;
   confirmLabel: string;
+  buttonLabelSize?: number;
   confirmVariant?: 'primary' | 'destructive';
   loading?: boolean;
   onCancel: () => void;
@@ -33,12 +34,14 @@ export function ConfirmModalContent({
   description,
   cancelLabel = '취소',
   confirmLabel,
+  buttonLabelSize = fontSize.lg,
   confirmVariant = 'primary',
   loading,
   onCancel,
   onConfirm,
 }: Omit<ConfirmModalProps, 'visible'>) {
   const color = confirmVariant === 'destructive' ? colors.error : colors.primaryDark;
+  const buttonLabelStyle = { fontSize: buttonLabelSize };
   return (
     <>
       <View style={styles.copy}>
@@ -54,7 +57,7 @@ export function ConfirmModalContent({
           onPress={onCancel}
           style={[styles.button, styles.cancel]}
         >
-          <Text style={styles.cancelText}>{cancelLabel}</Text>
+          <Text style={[styles.cancelText, buttonLabelStyle]}>{cancelLabel}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           accessibilityRole="button"
@@ -69,7 +72,7 @@ export function ConfirmModalContent({
           {loading ? (
             <ActivityIndicator color={color} />
           ) : (
-            <Text style={[styles.confirmText, { color }]}>{confirmLabel}</Text>
+            <Text style={[styles.confirmText, buttonLabelStyle, { color }]}>{confirmLabel}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -90,16 +93,17 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border },
   button: {
     backgroundColor: colors.background,
-    flex: 1,
+    width: '50%',
     minHeight: metrics.header,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.md,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.md,
   },
   cancel: {
     borderRightWidth: 1,
     borderRightColor: colors.border,
   },
-  cancelText: { fontSize: fontSize.lg, color: colors.textTertiary, textAlign: 'center' },
-  confirmText: { fontSize: fontSize.lg, fontFamily: fontFamily.semibold, textAlign: 'center' },
+  cancelText: { color: colors.textTertiary, textAlign: 'center' },
+  confirmText: { fontFamily: fontFamily.semibold, textAlign: 'center' },
 });
