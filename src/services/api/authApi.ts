@@ -1,53 +1,48 @@
-/**
- * 인증 API 서비스
- *
- * 현재는 mock 데이터를 반환하며, API 연결 시 주석 처리된 코드를 활성화한다.
- */
-
-import { LoginParams, SignupParams, AuthResponse, AuthError } from '@/types/auth';
+import { ApiError, request } from '@/services/api/apiClient';
 import { mockAuthResponse, MOCK_CREDENTIALS } from '@/services/mock/auth.mock';
+import { AuthError, type AuthResponse, type LoginParams, type SignupParams } from '@/types/auth';
 
-/**
- * 로그인 요청
- */
+const mockPreview = __DEV__ && process.env.EXPO_PUBLIC_AUTH_PREVIEW === '1';
+
 export async function login(params: LoginParams): Promise<AuthResponse> {
-  // TODO: API 연결 시 아래 주석 해제
-  // const res = await apiClient.post<AuthResponse>('/auth/login', params);
-  // return res.data;
-
-  await mockRequestDelay();
-  const isValidEmail = params.email.trim().toLowerCase() === MOCK_CREDENTIALS.email;
-  const isValidPassword = params.password === MOCK_CREDENTIALS.password;
-
-  if (!isValidEmail || !isValidPassword) {
-    throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+  if (mockPreview) {
+    await mockRequestDelay();
+    const emailMatches = params.email.trim().toLowerCase() === MOCK_CREDENTIALS.email;
+    if (!emailMatches || params.password !== MOCK_CREDENTIALS.password) {
+      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+    }
+    return mockAuthResponse;
   }
 
-  return mockAuthResponse;
+  return request<AuthResponse>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
 }
 
-/**
- * 회원가입 요청
- */
 export async function signup(params: SignupParams): Promise<AuthResponse> {
-  // TODO: API 연결 시 아래 주석 해제
-  // const res = await apiClient.post<AuthResponse>('/auth/signup', params);
-  // return res.data;
+  try {
+    if (mockPreview) {
+      await mockRequestDelay();
+      if (params.email.toLowerCase() === MOCK_CREDENTIALS.email) {
+        throw new AuthError('이미 가입된 계정이에요.');
+      }
+      return { ...mockAuthResponse, email: params.email };
+    }
 
-  await mockRequestDelay();
-  if (params.email.trim().toLowerCase() === MOCK_CREDENTIALS.email) {
-    throw new AuthError('EMAIL_ALREADY_REGISTERED', '이미 가입된 계정이에요.');
+    return await request<AuthResponse>('/auth/signup', {
+      method: 'POST',
+      // TODO: 약관 동의 화면 구현 후 사용자가 선택한 동의 값을 연동한다.
+      body: JSON.stringify({ ...params, agreeToTerms: true }),
+    });
+  } catch (error) {
+    if (error instanceof ApiError && error.code === 'AUTH_409_001') {
+      throw new AuthError('이미 가입된 계정이에요.');
+    }
+    throw error;
   }
-  return {
-    ...mockAuthResponse,
-    email: params.email.trim(),
-    nickname: params.nickname.trim(),
-    // 회원가입 직후이므로 프로필 미완료 상태
-    profileCompleted: false,
-  };
 }
 
-/** 요청 중 입력 잠금과 로딩 상태를 UI에서 확인하기 위한 Mock 지연. */
 function mockRequestDelay(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 300));
 }

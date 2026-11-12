@@ -9,6 +9,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AuthApiCheck } from '@/screens/dev/AuthApiCheck';
 
 import { colors } from '@/constants/colors';
 import { fontSize, fontFamily } from '@/constants/typography';
@@ -21,6 +22,7 @@ export function SettingsScreen() {
         <Text style={styles.emoji}>👤</Text>
         <Text style={styles.title}>마이페이지</Text>
         <Text style={styles.subtitle}>마이페이지 화면 (추후 구현 예정)</Text>
+        <AuthApiCheck />
       </View>
     </SafeAreaView>
   );

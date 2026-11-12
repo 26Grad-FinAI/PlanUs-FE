@@ -1,4 +1,4 @@
-/** 플로팅 입력과 테스트 계정의 Mock 로그인을 연결한다. */
+/** 이메일 로그인 폼. */
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, TextInputInstance, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -51,7 +51,7 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
     setRequestError('');
     try {
       const response = await login({ email: email.trim(), password });
-      if (active.current) signIn(response.profileCompleted);
+      if (active.current) signIn(response);
     } catch (error: unknown) {
       if (active.current)
         setRequestError(error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.');

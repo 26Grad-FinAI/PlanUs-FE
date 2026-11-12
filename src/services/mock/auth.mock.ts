@@ -1,8 +1,7 @@
 /**
  * 인증 관련 Mock 데이터
  *
- * API 연결 전까지 이 데이터를 사용해 로그인/회원가입 동작을 시뮬레이션
- * 실제 서버 연결 시 authApi.ts의 주석을 해제
+ * 인증 화면 미리보기에서만 사용한다.
  */
 
 import { AuthResponse } from '@/types/auth';
@@ -17,7 +16,6 @@ export const MOCK_CREDENTIALS = {
 export const mockAuthResponse: AuthResponse = {
   userId: 1,
   email: MOCK_CREDENTIALS.email,
-  nickname: '김스펜드',
   accessToken: 'mock-access-token-abc123',
   refreshToken: 'mock-refresh-token-xyz789',
   profileCompleted: false, // AI 예산 추천 화면 테스트용 — 온보딩 미완료로 설정

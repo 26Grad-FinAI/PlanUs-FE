@@ -1,4 +1,4 @@
-/** 가입 폼과 중복 계정 모달을 Mock 인증 흐름에 연결한다. */
+/** 가입 폼과 중복 계정 안내. */
 import React, { useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInputInstance, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -95,10 +95,10 @@ export function SignupScreen({ navigation }: SignupScreenProps) {
         email: values.email.trim(),
         nickname: values.nickname.trim(),
       });
-      if (active.current) signIn(response.profileCompleted);
+      if (active.current) signIn(response);
     } catch (error: unknown) {
       if (!active.current) return;
-      if (error instanceof AuthError && error.code === 'EMAIL_ALREADY_REGISTERED') {
+      if (error instanceof AuthError) {
         Keyboard.dismiss();
         setDuplicateEmail(values.email.trim());
         setDuplicateVisible(true);
