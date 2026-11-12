@@ -1,11 +1,6 @@
-/**
- * 소비 기록 Mock 데이터 및 Mock API 함수
- *
- * 실제 API 연결 전까지 이 파일의 데이터를 사용한다.
- * API 연결 시 주석 해제 후 mock 반환 코드를 제거한다.
- */
+/** 기록 스토어 초기화에 사용하는 샘플 소비 기록. */
 
-import { SpendingRecord, CreateSpendingRecordParams } from '@/types/record';
+import { SpendingRecord } from '@/types/record';
 
 // 오늘 기준 상대 일수(offsetDays)로 ISO 날짜 문자열 생성
 // 실행 날짜가 달라져도 최근 기록이 보이도록
@@ -133,37 +128,3 @@ export const mockSpendingRecords: SpendingRecord[] = [
     createdAt: `${dateWithOffset(-8)}T08:00:00.000Z`,
   },
 ];
-
-/**
- * 소비 기록 목록 조회 (Mock)
- *
- * TODO: API 연결 시 사용
- * const res = await api.get('/records');
- * return res.data;
- */
-export async function fetchSpendingRecords(): Promise<SpendingRecord[]> {
-  // 원본 배열 참조 대신 복사본 반환 → 외부에서의 직접 변이 방지
-  return mockSpendingRecords.map((record) => ({ ...record }));
-}
-
-/**
- * 소비 기록 생성 (Mock)
- * 실제로는 저장하지 않고 생성된 객체만 반환
- *
- * TODO: API 연결 시 사용
- * const res = await api.post('/records', params);
- * return res.data;
- */
-export async function createSpendingRecord(
-  params: CreateSpendingRecordParams,
-): Promise<SpendingRecord> {
-  const newRecord: SpendingRecord = {
-    id: String(Date.now()),
-    ...params,
-    createdAt: new Date().toISOString(),
-  };
-
-  // 목록 맨 앞에 삽입해 이후 fetchSpendingRecords 호출 시 결과에 반영
-  mockSpendingRecords.unshift(newRecord);
-  return { ...newRecord };
-}

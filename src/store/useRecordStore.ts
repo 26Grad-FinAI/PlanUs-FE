@@ -6,7 +6,7 @@
  * 기록이 추가되면 이를 구독하는 화면(홈 등)이 자동으로 다시 렌더된다.
  *
  * TODO: API 연결 시 초기 records는 fetchSpendingRecords로 로드하고,
- *       addRecord 내부는 createSpendingRecord(params) 호출 + 서버 응답 반영으로 교체
+ *       addRecord에서 서버에 기록을 등록하고 응답을 스토어에 반영
  */
 
 import { create } from 'zustand';
