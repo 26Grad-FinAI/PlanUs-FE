@@ -10,6 +10,7 @@ import { formatComma } from '@/utils/formatCurrency';
 import { toISODate } from '@/utils/formatDate';
 
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const CALENDAR_HORIZONTAL_PADDING = 14;
 interface MonthlyCalendarProps {
   monthCursor: Date;
   weeks: (Date | null)[][];
@@ -32,7 +33,8 @@ export function MonthlyCalendar({
 }: MonthlyCalendarProps) {
   const { width } = useWindowDimensions();
   // Web의 말줄임을 막기 위해 큰 금액도 날짜 셀 폭에 맞는 글자 크기로 표시한다.
-  const cellWidth = (Math.min(width, 640) - 64) / 7;
+  const cellWidth =
+    (Math.min(width, 640) - 24 - CALENDAR_HORIZONTAL_PADDING * 2) / WEEKDAY_LABELS.length;
   function amountSize(amount: number) {
     return Math.min(10, Math.max(6, cellWidth / ((formatComma(amount).length + 1) * 0.6)));
   }
@@ -104,11 +106,13 @@ export function MonthlyCalendar({
           </Text>
         ))}
       </View>
-      {weeks.map((week, index) => (
-        <View key={index} style={styles.week}>
-          {week.map((date, day) => renderDayCell(date, `${index}-${day}`))}
-        </View>
-      ))}
+      <View style={styles.weeks}>
+        {weeks.map((week, index) => (
+          <View key={index} style={styles.week}>
+            {week.map((date, day) => renderDayCell(date, `${index}-${day}`))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -117,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: CALENDAR_HORIZONTAL_PADDING,
     paddingTop: 10,
     paddingBottom: 28,
   },
@@ -130,6 +134,7 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontFamily: fontFamily.medium,
   },
+  weeks: { gap: 6 },
   week: { flexDirection: 'row' },
   dayCell: { flex: 1, minWidth: 0, minHeight: 50, alignItems: 'center', paddingTop: 4 },
   dayNumberWrap: {
