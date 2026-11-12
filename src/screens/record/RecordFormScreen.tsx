@@ -1,11 +1,12 @@
 /** 신규 등록과 기존 기록 수정을 같은 입력 UI로 구성한다. */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   ScrollView,
   ScrollViewInstance,
   StyleSheet,
   Platform,
+  Keyboard,
   KeyboardAvoidingView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -50,8 +51,21 @@ export function RecordFormScreen({ navigation, route }: Props) {
   const saving = useRef(false);
   const mounted = useRef(false);
   const scroll = useRef<ScrollViewInstance>(null);
+  const memoFocused = useRef(false);
+  const memoTop = useRef<number | null>(null);
+  const viewportHeight = useRef(0);
   const errors = submitted ? validateRecordForm(values, record) : {};
   const categories = recordFormCategories(values.type, record);
+
+  const revealMemo = useCallback(() => {
+    if (!memoFocused.current || memoTop.current == null || !navigation.isFocused()) return;
+    scroll.current?.scrollTo({ y: Math.max(0, memoTop.current - spacing.lg), animated: true });
+  }, [navigation]);
+
+  useEffect(() => {
+    const keyboard = Keyboard.addListener('keyboardDidShow', revealMemo);
+    return () => keyboard.remove();
+  }, [revealMemo]);
 
   useEffect(() => {
     mounted.current = true;
@@ -141,18 +155,24 @@ export function RecordFormScreen({ navigation, route }: Props) {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={
-        Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined
-      }
+      enabled={Platform.OS === 'android'}
+      behavior="height"
     >
       <View style={[styles.screen, { paddingTop: top }]}>
         <Header title={editing ? '소비 수정' : '소비 등록'} onClose={close} />
         <ScrollView
           ref={scroll}
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           contentContainerStyle={[styles.content, { paddingBottom: bottom + spacing.section }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          onLayout={(event) => {
+            const { height } = event.nativeEvent.layout;
+            const shrank = height < viewportHeight.current;
+            viewportHeight.current = height;
+            if (shrank) revealMemo();
+          }}
         >
           <View style={styles.typeControl}>
             <SegmentedControl
@@ -225,13 +245,26 @@ export function RecordFormScreen({ navigation, route }: Props) {
               </View>
             </>
           )}
-          <TextArea
-            label="메모"
-            placeholder="메모를 입력하세요"
-            value={values.memo}
-            onChangeText={(value) => change('memo', value)}
-            minHeight={120}
-          />
+          <View
+            onLayout={(event) => {
+              memoTop.current = event.nativeEvent.layout.y;
+            }}
+          >
+            <TextArea
+              label="메모"
+              placeholder="메모를 입력하세요"
+              value={values.memo}
+              onChangeText={(value) => change('memo', value)}
+              onFocus={() => {
+                memoFocused.current = true;
+                if (Keyboard.isVisible()) revealMemo();
+              }}
+              onBlur={() => {
+                memoFocused.current = false;
+              }}
+              minHeight={120}
+            />
+          </View>
           {!!saveError && <Text accessibilityRole="alert">{saveError}</Text>}
           <Button
             label={editing ? '수정하기' : '저장하기'}
