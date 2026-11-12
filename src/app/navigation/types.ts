@@ -18,7 +18,7 @@ export type AuthStackParamList = {
 // 온보딩 스택 (프로필 입력 → AI 예산 추천)
 export type OnboardingStackParamList = {
   ProfileSetup: undefined;
-  BudgetLoading: { profile: UserProfile; year: number; month: number };
+  BudgetLoading: { profile: UserProfile };
   BudgetRecommendation: {
     profile: UserProfile;
     year: number;

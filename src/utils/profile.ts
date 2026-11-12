@@ -4,6 +4,9 @@ import { ProfileDraft, ProfileErrors, UserProfile } from '@/types/profile';
 export function validateProfileStep(draft: ProfileDraft, step: 1 | 2): ProfileErrors {
   const errors: ProfileErrors = {};
   if (step === 1) {
+    const age = Number(draft.age);
+    if (!Number.isInteger(age) || age < 19 || age > 34)
+      errors.age = '만 19~34세 사이의 나이를 입력해주세요.';
     if (!draft.gender) errors.gender = '성별을 선택해주세요.';
     if (draft.isEmployed === null) errors.isEmployed = '취업 여부를 선택해주세요.';
     if (!draft.ownsHome) errors.ownsHome = '주택 소유 유무를 선택해주세요.';

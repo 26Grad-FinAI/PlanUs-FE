@@ -12,7 +12,10 @@ const Onboarding = createNativeStackNavigator<OnboardingStackParamList>();
 
 export function OnboardingNavigator() {
   return (
-    <Onboarding.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+    <Onboarding.Navigator
+      initialRouteName="ProfileSetup"
+      screenOptions={{ headerShown: false, animation: 'fade' }}
+    >
       <Onboarding.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <Onboarding.Screen name="BudgetLoading" component={BudgetLoadingScreen} />
       <Onboarding.Screen name="BudgetRecommendation" component={BudgetRecommendationScreen} />

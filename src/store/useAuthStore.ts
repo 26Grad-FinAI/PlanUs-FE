@@ -3,7 +3,7 @@ import { useBudgetStore } from '@/store/useBudgetStore';
 import type { AuthResponse, AuthTokens } from '@/types/auth';
 
 interface AuthState {
-  session: (AuthTokens & { id: symbol }) | null;
+  session: (AuthTokens & { id: symbol; userId: number }) | null;
   isAuthenticated: boolean;
   hasCompletedOnboarding: boolean;
   signIn: (response: AuthResponse) => void;
@@ -16,9 +16,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   hasCompletedOnboarding: false,
 
-  signIn: ({ accessToken, refreshToken, profileCompleted }) =>
+  signIn: ({ userId, accessToken, refreshToken, profileCompleted }) =>
     set({
-      session: { id: Symbol(), accessToken, refreshToken },
+      session: { id: Symbol(), userId, accessToken, refreshToken },
       isAuthenticated: true,
       hasCompletedOnboarding: profileCompleted,
     }),

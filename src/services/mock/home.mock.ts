@@ -6,8 +6,6 @@
  * 화면(HomeCalendarScreen)은 연/월만 넘기고 직접 합산하지 않는다.
  */
 
-import { mockAIBudget } from './budget.mock';
-import { mockUserProfile } from './profile.mock';
 import { useRecordStore } from '@/store/useRecordStore';
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { HomeSummary } from '@/types/home';
@@ -22,10 +20,10 @@ import { HomeSummary } from '@/types/home';
 export async function fetchHomeSummary(year: number, month: number): Promise<HomeSummary> {
   const confirmed = useBudgetStore.getState().confirmedBudget;
   const isConfirmedMonth = confirmed?.year === year && confirmed.month === month;
-  const profile = isConfirmedMonth ? confirmed.profile : mockUserProfile;
+  const profile = isConfirmedMonth ? confirmed.profile : undefined;
   const budgetTotal = isConfirmedMonth
     ? confirmed.recommendation.categories.reduce((sum, item) => sum + item.userAmount, 0)
-    : mockAIBudget.aiTotalAmount;
+    : 0;
 
   const monthRecords = useRecordStore.getState().records.filter((record) => {
     const [recordYear, recordMonth] = record.date.split('-').map(Number);
@@ -39,7 +37,8 @@ export async function fetchHomeSummary(year: number, month: number): Promise<Hom
   const additionalIncome = monthRecords
     .filter((record) => record.type === 'income')
     .reduce((sum, record) => sum + record.amount, 0);
-  const fixedExpense = profile.fixedExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const fixedExpense = profile?.fixedExpenses.reduce((sum, item) => sum + item.amount, 0) ?? 0;
+  const monthlyIncome = profile?.monthlyIncome ?? 0;
 
   const remaining = Math.max(budgetTotal - totalExpense, 0);
   const usageRate =
@@ -50,9 +49,9 @@ export async function fetchHomeSummary(year: number, month: number): Promise<Hom
     budgetTotal,
     remaining,
     usageRate,
-    monthlyIncome: profile.monthlyIncome,
+    monthlyIncome,
     additionalIncome,
-    totalIncome: profile.monthlyIncome + additionalIncome,
+    totalIncome: monthlyIncome + additionalIncome,
     fixedExpense,
     totalOutflow: fixedExpense + totalExpense,
   };
