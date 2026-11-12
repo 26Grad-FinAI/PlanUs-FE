@@ -1,5 +1,5 @@
-/** 신규 등록과 기존 기록 수정을 같은 입력 UI로 구성한다. 입력은 저장할 때만 스토어에 반영한다. */
-import React, { useRef, useState } from 'react';
+/** 신규 등록과 기존 기록 수정을 같은 입력 UI로 구성한다. */
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -24,12 +24,13 @@ import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontSize, fontFamily } from '@/constants/typography';
 import { metrics, spacing, radius } from '@/constants/layout';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import { RECORD_TYPES, SPENDING_NATURE_OPTIONS } from '@/constants/record';
-import { useRecordStore } from '@/store/useRecordStore';
+import { saveRecord } from '@/services/api/recordApi';
+import { useRecordRevision } from '@/store/useRecordRevision';
 import { CreateSpendingRecordParams, SpendingType } from '@/types/record';
 import {
   createRecordFormValues,
+  recordFormCategories,
   validateRecordForm,
   RecordFormValues,
 } from '@/features/record/recordForm';
@@ -39,44 +40,49 @@ type Props = NativeStackScreenProps<RootStackParamList, 'RecordAdd' | 'RecordEdi
 
 export function RecordFormScreen({ navigation, route }: Props) {
   const { top, bottom } = useSafeAreaInsets();
-  const recordId = route.params?.recordId;
   const editing = route.name === 'RecordEdit';
-  const record = useRecordStore((state) => state.records.find((item) => item.id === recordId));
-  const addRecord = useRecordStore((state) => state.addRecord);
-  const updateRecord = useRecordStore((state) => state.updateRecord);
+  const record = route.params?.record;
   // 날짜 선택 후 복귀해도 입력을 잃지 않도록 화면 생성 시 한 번만 초기화한다.
   const [values, setValues] = useState(() => createRecordFormValues(record));
   const [submitted, setSubmitted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const saving = useRef(false);
+  const mounted = useRef(false);
   const scroll = useRef<ScrollViewInstance>(null);
-  const errors = submitted ? validateRecordForm(values) : {};
-  const categories = values.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const errors = submitted ? validateRecordForm(values, record) : {};
+  const categories = recordFormCategories(values.type, record);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   function change<K extends keyof RecordFormValues>(key: K, value: RecordFormValues[K]) {
+    if (saving.current) return;
+    setSaveError('');
     setValues((previous) => ({ ...previous, [key]: value }));
   }
 
   function changeType(type: SpendingType) {
-    if (editing || type === values.type) return;
-    setValues((previous) => ({
-      ...previous,
-      type,
-      category: null,
-      spendingNature: null,
-      isRecurring: false,
-    }));
+    if (saving.current || editing || type === values.type) return;
+    setValues({ ...createRecordFormValues(), type });
     setSubmitted(false);
+    setSaveError('');
   }
 
   function close() {
+    if (saving.current) return;
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate('Main', { screen: 'HomeCalendar' });
   }
 
-  function save() {
+  async function save() {
     if (saving.current) return;
     setSubmitted(true);
-    if (Object.keys(validateRecordForm(values)).length || !values.category) {
+    if (Object.keys(validateRecordForm(values, record)).length || !values.category) {
       // 긴 지출 폼 아래에서 저장해도 위쪽의 필수 입력 오류를 확인할 수 있게 한다.
       scroll.current?.scrollTo({ y: 0, animated: true });
       return;
@@ -91,7 +97,6 @@ export function RecordFormScreen({ navigation, route }: Props) {
     let params: CreateSpendingRecordParams;
     if (values.type === 'income') params = { ...fields, type: 'income' };
     else {
-      if (!values.spendingNature) return;
       params = {
         ...fields,
         type: 'expense',
@@ -100,16 +105,24 @@ export function RecordFormScreen({ navigation, route }: Props) {
       };
     }
     saving.current = true;
-    if (editing && recordId) {
-      if (!updateRecord(recordId, params)) {
-        saving.current = false;
-        return;
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      const saved = await saveRecord(params, record);
+      useRecordRevision.getState().invalidate();
+      if (!mounted.current || !navigation.isFocused()) return;
+      if (editing) {
+        navigation.popTo('RecordDetail', { record: saved });
+      } else {
+        navigation.popTo('Main', { screen: 'HomeCalendar' });
       }
-      close();
-    } else {
-      addRecord(params);
-      // 다른 탭에서 열었더라도 등록 후 홈으로 돌아가 갱신된 집계를 확인한다.
-      navigation.popTo('Main', { screen: 'HomeCalendar' });
+    } catch (error) {
+      if (mounted.current) {
+        setSaveError(error instanceof Error ? error.message : '내역을 저장하지 못했어요.');
+      }
+    } finally {
+      saving.current = false;
+      if (mounted.current) setIsSaving(false);
     }
   }
 
@@ -169,6 +182,7 @@ export function RecordFormScreen({ navigation, route }: Props) {
             value={values.description}
             onChangeText={(value) => change('description', value)}
             error={errors.description}
+            maxLength={255}
             returnKeyType="done"
           />
           <DateField
@@ -193,7 +207,7 @@ export function RecordFormScreen({ navigation, route }: Props) {
               <View style={styles.natureSection}>
                 <ChipGroup
                   label="소비 성격"
-                  required
+                  required={record?.type !== 'expense' || record.spendingNature !== null}
                   compact
                   options={SPENDING_NATURE_OPTIONS}
                   value={values.spendingNature}
@@ -218,11 +232,13 @@ export function RecordFormScreen({ navigation, route }: Props) {
             onChangeText={(value) => change('memo', value)}
             minHeight={120}
           />
+          {!!saveError && <Text accessibilityRole="alert">{saveError}</Text>}
           <Button
             label={editing ? '수정하기' : '저장하기'}
             fullWidth
             size="lg"
             onPress={save}
+            loading={isSaving}
             style={styles.saveButton}
           />
         </ScrollView>

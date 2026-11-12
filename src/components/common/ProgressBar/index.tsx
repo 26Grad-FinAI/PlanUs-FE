@@ -9,8 +9,15 @@ interface ProgressBarProps {
   max?: number;
   label: string;
   tone?: 'primary' | 'danger' | 'inverse';
+  animated?: boolean;
 }
-export function ProgressBar({ value, max = 100, label, tone = 'primary' }: ProgressBarProps) {
+export function ProgressBar({
+  value,
+  max = 100,
+  label,
+  tone = 'primary',
+  animated = false,
+}: ProgressBarProps) {
   // 예산 0원/비정상 값에서도 너비가 NaN 또는 Infinity가 되지 않게 한다.
   const ratio =
     !Number.isFinite(value) || !Number.isFinite(max)
@@ -20,6 +27,24 @@ export function ProgressBar({ value, max = 100, label, tone = 'primary' }: Progr
         : value > 0
           ? 100
           : 0;
+  const [fill] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (!animated) {
+      fill.setValue(ratio);
+      return;
+    }
+
+    const animation = Animated.timing(fill, {
+      toValue: ratio,
+      duration: 320,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+      isInteraction: false,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [animated, fill, ratio]);
+
   return (
     <View
       accessibilityRole="progressbar"
@@ -30,11 +55,13 @@ export function ProgressBar({ value, max = 100, label, tone = 'primary' }: Progr
       accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio) }}
       style={[styles.track, tone === 'inverse' && styles.inverseTrack]}
     >
-      <View
+      <Animated.View
         style={[
           styles.fill,
           {
-            width: `${ratio}%`,
+            width: animated
+              ? fill.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] })
+              : `${ratio}%`,
             backgroundColor:
               tone === 'danger'
                 ? colors.error

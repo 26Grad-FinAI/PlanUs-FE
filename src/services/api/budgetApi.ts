@@ -1,6 +1,7 @@
 import { ApiError, authenticatedRequest } from '@/services/api/apiClient';
 import { EXPENSE_CATEGORIES } from '@/constants/categories';
-import type { AIBudgetRecommendation, BudgetCategory, CategoryBudget } from '@/types/budget';
+import { EXPENSE_CATEGORY_IDS } from '@/services/api/categoryIds';
+import type { AIBudgetRecommendation, CategoryBudget } from '@/types/budget';
 
 interface BudgetMonth {
   year: number;
@@ -23,19 +24,6 @@ interface PlanResult {
   aiResponse: { persona?: { display?: { summary?: string } } } | string | null;
 }
 
-const categoryIds: Record<BudgetCategory, number> = {
-  grocery: 1,
-  clothing: 2,
-  medical: 3,
-  transport: 4,
-  leisure: 5,
-  education: 6,
-  dining: 7,
-  travel: 8,
-  telecom: 9,
-  other: 10,
-};
-
 export const budgetWaitMs = 5 * 60 * 1000;
 
 export function currentBudgetMonth(): BudgetMonth {
@@ -51,7 +39,7 @@ function monthQuery({ year, month }: BudgetMonth) {
 function toRecommendation(summary: BudgetSummary, insight?: string): AIBudgetRecommendation {
   const amounts = new Map(summary.categories.map((item) => [item.categoryId, item]));
   const categories = EXPENSE_CATEGORIES.flatMap(({ id, label }) => {
-    const amount = amounts.get(categoryIds[id]);
+    const amount = amounts.get(EXPENSE_CATEGORY_IDS[id]);
     return amount
       ? [{ category: id, label, aiAmount: amount.aiAmount, userAmount: amount.userAmount }]
       : [];
@@ -158,7 +146,7 @@ export async function saveBudgetCategories(
   signal: AbortSignal,
 ): Promise<AIBudgetRecommendation> {
   const categories = budgets.map(({ category, userAmount }) => ({
-    categoryId: categoryIds[category],
+    categoryId: EXPENSE_CATEGORY_IDS[category],
     amount: userAmount,
   }));
   const summary = await authenticatedRequest<BudgetSummary>(

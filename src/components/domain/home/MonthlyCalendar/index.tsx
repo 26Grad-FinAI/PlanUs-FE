@@ -5,7 +5,7 @@ import { MonthNavigator } from '@/components/common/MonthNavigator';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontFamily } from '@/constants/typography';
-import { SpendingRecord } from '@/types/record';
+import type { DailyTotals } from '@/types/home';
 import { formatComma } from '@/utils/formatCurrency';
 import { toISODate } from '@/utils/formatDate';
 
@@ -14,7 +14,7 @@ interface MonthlyCalendarProps {
   monthCursor: Date;
   weeks: (Date | null)[][];
   todayISO: string;
-  recordsByDate: Record<string, SpendingRecord[]>;
+  totalsByDate: Record<string, DailyTotals>;
   selectedDate: string | null;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -24,7 +24,7 @@ export function MonthlyCalendar({
   monthCursor,
   weeks,
   todayISO,
-  recordsByDate,
+  totalsByDate,
   selectedDate,
   onPrevMonth,
   onNextMonth,
@@ -39,15 +39,9 @@ export function MonthlyCalendar({
   function renderDayCell(date: Date | null, key: string) {
     if (!date) return <View key={key} style={styles.dayCell} />;
     const dateKey = toISODate(date);
-    const dayRecords = recordsByDate[dateKey] ?? [];
+    const { totalIncome: income = 0, totalExpense: expense = 0 } = totalsByDate[dateKey] ?? {};
     const isToday = dateKey === todayISO;
     const isSelected = selectedDate === dateKey;
-    const income = dayRecords
-      .filter((r) => r.type === 'income')
-      .reduce((sum, r) => sum + r.amount, 0);
-    const expense = dayRecords
-      .filter((r) => r.type === 'expense')
-      .reduce((sum, r) => sum + r.amount, 0);
     return (
       <TouchableOpacity
         key={key}
@@ -153,5 +147,5 @@ const styles = StyleSheet.create({
   amounts: { alignSelf: 'stretch', alignItems: 'center', marginTop: 3 },
   dayAmount: { fontSize: 10, lineHeight: 13, fontFamily: fontFamily.medium, maxWidth: '100%' },
   income: { color: colors.income },
-  expense: { color: colors.expense },
+  expense: { color: '#707785' },
 });

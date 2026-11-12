@@ -39,7 +39,6 @@ export function ModalSurface({
   const insets = useSafeAreaInsets();
   const [translateY] = useState(() => new Animated.Value(-spacing.lg));
   useEffect(() => {
-    // 배경이나 상세 화면은 흐려지지 않고 메뉴 표면만 위에서 제자리로 내려온다.
     translateY.setValue(-spacing.lg);
     if (!visible || !slideFromTop) return;
     const motion = Animated.timing(translateY, {

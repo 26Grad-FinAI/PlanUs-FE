@@ -4,18 +4,31 @@
  * HomeSummary : 이번 달 사용 금액/예산/남은 예산/소진율
  */
 
+import type { RecordListItem } from '@/types/record';
+
 export interface HomeSummary {
   // 이번 달 사용 금액
   totalExpense: number;
   // 이번 달 예산 총액
   budgetTotal: number;
-  // 남은 예산 = budgetTotal - totalExpense (0 미만으로 내려가지 않음)
+  // 남은 예산 = budgetTotal - totalExpense
   remaining: number;
-  // 예산 소진율 (%), 0~100
+  // 예산 소진율 (%)
   usageRate: number;
   monthlyIncome: number;
   additionalIncome: number;
   totalIncome: number;
   fixedExpense: number;
   totalOutflow: number;
+}
+
+export interface DailyTotals {
+  date: string;
+  totalExpense: number;
+  totalIncome: number;
+}
+
+export interface DateGroup {
+  date: string;
+  items: RecordListItem[];
 }
