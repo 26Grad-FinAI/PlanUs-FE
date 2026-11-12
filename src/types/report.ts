@@ -1,13 +1,16 @@
 /** 소비 통계 화면에 필요한 월별 집계와 비교 데이터. */
 import { BudgetCategory } from '@/types/budget';
 
-export interface CategoryBreakdownItem {
-  // 집계한 나머지 조각은 실제 ‘기타’ 카테고리와 구분한다.
-  category: BudgetCategory | 'remaining';
+export interface CategorySpendingItem {
+  category: BudgetCategory;
   label: string;
   amount: number;
   ratio: number;
 }
+
+export type CategoryBreakdownItem = Omit<CategorySpendingItem, 'category'> & {
+  category: BudgetCategory | 'remaining';
+};
 
 export interface MonthlyTrendItem {
   label: string;
@@ -35,8 +38,7 @@ export interface MonthlyReport {
   totalExpense: number;
   totalIncome: number;
   totalBudget: number;
-  categoryBreakdown: CategoryBreakdownItem[];
+  categorySpending: CategorySpendingItem[];
   monthlyTrend: MonthlyTrendItem[];
   budgetComparison: BudgetComparisonItem[];
-  peerComparison: PeerComparisonItem[];
 }

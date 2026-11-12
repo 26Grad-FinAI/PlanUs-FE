@@ -1,6 +1,5 @@
 import { authenticatedRequest } from '@/services/api/apiClient';
-import { EXPENSE_CATEGORY_IDS } from '@/services/api/categoryIds';
-import type { BudgetCategory } from '@/types/budget';
+import { EXPENSE_CATEGORY_IDS, expenseCategoryFromId } from '@/services/api/categoryIds';
 import type {
   CreateSpendingRecordParams,
   RecordListItem,
@@ -39,14 +38,6 @@ export interface Transaction extends Pick<RecordData, 'title' | 'amount'> {
   categoryId: number;
 }
 
-function categoryFromId(id: number): BudgetCategory {
-  return (
-    (Object.keys(EXPENSE_CATEGORY_IDS) as BudgetCategory[]).find(
-      (category) => EXPENSE_CATEGORY_IDS[category] === id,
-    ) ?? 'other'
-  );
-}
-
 function natureFromCode(code: string | null) {
   return (
     (Object.keys(emotionCodes) as SpendingNature[]).find(
@@ -64,7 +55,7 @@ export function toRecordListItem(item: Transaction, date: string): RecordListIte
     amount: Math.abs(item.amount),
     description: item.title,
     categoryId: item.categoryId,
-    category: categoryFromId(item.categoryId),
+    category: expenseCategoryFromId(item.categoryId),
   };
 }
 
@@ -87,7 +78,7 @@ export async function fetchRecordDetail(
       description: detail.title,
       memo: detail.memo ?? undefined,
       categoryId: detail.categoryId,
-      category: categoryFromId(detail.categoryId),
+      category: expenseCategoryFromId(detail.categoryId),
     };
   }
   const detail = await authenticatedRequest<ExpenseDetail>(path, { signal });

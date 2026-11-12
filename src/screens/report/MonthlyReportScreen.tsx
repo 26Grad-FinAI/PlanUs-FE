@@ -21,10 +21,8 @@ export function MonthlyReportScreen() {
   const { width, fontScale } = useWindowDimensions();
   const {
     monthCursor,
-    report,
-    error,
-    isLoading,
-    retry,
+    report: reportQuery,
+    peers,
     handlePrevMonth,
     handleNextMonth,
     budgetExpanded,
@@ -32,6 +30,7 @@ export function MonthlyReportScreen() {
     peersExpanded,
     togglePeers,
   } = useMonthlyReport();
+  const report = reportQuery.result.status === 'success' ? reportQuery.result.data : null;
   // 큰 글자나 긴 금액은 축약하지 않고 요약을 세로로 배치한다.
   const stackSummary =
     fontScale > 1.3 ||
@@ -50,7 +49,7 @@ export function MonthlyReportScreen() {
             onNext={handleNextMonth}
           />
         </View>
-        {isLoading && (
+        {reportQuery.result.status === 'loading' && (
           <View style={styles.notice} accessibilityLiveRegion="polite" aria-busy>
             <ActivityIndicator color={colors.primary} accessibilityLabel="소비 통계 조회 중" />
             <Text variant="label" style={styles.muted}>
@@ -58,10 +57,15 @@ export function MonthlyReportScreen() {
             </Text>
           </View>
         )}
-        {error && (
-          <View style={styles.notice} accessibilityLiveRegion="polite">
-            <Text style={styles.muted}>{error}</Text>
-            <Button label="다시 시도" onPress={retry} variant="ghost" size="sm" />
+        {(reportQuery.result.status === 'error' || reportQuery.refreshFailed) && (
+          <View
+            style={report ? styles.compactNotice : styles.notice}
+            accessibilityLiveRegion="polite"
+          >
+            <Text style={styles.muted}>
+              {report ? '최신 통계를 불러오지 못했어요.' : '통계를 불러오지 못했어요.'}
+            </Text>
+            <Button label="다시 시도" onPress={reportQuery.retry} variant="ghost" size="sm" />
           </View>
         )}
         {report && (
@@ -94,7 +98,7 @@ export function MonthlyReportScreen() {
                 카테고리별 비중
               </Text>
               <Card>
-                <CategoryDonut items={report.categoryBreakdown} />
+                <CategoryDonut items={report.categorySpending} totalExpense={report.totalExpense} />
               </Card>
             </View>
             <View style={styles.section}>
@@ -126,11 +130,31 @@ export function MonthlyReportScreen() {
                   나이·소득·환경이 비슷한 사람들의 소비 평균이에요
                 </Text>
               </View>
-              <PeerComparison
-                items={report.peerComparison}
-                expanded={peersExpanded}
-                onToggle={togglePeers}
-              />
+              {peers.result.status === 'loading' && (
+                <Card style={styles.compactNotice} accessibilityLiveRegion="polite" aria-busy>
+                  <ActivityIndicator color={colors.primary} />
+                  <Text variant="label" style={styles.muted}>
+                    또래 비교를 불러오고 있어요.
+                  </Text>
+                </Card>
+              )}
+              {(peers.result.status === 'error' || peers.refreshFailed) && (
+                <Card style={styles.compactNotice} accessibilityLiveRegion="polite">
+                  <Text variant="label" style={styles.muted}>
+                    {peers.refreshFailed
+                      ? '최신 또래 비교를 불러오지 못했어요.'
+                      : '또래 비교를 불러오지 못했어요.'}
+                  </Text>
+                  <Button label="다시 시도" onPress={peers.retry} variant="ghost" size="sm" />
+                </Card>
+              )}
+              {peers.result.status === 'success' && (
+                <PeerComparison
+                  items={peers.result.data}
+                  expanded={peersExpanded}
+                  onToggle={togglePeers}
+                />
+              )}
             </View>
           </>
         )}
@@ -175,6 +199,7 @@ const styles = StyleSheet.create({
   },
   section: { gap: spacing.md },
   sectionHeading: { gap: spacing.xs },
+  compactNotice: { alignItems: 'center', gap: spacing.sm },
   notice: { minHeight: 168, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
   muted: { color: colors.textTertiary },
 });
