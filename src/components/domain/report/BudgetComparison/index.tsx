@@ -1,6 +1,7 @@
 /** 월 전체와 카테고리의 소비·예산을 같은 카드 구성으로 비교한다. */
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import type { Animated, LayoutChangeEvent } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Card } from '@/components/common/Card';
 import { ProgressBar } from '@/components/common/ProgressBar';
@@ -20,6 +21,9 @@ interface BudgetComparisonProps {
   totalExpense: number;
   expanded: boolean;
   onToggle: () => void;
+  fillProgress?: Animated.Value;
+  onLayout?: (event: LayoutChangeEvent) => void;
+  onSummaryLayout?: (event: LayoutChangeEvent) => void;
 }
 
 interface BudgetUsageCardProps {
@@ -28,14 +32,24 @@ interface BudgetUsageCardProps {
   budget: number;
   actual: number;
   summary?: boolean;
+  fillProgress?: Animated.Value;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }
 
-function BudgetUsageCard({ label, icon, budget, actual, summary = false }: BudgetUsageCardProps) {
+function BudgetUsageCard({
+  label,
+  icon,
+  budget,
+  actual,
+  summary = false,
+  fillProgress,
+  onLayout,
+}: BudgetUsageCardProps) {
   const isOver = actual > budget;
   // 예산이 없는 소비는 비율을 꾸며내지 않고 금액과 초과 상태로 표시한다.
   const ratio = budget > 0 ? `${Math.round((actual / budget) * 100)}%` : '-';
   return (
-    <Card style={styles.card}>
+    <Card style={styles.card} onLayout={onLayout}>
       <View style={styles.row}>
         {icon && (
           <Ionicons
@@ -46,11 +60,7 @@ function BudgetUsageCard({ label, icon, budget, actual, summary = false }: Budge
             aria-hidden
           />
         )}
-        <Text
-          variant={summary ? 'label' : 'body'}
-          weight={summary ? 'medium' : 'semibold'}
-          style={[styles.label, summary && styles.muted]}
-        >
+        <Text variant="body" weight={summary ? 'semibold' : 'medium'} style={styles.label}>
           {label}
         </Text>
         <Text
@@ -74,6 +84,7 @@ function BudgetUsageCard({ label, icon, budget, actual, summary = false }: Budge
         value={actual}
         max={budget}
         tone={isOver ? 'danger' : 'primary'}
+        fillProgress={fillProgress}
       />
     </Card>
   );
@@ -85,11 +96,21 @@ export function BudgetComparison({
   totalExpense,
   expanded,
   onToggle,
+  fillProgress,
+  onLayout,
+  onSummaryLayout,
 }: BudgetComparisonProps) {
   const visible = expanded ? items : items.slice(0, REPORT_VISIBLE_COUNT);
   return (
-    <View style={styles.container}>
-      <BudgetUsageCard label="월 예산" budget={totalBudget} actual={totalExpense} summary />
+    <View style={styles.container} onLayout={onLayout}>
+      <BudgetUsageCard
+        label="월 예산"
+        budget={totalBudget}
+        actual={totalExpense}
+        summary
+        fillProgress={fillProgress}
+        onLayout={onSummaryLayout}
+      />
       {visible.map((item) => (
         <BudgetUsageCard
           key={item.category}
@@ -97,6 +118,7 @@ export function BudgetComparison({
           icon={BUDGET_CATEGORY_META[item.category].icon}
           budget={item.budget}
           actual={item.actual}
+          fillProgress={fillProgress}
         />
       ))}
       <ReportMoreButton

@@ -27,7 +27,7 @@ export function ReportMoreButton({ count, expanded, section, onToggle }: ReportM
       onPress={onToggle}
       style={styles.button}
     >
-      <Text variant="caption" style={styles.label}>
+      <Text variant="label" style={styles.label}>
         {label}
       </Text>
       <Ionicons

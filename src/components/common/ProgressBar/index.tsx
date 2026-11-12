@@ -10,6 +10,7 @@ interface ProgressBarProps {
   label: string;
   tone?: 'primary' | 'danger' | 'inverse';
   animated?: boolean;
+  fillProgress?: Animated.Value;
 }
 export function ProgressBar({
   value,
@@ -17,6 +18,7 @@ export function ProgressBar({
   label,
   tone = 'primary',
   animated = false,
+  fillProgress,
 }: ProgressBarProps) {
   // 예산 0원/비정상 값에서도 너비가 NaN 또는 Infinity가 되지 않게 한다.
   const ratio =
@@ -29,6 +31,7 @@ export function ProgressBar({
           : 0;
   const [fill] = useState(() => new Animated.Value(0));
   useEffect(() => {
+    if (fillProgress) return;
     if (!animated) {
       fill.setValue(ratio);
       return;
@@ -43,7 +46,7 @@ export function ProgressBar({
     });
     animation.start();
     return () => animation.stop();
-  }, [animated, fill, ratio]);
+  }, [animated, fill, fillProgress, ratio]);
 
   return (
     <View
@@ -58,10 +61,12 @@ export function ProgressBar({
       <Animated.View
         style={[
           styles.fill,
+          fillProgress && { transformOrigin: 'left center', transform: [{ scaleX: fillProgress }] },
           {
-            width: animated
-              ? fill.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] })
-              : `${ratio}%`,
+            width:
+              animated && !fillProgress
+                ? fill.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] })
+                : `${ratio}%`,
             backgroundColor:
               tone === 'danger'
                 ? colors.error

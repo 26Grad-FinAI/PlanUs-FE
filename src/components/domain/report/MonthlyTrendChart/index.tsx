@@ -1,6 +1,6 @@
 /** 선택 월까지의 여섯 달을 공통 금액 척도로 표시한다. */
 import React from 'react';
-import { ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Animated, ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { radius, spacing } from '@/constants/layout';
@@ -10,11 +10,12 @@ import { formatFullAmount, formatManwon } from '@/utils/formatCurrency';
 
 interface MonthlyTrendChartProps {
   items: MonthlyTrendItem[];
+  fillProgress?: Animated.Value;
 }
 
 const MAX_BAR_HEIGHT = 120;
 
-export function MonthlyTrendChart({ items }: MonthlyTrendChartProps) {
+export function MonthlyTrendChart({ items, fillProgress }: MonthlyTrendChartProps) {
   const { fontScale } = useWindowDimensions();
   const maxAmount = Math.max(...items.map((item) => item.amount), 1);
   return (
@@ -40,11 +41,12 @@ export function MonthlyTrendChart({ items }: MonthlyTrendChartProps) {
             >
               {item.amount === 0 ? '0원' : formatManwon(item.amount)}
             </Text>
-            <View
+            <Animated.View
               style={[
                 styles.bar,
                 { height: (Math.max(0, item.amount) / maxAmount) * MAX_BAR_HEIGHT },
                 item.isCurrent && styles.currentBar,
+                fillProgress && { transform: [{ scaleY: fillProgress }] },
               ]}
             />
           </View>
@@ -72,7 +74,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   highlight: { color: colors.primaryDark },
-  bar: { width: 26, borderRadius: radius.input, backgroundColor: colors.primaryLight },
+  bar: {
+    width: 26,
+    borderRadius: radius.input,
+    backgroundColor: colors.primaryLight,
+    transformOrigin: 'center bottom',
+  },
   currentBar: { backgroundColor: colors.primary },
   muted: { color: colors.textTertiary },
 });
