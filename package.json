@@ -4,7 +4,6 @@
   "main": "index.ts",
   "scripts": {
     "preview": "node scripts/preview.cjs",
-    "preview:auth": "node scripts/preview.cjs --auth",
     "typecheck": "tsc --noEmit",
     "start": "expo start",
     "android": "expo start --android",

@@ -8,34 +8,59 @@ import { Header } from '@/components/common/Header';
 import { Text } from '@/components/common/Text';
 import { Button } from '@/components/common/Button';
 import { IndeterminateProgressBar } from '@/components/common/ProgressBar/IndeterminateProgressBar';
-import { fetchAIBudgetRecommendation } from '@/services/mock/budget.mock';
+import {
+  budgetWaitMs,
+  currentBudgetMonth,
+  loadBudgetRecommendation,
+} from '@/services/api/budgetApi';
+import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
 import { spacing } from '@/constants/layout';
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'BudgetLoading'>;
 export function BudgetLoadingScreen({ navigation, route }: Props) {
-  const { profile, year, month } = route.params;
+  const { profile } = route.params;
   const [attempt, setAttempt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    let cancelled = false;
-    fetchAIBudgetRecommendation(profile, controller.signal)
-      .then((recommendation) => {
-        if (!cancelled)
-          navigation.replace('BudgetRecommendation', { profile, year, month, recommendation });
+    const { signal } = controller;
+    const session = useAuthStore.getState().session;
+    if (!session) return;
+    const budgetMonth = currentBudgetMonth();
+    const isActive = () => !signal.aborted && useAuthStore.getState().session?.id === session.id;
+    const timeout = setTimeout(() => {
+      if (isActive()) setError('응답이 늦어지고 있어요. 다시 시도하면 진행 상태를 확인해요.');
+      controller.abort();
+    }, budgetWaitMs);
+
+    async function load() {
+      const recommendation = await loadBudgetRecommendation(budgetMonth, attempt > 0, signal);
+      if (isActive()) {
+        navigation.replace('BudgetRecommendation', { profile, ...budgetMonth, recommendation });
+      }
+    }
+
+    void load()
+      .catch((reason: unknown) => {
+        if (isActive()) {
+          setError(reason instanceof Error ? reason.message : '예산을 불러오지 못했어요.');
+        }
       })
-      .catch(() => {
-        if (!cancelled) setError('예산을 산출하지 못했어요. 잠시 후 다시 시도해주세요.');
-      });
+      .finally(() => clearTimeout(timeout));
     return () => {
-      cancelled = true;
+      clearTimeout(timeout);
       controller.abort();
     };
-  }, [attempt, navigation, profile, year, month]);
+  }, [attempt, navigation, profile]);
+
+  function goBack() {
+    if (navigation.canGoBack()) navigation.goBack();
+    else useAuthStore.getState().signOut();
+  }
   return (
     <ScreenLayout
       scroll={false}
-      header={<Header onBack={() => navigation.goBack()} backLabel="뒤로" divider={false} />}
+      header={<Header onBack={goBack} backLabel="뒤로" divider={false} />}
       contentStyle={styles.screen}
     >
       <Image
@@ -59,7 +84,7 @@ export function BudgetLoadingScreen({ navigation, route }: Props) {
           )}
         </Text>
         <Text style={styles.description} accessibilityLiveRegion="polite">
-          {error ?? '(최대 5분 소요)'}
+          {error ?? '예산을 준비하는 데 몇 분이 걸릴 수 있어요.'}
         </Text>
       </View>
       {error ? (

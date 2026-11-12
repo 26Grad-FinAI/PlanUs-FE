@@ -1,5 +1,5 @@
 /** 같은 화면에서 입력값을 유지하는 두 단계 프로필 설정. */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BackHandler, Keyboard, ScrollViewInstance, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,6 +17,7 @@ import { FixedExpenseInput } from '@/components/domain/profile/FixedExpenseInput
 import { ProfileDraft, ProfileErrors } from '@/types/profile';
 import { validateProfileStep, normalizeProfile } from '@/utils/profile';
 import { AuthApiCheck } from '@/screens/dev/AuthApiCheck';
+import { saveProfile } from '@/services/api/profileApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/constants/colors';
 import { metrics, spacing } from '@/constants/layout';
@@ -35,12 +36,18 @@ export function ProfileSetupScreen({ navigation }: Props) {
   const [draft, setDraft] = useState<ProfileDraft>(INITIAL_DRAFT);
   const [step, setStep] = useState<1 | 2>(1);
   const [stepErrors, setStepErrors] = useState<Record<1 | 2, ProfileErrors>>({ 1: {}, 2: {} });
+  const [saving, setSaving] = useState(false);
+  const [requestError, setRequestError] = useState('');
   const scrollRef = useRef<ScrollViewInstance>(null);
   const expenseSequence = useRef(1);
-  const submitting = useRef(false);
+  const saveRequest = useRef<AbortController | null>(null);
   const signOut = useAuthStore((state) => state.signOut);
   const errors = stepErrors[step];
+  useEffect(() => () => saveRequest.current?.abort(), []);
+
   function update<K extends keyof ProfileDraft>(field: K, value: ProfileDraft[K]) {
+    if (saveRequest.current) return;
+    setRequestError('');
     setDraft((current) => ({ ...current, [field]: value }));
     setStepErrors((current) => ({
       ...current,
@@ -60,13 +67,14 @@ export function ProfileSetupScreen({ navigation }: Props) {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   }
   function goBack() {
+    if (saveRequest.current) return;
     if (step === 2) changeStep(1);
     else signOut();
   }
   useFocusEffect(
     React.useCallback(() => {
-      submitting.current = false;
       const listener = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (saveRequest.current) return true;
         if (step === 2) {
           Keyboard.dismiss();
           setStep(1);
@@ -78,21 +86,36 @@ export function ProfileSetupScreen({ navigation }: Props) {
       return () => listener.remove();
     }, [step, signOut]),
   );
-  function submit() {
+  async function submit() {
+    if (saveRequest.current) return;
     const nextErrors = validateProfileStep(draft, step);
     setStepErrors((current) => ({ ...current, [step]: nextErrors }));
     if (Object.keys(nextErrors).length) return;
     if (step === 1) {
       changeStep(2);
-    } else if (!submitting.current) {
-      submitting.current = true;
-      Keyboard.dismiss();
-      const now = new Date();
-      navigation.navigate('BudgetLoading', {
-        profile: normalizeProfile(draft),
-        year: now.getFullYear(),
-        month: now.getMonth() + 1,
-      });
+      return;
+    }
+
+    Keyboard.dismiss();
+    const profile = normalizeProfile(draft);
+    const session = useAuthStore.getState().session;
+    if (!session) return;
+    const controller = new AbortController();
+    saveRequest.current = controller;
+    setSaving(true);
+    setRequestError('');
+    try {
+      await saveProfile(profile, controller.signal);
+      if (!controller.signal.aborted && useAuthStore.getState().session?.id === session.id) {
+        navigation.replace('BudgetLoading', { profile });
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setRequestError(error instanceof Error ? error.message : '프로필을 저장하지 못했어요.');
+      }
+    } finally {
+      saveRequest.current = null;
+      if (!controller.signal.aborted) setSaving(false);
     }
   }
   return (
@@ -121,10 +144,12 @@ export function ProfileSetupScreen({ navigation }: Props) {
           <Input
             variant="underline"
             label="나이"
+            required
             placeholder="만 나이를 입력하세요"
             suffix="세"
             style={styles.age}
             value={draft.age}
+            error={errors.age}
             onChangeText={(value) => update('age', value.replace(/[^0-9]/g, '').slice(0, 3))}
             keyboardType="number-pad"
             inputMode="numeric"
@@ -223,6 +248,7 @@ export function ProfileSetupScreen({ navigation }: Props) {
             hint="최근 생활 변화, 금전 상황 등을 자유롭게 적어주세요. (10자 이상)"
             placeholder="ex. 2월에 자취를 시작했어요. 여행 자금 300만원을 모으는 중이에요."
             value={draft.introduction}
+            maxLength={2000}
             onChangeText={(value) => update('introduction', value)}
             error={errors.introduction}
             minHeight={120}
@@ -230,12 +256,18 @@ export function ProfileSetupScreen({ navigation }: Props) {
           />
         </>
       )}
-      <Button label={step === 1 ? '다음' : 'AI 예산 산출 시작'} onPress={submit} />
+      {!!requestError && (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {requestError}
+        </Text>
+      )}
+      <Button label={step === 1 ? '다음' : 'AI 예산 산출 시작'} onPress={submit} loading={saving} />
       <AuthApiCheck />
     </ScreenLayout>
   );
 }
 const styles = StyleSheet.create({
+  error: { color: colors.error },
   introduction: { paddingTop: spacing.md },
   age: { textAlign: 'right', fontSize: 20 },
   header: { width: '100%', maxWidth: metrics.contentMax, alignSelf: 'center' },

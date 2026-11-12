@@ -8,7 +8,7 @@
  *   홈(HomeCalendar) · 통계(MonthlyReport) · [+ 소비 기록] · AI분석(AIAnalysis) · 마이(Settings)
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { TabBar } from '@/components/common/TabBar';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -21,6 +21,10 @@ import { MonthlyReportScreen } from '@/screens/report/MonthlyReportScreen';
 import { AIAnalysisScreen } from '@/screens/ai/AIAnalysisScreen';
 import { SettingsScreen } from '@/screens/settings/SettingsScreen';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { currentBudgetMonth, fetchBudgetSummary } from '@/services/api/budgetApi';
+import { fetchSavedProfile } from '@/services/api/profileApi';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useBudgetStore } from '@/store/useBudgetStore';
 import { MainTabParamList, RootStackParamList } from './types';
 
 /**
@@ -97,6 +101,33 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
  * tabBar 옵션에 CustomTabBar를 전달해 기본 탭바를 커스텀 탭바로 교체
  */
 export function MainTabNavigator() {
+  const sessionId = useAuthStore((state) => state.session?.id);
+  const { year, month } = currentBudgetMonth();
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const { confirmedBudget } = useBudgetStore.getState();
+    if (confirmedBudget?.year === year && confirmedBudget.month === month) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    const isActive = () => !signal.aborted && useAuthStore.getState().session?.id === sessionId;
+
+    async function loadBudget() {
+      const recommendation = await fetchBudgetSummary({ year, month }, signal);
+      if (!recommendation || !isActive()) return;
+      const profile = await fetchSavedProfile(signal);
+      if (isActive()) {
+        useBudgetStore.getState().confirmBudget({ year, month, profile, recommendation });
+      }
+    }
+
+    void loadBudget().catch(() => {
+      if (isActive() && __DEV__) console.warn('홈 화면의 예산 정보를 불러오지 못했어요.');
+    });
+    return () => controller.abort();
+  }, [sessionId, year, month]);
+
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}

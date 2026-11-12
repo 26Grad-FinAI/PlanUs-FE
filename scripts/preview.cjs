@@ -2,19 +2,17 @@
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const args = process.argv.slice(2);
-const auth = args.includes('--auth');
 const cli = path.join(path.dirname(require.resolve('expo/package.json')), 'bin', 'cli');
 const child = spawn(
   process.execPath,
-  [cli, 'start', '--web', ...args.filter((arg) => arg !== '--auth')],
+  [cli, 'start', '--web', ...args],
   {
     stdio: 'inherit',
     // UI 예시는 로컬 API 설정과 분리해 같은 mock 상태로 시작한다.
     env: {
       ...process.env,
       EXPO_NO_DOTENV: '1',
-      EXPO_PUBLIC_DESIGN_SYSTEM_PREVIEW: auth ? '0' : '1',
-      EXPO_PUBLIC_AUTH_PREVIEW: auth ? '1' : '0',
+      EXPO_PUBLIC_DESIGN_SYSTEM_PREVIEW: '1',
     },
   },
 );

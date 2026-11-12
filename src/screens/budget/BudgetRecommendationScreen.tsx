@@ -1,5 +1,5 @@
 /** 추천 예산을 편집하고 최신 입력 스냅샷을 확정한다. */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +12,7 @@ import { Button } from '@/components/common/Button';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { BudgetCategoryCard } from '@/components/domain/budget/BudgetCategoryCard';
 import { BudgetCategory, CategoryBudget } from '@/types/budget';
+import { saveBudgetCategories } from '@/services/api/budgetApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { formatFullAmount } from '@/utils/formatCurrency';
@@ -29,9 +30,13 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
   const [editError, setEditError] = useState('');
   const [showOverBudgetModal, setShowOverBudgetModal] = useState(false);
   const [pendingBudget, setPendingBudget] = useState<CategoryBudget[] | null>(null);
-  const finished = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const saveRequest = useRef<AbortController | null>(null);
   const confirmBudget = useBudgetStore((state) => state.confirmBudget);
   const completeOnboarding = useAuthStore((state) => state.completeOnboarding);
+  useEffect(() => () => saveRequest.current?.abort(), []);
+  useEffect(() => navigation.setOptions({ gestureEnabled: !saving }), [navigation, saving]);
   const validEdit =
     editing !== null && /^\d+$/.test(editing.text) && Number.isSafeInteger(Number(editing.text));
   const preview = validEdit
@@ -66,27 +71,52 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
   function reset() {
     setEditing(null);
     setEditError('');
-    setBudgets(recommendation.categories.map((item) => ({ ...item })));
+    setBudgets(recommendation.categories.map((item) => ({ ...item, userAmount: item.aiAmount })));
   }
-  function finalize(snapshot: CategoryBudget[]) {
-    if (finished.current) return;
-    finished.current = true;
-    confirmBudget({
-      profile,
-      year,
-      month,
-      recommendation: { ...recommendation, categories: snapshot },
-    });
-    completeOnboarding();
+  function goBack() {
+    if (saveRequest.current) return;
+    if (navigation.canGoBack()) navigation.goBack();
+    else useAuthStore.getState().signOut();
+  }
+  async function finalize(snapshot: CategoryBudget[]) {
+    const session = useAuthStore.getState().session;
+    if (saveRequest.current || !session) return;
+    const controller = new AbortController();
+    saveRequest.current = controller;
+    setSaving(true);
+    setSaveError('');
+    const isActive = () =>
+      !controller.signal.aborted && useAuthStore.getState().session?.id === session.id;
+
+    try {
+      const saved = await saveBudgetCategories(
+        { year, month },
+        snapshot,
+        recommendation.insight,
+        controller.signal,
+      );
+      if (!isActive()) return;
+      confirmBudget({ profile, year, month, recommendation: saved });
+      completeOnboarding();
+    } catch (error) {
+      if (isActive()) {
+        setShowOverBudgetModal(false);
+        setSaveError(error instanceof Error ? error.message : '예산을 저장하지 못했어요.');
+      }
+    } finally {
+      saveRequest.current = null;
+      if (isActive()) setSaving(false);
+    }
   }
   function confirm() {
+    if (saveRequest.current) return;
     const snapshot = commitEdit();
     if (!snapshot) return;
     // 편집 직후에도 계산과 저장에 같은 스냅샷을 사용해 마지막 입력을 놓치지 않는다.
     if (sumBudgets(snapshot) > recommendation.aiTotalAmount) {
       setPendingBudget(snapshot);
       setShowOverBudgetModal(true);
-    } else finalize(snapshot);
+    } else void finalize(snapshot);
   }
   const pendingExcess = pendingBudget
     ? sumBudgets(pendingBudget) - recommendation.aiTotalAmount
@@ -94,10 +124,15 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
   return (
     <>
       <ScreenLayout
-        header={<Header onBack={() => navigation.goBack()} backLabel="뒤로" divider={false} />}
+        header={<Header onBack={goBack} backLabel="뒤로" divider={false} />}
         footer={
           <BottomActionBar>
-            <Button label="예산 확정하기" onPress={confirm} />
+            {!!saveError && (
+              <Text accessibilityRole="alert" style={styles.saveError}>
+                {saveError}
+              </Text>
+            )}
+            <Button label="예산 확정하기" onPress={confirm} loading={saving} />
           </BottomActionBar>
         }
       >
@@ -167,6 +202,7 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
             variant="ghost"
             size="sm"
             onPress={reset}
+            disabled={saving}
             style={styles.reset}
           />
         </View>
@@ -178,7 +214,9 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
               total={total}
               editingValue={editing?.category === budget.category ? editing.text : null}
               error={editing?.category === budget.category ? editError : undefined}
-              onEdit={() => beginEdit(budget)}
+              onEdit={() => {
+                if (!saveRequest.current) beginEdit(budget);
+              }}
               onChange={(text) => {
                 setEditing({
                   category: budget.category,
@@ -204,15 +242,19 @@ export function BudgetRecommendationScreen({ navigation, route }: Props) {
         description={`AI 제안보다 ${formatFullAmount(Math.max(0, pendingExcess))} 더 많아요.\n이대로 확정하시겠어요?`}
         cancelLabel="다시 조정할게요"
         confirmLabel="이대로 확정하기"
-        onCancel={() => setShowOverBudgetModal(false)}
+        loading={saving}
+        onCancel={() => {
+          if (!saveRequest.current) setShowOverBudgetModal(false);
+        }}
         onConfirm={() => {
-          if (pendingBudget) finalize(pendingBudget);
+          if (pendingBudget) void finalize(pendingBudget);
         }}
       />
     </>
   );
 }
 const styles = StyleSheet.create({
+  saveError: { color: colors.error, marginBottom: spacing.sm },
   categories: { gap: spacing.lg },
   insightCard: { padding: spacing.lg, gap: spacing.sm },
   heading: {
