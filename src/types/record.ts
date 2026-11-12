@@ -36,14 +36,19 @@ interface RecordFields {
   memo?: string;
 }
 
-/** 지출 전용 필드는 저장 단계에서 반드시 제공하고, 수입에는 포함하지 않는다. */
 export type CreateSpendingRecordParams = RecordFields &
   (
-    | { type: 'expense'; spendingNature: SpendingNature; isRecurring: boolean }
+    | { type: 'expense'; spendingNature: SpendingNature | null; isRecurring: boolean }
     | { type: 'income'; spendingNature?: never; isRecurring?: never }
   );
 
 export type SpendingRecord = CreateSpendingRecordParams & {
   id: string;
-  createdAt: string;
+  time: string;
+  categoryId: number;
 };
+
+export type RecordListItem = Pick<
+  SpendingRecord,
+  'id' | 'type' | 'description' | 'amount' | 'category' | 'categoryId' | 'date' | 'time'
+>;

@@ -8,6 +8,7 @@
 import { UserProfile } from '@/types/profile';
 import { AIBudgetRecommendation } from '@/types/budget';
 import { NavigatorScreenParams } from '@react-navigation/native';
+import type { RecordListItem, SpendingRecord } from '@/types/record';
 
 // 인증 스택 (로그인, 회원가입)
 export type AuthStackParamList = {
@@ -40,7 +41,7 @@ export type RootStackParamList = {
   Auth: undefined; // AuthStack
   Onboarding: undefined; // OnboardingStack
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
-  RecordDetail: { recordId: string };
+  RecordDetail: { record: RecordListItem };
   RecordAdd: undefined;
-  RecordEdit: { recordId: string };
+  RecordEdit: { record: SpendingRecord };
 };

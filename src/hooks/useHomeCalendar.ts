@@ -1,114 +1,67 @@
-/**
- * 홈 캘린더 화면의 상태 + 파생 데이터를 모아둔 훅
- *
- * 화면(HomeCalendarScreen)은 이 훅의 반환값을 그대로 하위 컴포넌트에 전달하기만 하고,
- * 월 이동/날짜 선택/요약 조회 등의 로직은 모두 여기서 처리한다.
- */
-
-import { useEffect, useMemo, useState } from 'react';
-
-import { fetchHomeSummary } from '@/services/mock/home.mock';
-import { useRecordStore } from '@/store/useRecordStore';
-import { useBudgetStore } from '@/store/useBudgetStore';
-import { HomeSummary } from '@/types/home';
-import { SpendingRecord } from '@/types/record';
-import { buildMonthWeeks, toISODate } from '@/utils/formatDate';
+import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useToday } from '@/hooks/useToday';
+import { useHomeRecords } from '@/hooks/useHomeRecords';
+import { fetchHomeCalendar, fetchHomeSummary } from '@/services/api/homeApi';
+import type { DailyTotals, HomeSummary } from '@/types/home';
+import { useRecordRevision } from '@/store/useRecordRevision';
+import { buildMonthWeeks, toISODate } from '@/utils/formatDate';
 
-const EMPTY_SUMMARY: HomeSummary = {
-  totalExpense: 0,
-  budgetTotal: 0,
-  remaining: 0,
-  usageRate: 0,
-  monthlyIncome: 0,
-  additionalIncome: 0,
-  totalIncome: 0,
-  fixedExpense: 0,
-  totalOutflow: 0,
-};
-
-export interface DateGroup {
-  date: string;
-  items: SpendingRecord[];
+interface MonthData {
+  summary: HomeSummary;
+  calendar: DailyTotals[];
 }
 
 export function useHomeCalendar() {
   const today = useToday();
-  const todayISO = useMemo(() => toISODate(today), [today]);
+  const todayISO = toISODate(today);
+  const recordRevision = useRecordRevision((state) => state.revision);
   const [monthCursor, setMonthCursor] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
   );
-
-  // 소비 기록 store 구독 — 기록이 추가되면 records가 바뀌어 아래 값들이 자동으로 다시 계산된다
-  const records = useRecordStore((s) => s.records);
-  const confirmedBudget = useBudgetStore((state) => state.confirmedBudget);
-
-  // 날짜 문자열 → 해당 날짜의 기록 목록 매핑 (캘린더 셀에서 빠르게 조회하기 위함)
-  const recordsByDate = useMemo(() => {
-    const map: Record<string, SpendingRecord[]> = {};
-    records.forEach((record) => {
-      if (!map[record.date]) map[record.date] = [];
-      map[record.date].push(record);
-    });
-    return map;
-  }, [records]);
-
-  // 현재 보고 있는 달에 속한 기록만 필터링
-  const monthRecords = useMemo(() => {
-    return records.filter((record) => {
-      const [year, month] = record.date.split('-').map(Number);
-      return year === monthCursor.getFullYear() && month - 1 === monthCursor.getMonth();
-    });
-  }, [monthCursor, records]);
-
-  // 이번 달 사용 금액/예산/남은 예산/소진율 — 기록이 바뀔 때마다 요약도 다시 조회한다
-  const [summary, setSummary] = useState<HomeSummary>(EMPTY_SUMMARY);
-  useEffect(() => {
-    let cancelled = false;
-    fetchHomeSummary(monthCursor.getFullYear(), monthCursor.getMonth() + 1).then((data) => {
-      if (!cancelled) setSummary(data);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [monthCursor, records, confirmedBudget, todayISO]);
-
-  // 날짜별로 그룹화 후 최근 날짜가 먼저 오도록 정렬
-  const dateGroups: DateGroup[] = useMemo(() => {
-    const map: Record<string, SpendingRecord[]> = {};
-    monthRecords.forEach((record) => {
-      if (!map[record.date]) map[record.date] = [];
-      map[record.date].push(record);
-    });
-    return Object.entries(map)
-      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([date, items]) => ({
-        date,
-        items: [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-      }));
-  }, [monthRecords]);
-
-  // 캘린더에서 특정 날짜를 탭하면 해당 날짜의 내역만 아래 목록에 보여준다
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const visibleGroups = selectedDate
-    ? dateGroups.filter((group) => group.date === selectedDate)
-    : dateGroups;
+  const [attempt, setAttempt] = useState(0);
+  const [monthResult, setMonthResult] = useState<{
+    key: string;
+    data?: MonthData;
+    error?: string;
+  }>();
+  const yearMonth = toISODate(monthCursor).slice(0, 7);
+  const monthKey = `${yearMonth}/${attempt}/${recordRevision}`;
+  const currentMonth = monthResult?.key === monthKey ? monthResult : undefined;
+  const month = currentMonth?.data;
+  const monthError = currentMonth?.error;
+  const records = useHomeRecords(yearMonth, selectedDate, recordRevision);
 
+  useFocusEffect(
+    useCallback(() => {
+      const controller = new AbortController();
+      const { signal } = controller;
+      void Promise.all([fetchHomeSummary(yearMonth, signal), fetchHomeCalendar(yearMonth, signal)])
+        .then(([summary, calendar]) => {
+          if (!signal.aborted) setMonthResult({ key: monthKey, data: { summary, calendar } });
+        })
+        .catch((error: unknown) => {
+          if (!signal.aborted) {
+            setMonthResult({
+              key: monthKey,
+              error: error instanceof Error ? error.message : '홈 정보를 불러오지 못했어요.',
+            });
+          }
+        });
+      return () => controller.abort();
+    }, [yearMonth, monthKey]),
+  );
+
+  const totalsByDate = useMemo(
+    () => Object.fromEntries(month?.calendar.map((day) => [day.date, day]) ?? []),
+    [month],
+  );
   const weeks = useMemo(() => buildMonthWeeks(monthCursor), [monthCursor]);
 
-  function handlePrevMonth() {
-    setMonthCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  function moveMonth(offset: number) {
+    setMonthCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() + offset, 1));
     setSelectedDate(null);
-  }
-
-  function handleNextMonth() {
-    setMonthCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-    setSelectedDate(null);
-  }
-
-  // 같은 날짜를 다시 누르면 선택 해제 → 전체 목록으로 복귀
-  function handleDayPress(dateKey: string) {
-    setSelectedDate((prev) => (prev === dateKey ? null : dateKey));
   }
 
   return {
@@ -116,12 +69,14 @@ export function useHomeCalendar() {
     todayISO,
     monthCursor,
     weeks,
-    recordsByDate,
-    summary,
+    totalsByDate,
+    summary: month?.summary,
+    monthError,
     selectedDate,
-    visibleGroups,
-    handlePrevMonth,
-    handleNextMonth,
-    handleDayPress,
+    ...records,
+    retryMonth: () => setAttempt((previous) => previous + 1),
+    handlePrevMonth: () => moveMonth(-1),
+    handleNextMonth: () => moveMonth(1),
+    handleDayPress: (date: string) => setSelectedDate((prev) => (prev === date ? null : date)),
   };
 }

@@ -12,8 +12,9 @@ import { formatFullAmount } from '@/utils/formatCurrency';
 interface SummaryCardProps {
   summary: HomeSummary;
   isCurrentMonth: boolean;
+  motionEnabled: boolean;
 }
-export function SummaryCard({ summary, isCurrentMonth }: SummaryCardProps) {
+export function SummaryCard({ summary, isCurrentMonth, motionEnabled }: SummaryCardProps) {
   const [expanded, setExpanded] = useState(false);
   function row(label: string, amount: number, sign = '', total = false) {
     return (
@@ -38,7 +39,7 @@ export function SummaryCard({ summary, isCurrentMonth }: SummaryCardProps) {
         </Text>
       </View>
       <View style={styles.progress}>
-        <ProgressBar label="예산 소진율" value={summary.usageRate} />
+        <ProgressBar label="예산 소진율" value={summary.usageRate} animated={motionEnabled} />
       </View>
       <View style={styles.stats}>
         <View style={styles.stat}>
@@ -56,7 +57,8 @@ export function SummaryCard({ summary, isCurrentMonth }: SummaryCardProps) {
         <ExpandableSection
           label="전체 수입·지출 보기"
           expanded={expanded}
-          onToggle={() => setExpanded(!expanded)}
+          animated={motionEnabled}
+          onToggle={() => setExpanded((previous) => !previous)}
         >
           <View style={styles.breakdown}>
             {row('수입', summary.totalIncome, '+', true)}

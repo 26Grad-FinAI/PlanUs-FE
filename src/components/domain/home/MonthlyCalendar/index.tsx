@@ -5,16 +5,17 @@ import { MonthNavigator } from '@/components/common/MonthNavigator';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { fontFamily } from '@/constants/typography';
-import { SpendingRecord } from '@/types/record';
+import type { DailyTotals } from '@/types/home';
 import { formatComma } from '@/utils/formatCurrency';
 import { toISODate } from '@/utils/formatDate';
 
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const CALENDAR_HORIZONTAL_PADDING = 14;
 interface MonthlyCalendarProps {
   monthCursor: Date;
   weeks: (Date | null)[][];
   todayISO: string;
-  recordsByDate: Record<string, SpendingRecord[]>;
+  totalsByDate: Record<string, DailyTotals>;
   selectedDate: string | null;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -24,7 +25,7 @@ export function MonthlyCalendar({
   monthCursor,
   weeks,
   todayISO,
-  recordsByDate,
+  totalsByDate,
   selectedDate,
   onPrevMonth,
   onNextMonth,
@@ -32,22 +33,17 @@ export function MonthlyCalendar({
 }: MonthlyCalendarProps) {
   const { width } = useWindowDimensions();
   // Web의 말줄임을 막기 위해 큰 금액도 날짜 셀 폭에 맞는 글자 크기로 표시한다.
-  const cellWidth = (Math.min(width, 640) - 64) / 7;
+  const cellWidth =
+    (Math.min(width, 640) - 24 - CALENDAR_HORIZONTAL_PADDING * 2) / WEEKDAY_LABELS.length;
   function amountSize(amount: number) {
     return Math.min(10, Math.max(6, cellWidth / ((formatComma(amount).length + 1) * 0.6)));
   }
   function renderDayCell(date: Date | null, key: string) {
     if (!date) return <View key={key} style={styles.dayCell} />;
     const dateKey = toISODate(date);
-    const dayRecords = recordsByDate[dateKey] ?? [];
+    const { totalIncome: income = 0, totalExpense: expense = 0 } = totalsByDate[dateKey] ?? {};
     const isToday = dateKey === todayISO;
     const isSelected = selectedDate === dateKey;
-    const income = dayRecords
-      .filter((r) => r.type === 'income')
-      .reduce((sum, r) => sum + r.amount, 0);
-    const expense = dayRecords
-      .filter((r) => r.type === 'expense')
-      .reduce((sum, r) => sum + r.amount, 0);
     return (
       <TouchableOpacity
         key={key}
@@ -110,11 +106,13 @@ export function MonthlyCalendar({
           </Text>
         ))}
       </View>
-      {weeks.map((week, index) => (
-        <View key={index} style={styles.week}>
-          {week.map((date, day) => renderDayCell(date, `${index}-${day}`))}
-        </View>
-      ))}
+      <View style={styles.weeks}>
+        {weeks.map((week, index) => (
+          <View key={index} style={styles.week}>
+            {week.map((date, day) => renderDayCell(date, `${index}-${day}`))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -123,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: CALENDAR_HORIZONTAL_PADDING,
     paddingTop: 10,
     paddingBottom: 28,
   },
@@ -136,6 +134,7 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontFamily: fontFamily.medium,
   },
+  weeks: { gap: 6 },
   week: { flexDirection: 'row' },
   dayCell: { flex: 1, minWidth: 0, minHeight: 50, alignItems: 'center', paddingTop: 4 },
   dayNumberWrap: {
@@ -153,5 +152,5 @@ const styles = StyleSheet.create({
   amounts: { alignSelf: 'stretch', alignItems: 'center', marginTop: 3 },
   dayAmount: { fontSize: 10, lineHeight: 13, fontFamily: fontFamily.medium, maxWidth: '100%' },
   income: { color: colors.income },
-  expense: { color: colors.expense },
+  expense: { color: '#707785' },
 });

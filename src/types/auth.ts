@@ -13,6 +13,11 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface SavedAuthSession {
+  session: (AuthTokens & { userId: number }) | null;
+  hasCompletedOnboarding: boolean;
+}
+
 export interface AuthResponse extends AuthTokens {
   userId: number;
   email: string;

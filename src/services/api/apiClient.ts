@@ -79,7 +79,9 @@ export async function refreshSession(): Promise<Session> {
     })
     .catch((error: unknown) => {
       const current = useAuthStore.getState();
-      if (current.session?.id === session.id) current.signOut();
+      if (error instanceof ApiError && error.status === 401 && current.session?.id === session.id) {
+        current.signOut();
+      }
       throw error;
     })
     .finally(() => {
