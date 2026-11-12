@@ -12,3 +12,11 @@ export const EXPENSE_CATEGORY_IDS: Record<BudgetCategory, number> = {
   telecom: 9,
   other: 10,
 };
+
+export function expenseCategoryFromId(id: number): BudgetCategory {
+  return (
+    (Object.keys(EXPENSE_CATEGORY_IDS) as BudgetCategory[]).find(
+      (category) => EXPENSE_CATEGORY_IDS[category] === id,
+    ) ?? 'other'
+  );
+}

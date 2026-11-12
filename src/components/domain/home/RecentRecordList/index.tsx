@@ -13,6 +13,7 @@ import { formatFullAmount } from '@/utils/formatCurrency';
 
 interface RecentRecordListProps {
   header: React.ReactNode;
+  scrollRef?: React.Ref<FlatList<DateGroup>>;
   contentContainerStyle?: StyleProp<ViewStyle>;
   groups: DateGroup[];
   selectedDate: string | null;
@@ -27,6 +28,7 @@ interface RecentRecordListProps {
 }
 export function RecentRecordList({
   header,
+  scrollRef,
   contentContainerStyle,
   groups,
   selectedDate,
@@ -41,6 +43,7 @@ export function RecentRecordList({
 }: RecentRecordListProps) {
   return (
     <FlatList
+      ref={scrollRef}
       data={groups}
       keyExtractor={(group) => group.date}
       style={styles.scroll}
@@ -165,7 +168,7 @@ const styles = StyleSheet.create({
   records: { flex: 1, gap: 12 },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, minHeight: 44 },
   description: { flex: 1, minWidth: 0, gap: 2 },
-  name: { fontSize: 16, lineHeight: 20, fontFamily: fontFamily.medium },
+  name: { fontSize: 16, lineHeight: 20, fontFamily: fontFamily.regular },
   category: { fontSize: 12, lineHeight: 18, color: colors.textDisabled },
   amount: { maxWidth: '53%', fontSize: 16, lineHeight: 20, fontFamily: fontFamily.semibold },
   income: { color: colors.income },

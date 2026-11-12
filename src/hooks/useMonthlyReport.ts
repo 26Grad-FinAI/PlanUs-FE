@@ -1,58 +1,84 @@
 /** 월별 조회와 재시도, 두 비교 영역의 펼침 상태를 관리한다. */
-import { useEffect, useState } from 'react';
-import { fetchMonthlyReport } from '@/services/mock/report.mock';
-import { MonthlyReport } from '@/types/report';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { fetchMonthlyReport, fetchPeerComparison } from '@/services/api/reportApi';
+import { useRecordRevision } from '@/store/useRecordRevision';
+import { toISODate } from '@/utils/formatDate';
 
-interface ReportResult {
-  key: string;
-  report: MonthlyReport | null;
-  error: string | null;
+type QueryResult<T> = { status: 'success'; data: T } | { status: 'error' };
+
+function useReportQuery<T>(
+  yearMonth: string,
+  revision: string,
+  fetchData: (yearMonth: string, signal: AbortSignal) => Promise<T>,
+) {
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<{
+    key: string;
+    attempt: number;
+    value: QueryResult<T>;
+    refreshFailed?: boolean;
+  }>();
+  const key = `${yearMonth}/${revision}`;
+
+  useFocusEffect(
+    useCallback(() => {
+      const controller = new AbortController();
+      const { signal } = controller;
+      void fetchData(yearMonth, signal).then(
+        (data) => {
+          if (!signal.aborted) setResult({ key, attempt, value: { status: 'success', data } });
+        },
+        () => {
+          if (!signal.aborted) {
+            setResult((previous) =>
+              previous?.key === key && previous.value.status === 'success'
+                ? { ...previous, attempt, refreshFailed: true }
+                : { key, attempt, value: { status: 'error' } },
+            );
+          }
+        },
+      );
+      return () => controller.abort();
+    }, [yearMonth, key, attempt, fetchData]),
+  );
+
+  const current = result?.key === key ? result : undefined;
+  return {
+    result:
+      current && (current.attempt === attempt || current.value.status === 'success')
+        ? current.value
+        : { status: 'loading' as const },
+    refreshFailed: current?.attempt === attempt && current.refreshFailed === true,
+    retry: () => setAttempt((previous) => previous + 1),
+  };
 }
 
 export function useMonthlyReport() {
+  const recordRevision = useRecordRevision((state) => state.revision);
   const [monthCursor, setMonthCursor] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
-  const [attempt, setAttempt] = useState(0);
-  const [result, setResult] = useState<ReportResult | null>(null);
+  const [monthRevision, setMonthRevision] = useState(0);
   const [budgetExpanded, setBudgetExpanded] = useState(false);
   const [peersExpanded, setPeersExpanded] = useState(false);
-  const year = monthCursor.getFullYear();
-  const month = monthCursor.getMonth() + 1;
-  const requestKey = `${year}-${month}-${attempt}`;
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchMonthlyReport(year, month).then(
-      (report) => {
-        if (!cancelled) setResult({ key: requestKey, report, error: null });
-      },
-      () => {
-        if (!cancelled) {
-          setResult({ key: requestKey, report: null, error: '통계를 불러오지 못했어요.' });
-        }
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [year, month, requestKey]);
+  const yearMonth = toISODate(monthCursor).slice(0, 7);
+  const revision = `${monthRevision}/${recordRevision}`;
+  const report = useReportQuery(yearMonth, revision, fetchMonthlyReport);
+  const peers = useReportQuery(yearMonth, revision, fetchPeerComparison);
 
   function moveMonth(offset: number) {
     setMonthCursor((previous) => new Date(previous.getFullYear(), previous.getMonth() + offset, 1));
+    setMonthRevision((previous) => previous + 1);
     setBudgetExpanded(false);
     setPeersExpanded(false);
   }
 
-  // 월 선택 직후에는 이전 결과를 새 월의 통계처럼 표시하지 않는다.
-  const currentResult = result?.key === requestKey ? result : null;
   return {
     monthCursor,
-    report: currentResult?.report ?? null,
-    error: currentResult?.error ?? null,
-    isLoading: currentResult === null,
-    retry: () => setAttempt((previous) => previous + 1),
+    report,
+    peers,
     handlePrevMonth: () => moveMonth(-1),
     handleNextMonth: () => moveMonth(1),
     budgetExpanded,
