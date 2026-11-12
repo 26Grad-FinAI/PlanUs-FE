@@ -1,22 +1,30 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import type { ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '@/components/common/Header';
 import { Text } from '@/components/common/Text';
 import { SavingsPlanCard } from '@/components/domain/ai/SavingsPlanCard';
 import { SavingsSummary } from '@/components/domain/ai/SavingsSummary';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
+import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
 import { colors } from '@/constants/colors';
 import { metrics, radius, spacing } from '@/constants/layout';
 
 /** 헤더와 탭바는 고정하고, 가변 개수의 플랜과 계산 결과를 함께 스크롤한다. */
 export function AIAnalysisScreen() {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useScrollToTopOnFocus(scrollRef);
   const { analysis, selectedIds, appliedIds, totals, allApplied, togglePlan, apply, notice } =
     useAIAnalysis();
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <Header title="AI 분석" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
         <View style={styles.overview}>
           <View style={styles.heading}>
             <Text variant="title" style={styles.headingText}>

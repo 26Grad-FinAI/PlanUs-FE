@@ -1,5 +1,5 @@
 /** 월별 조회 상태를 표시하고 통계 섹션을 시안 순서대로 배치한다. */
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   Animated,
   useWindowDimensions,
 } from 'react-native';
+import type { ScrollViewInstance } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/common/Button';
@@ -25,6 +26,7 @@ import { fontSize } from '@/constants/typography';
 import { useMonthlyReport } from '@/hooks/useMonthlyReport';
 import { useMotionEnabled } from '@/hooks/useMotionEnabled';
 import { useReportEntrance } from '@/hooks/useReportEntrance';
+import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
 function entranceStyle(progress: Animated.Value | undefined) {
@@ -46,6 +48,7 @@ export function MonthlyReportScreen() {
   const { width, fontScale } = useWindowDimensions();
   const isFocused = useIsFocused();
   const motionEnabled = useMotionEnabled();
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const {
     monthCursor,
     report: reportQuery,
@@ -66,6 +69,7 @@ export function MonthlyReportScreen() {
     peersReady: peers.result.status === 'success',
   });
   const { progress } = entrance;
+  useScrollToTopOnFocus(scrollRef, entrance.resetViewportOffset);
   const donutProgress = progress?.categories;
   // 큰 글자나 긴 금액은 축약하지 않고 요약을 세로로 배치한다.
   const stackSummary =
@@ -77,6 +81,7 @@ export function MonthlyReportScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Header title="소비 통계" />
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         onLayout={entrance.onViewportLayout}

@@ -1,6 +1,7 @@
 /** 홈은 조회 상태를 유지한 채 루트 스택의 상세 화면으로 이동한다. */
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import type { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,13 +12,17 @@ import { colors } from '@/constants/colors';
 import { fontFamily } from '@/constants/typography';
 import { useHomeCalendar } from '@/hooks/useHomeCalendar';
 import { useMotionEnabled } from '@/hooks/useMotionEnabled';
+import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
 import { SummaryCard } from '@/components/domain/home/SummaryCard';
 import { MonthlyCalendar } from '@/components/domain/home/MonthlyCalendar';
 import { RecentRecordList } from '@/components/domain/home/RecentRecordList';
+import type { DateGroup } from '@/types/home';
 
 export function HomeCalendarScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const motionEnabled = useMotionEnabled();
+  const scrollRef = useRef<FlatList<DateGroup>>(null);
+  useScrollToTopOnFocus(scrollRef);
   const {
     today,
     todayISO,
@@ -42,6 +47,7 @@ export function HomeCalendarScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <RecentRecordList
+        scrollRef={scrollRef}
         key={`${monthCursor.getFullYear()}-${monthCursor.getMonth()}`}
         contentContainerStyle={styles.content}
         groups={visibleGroups}
