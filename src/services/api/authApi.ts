@@ -1,4 +1,4 @@
-import { ApiError, request } from '@/services/api/apiClient';
+import { ApiError, authenticatedRequest, request } from '@/services/api/apiClient';
 import { AuthError, type AuthResponse, type LoginParams, type SignupParams } from '@/types/auth';
 
 export async function login(params: LoginParams): Promise<AuthResponse> {
@@ -6,6 +6,10 @@ export async function login(params: LoginParams): Promise<AuthResponse> {
     method: 'POST',
     body: JSON.stringify(params),
   });
+}
+
+export function logout() {
+  return authenticatedRequest<void>('/auth/logout', { method: 'POST' });
 }
 
 export async function signup(params: SignupParams): Promise<AuthResponse> {

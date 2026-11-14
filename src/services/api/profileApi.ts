@@ -12,6 +12,23 @@ interface ProfilePayload {
   selfIntroduction: string | null;
 }
 
+interface AccountInfo {
+  email: string;
+  nickname: string | null;
+  createdAt: string;
+}
+
+type ProfileResponse = ProfilePayload & AccountInfo;
+
+function fetchProfile(signal: AbortSignal) {
+  return authenticatedRequest<ProfileResponse>('/users/me/profile', { signal });
+}
+
+export async function fetchAccountInfo(signal: AbortSignal): Promise<AccountInfo> {
+  const { email, nickname, createdAt } = await fetchProfile(signal);
+  return { email, nickname, createdAt };
+}
+
 export function saveProfile(profile: UserProfile, signal?: AbortSignal) {
   if (profile.age === null) throw new Error('나이를 입력해주세요.');
 
@@ -37,7 +54,7 @@ export function saveProfile(profile: UserProfile, signal?: AbortSignal) {
 }
 
 export async function fetchSavedProfile(signal: AbortSignal): Promise<UserProfile> {
-  const profile = await authenticatedRequest<ProfilePayload>('/users/me/profile', { signal });
+  const profile = await fetchProfile(signal);
   return {
     age: profile.age,
     gender: profile.gender === 'MALE' ? 'male' : 'female',
