@@ -1,24 +1,26 @@
-import { BudgetCategory } from '@/types/budget';
+export interface WeeklyFeedback {
+  feedback: string;
+  confidence?: string | null;
+}
 
-/** 월 절약액은 양수로 보관하고 화면에서만 차감 기호를 붙인다. */
+export type WeeklyFeedbackState =
+  | { status: 'loading' }
+  | ({ status: 'success'; weekStart: string; weekEnd: string } & WeeklyFeedback)
+  | { status: 'empty' }
+  | { status: 'error' };
+
 export interface SavingsPlan {
-  id: string;
-  category: BudgetCategory;
-  description: string;
-  monthlySavings: number;
+  categoryId: number;
+  categoryName: string;
+  reductionWon: number;
+  currentBehavior: string | null;
+  targetBehavior: string | null;
+  contextInsight: string | null;
+  monthlySavingWon: number;
 }
 
-export interface AIAnalysis {
-  id: string;
-  periodLabel: string;
-  insight: string;
-  plans: SavingsPlan[];
+export interface SavingsApplication {
+  applied: boolean;
+  updatedCategories: { categoryId: number; before: number; after: number }[];
+  newTotalBudget: number;
 }
-
-export interface AppliedSavingsPlan extends SavingsPlan {
-  year: number;
-  month: number;
-  analysisId: string;
-}
-
-export type ApplySavingsResult = { success: true } | { success: false; message: string };

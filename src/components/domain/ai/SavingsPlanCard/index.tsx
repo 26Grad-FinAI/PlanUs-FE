@@ -2,46 +2,65 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { SavingsPlan } from '@/types/ai';
-import { BUDGET_CATEGORY_META } from '@/constants/categories';
 import { colors } from '@/constants/colors';
-import { radius, spacing } from '@/constants/layout';
+import { metrics, radius, spacing } from '@/constants/layout';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
 interface SavingsPlanCardProps {
   plan: SavingsPlan;
   selected: boolean;
-  applied: boolean;
+  disabled: boolean;
   onPress: () => void;
 }
 
-export function SavingsPlanCard({ plan, selected, applied, onPress }: SavingsPlanCardProps) {
-  const label = BUDGET_CATEGORY_META[plan.category].label;
+export function SavingsPlanCard({ plan, selected, disabled, onPress }: SavingsPlanCardProps) {
+  const { categoryName, currentBehavior, targetBehavior, contextInsight, monthlySavingWon } = plan;
+  const amount = formatFullAmount(monthlySavingWon);
   return (
     <Pressable
       accessibilityRole="checkbox"
-      accessibilityLabel={`${label}, ${plan.description}, 월 ${formatFullAmount(plan.monthlySavings)} 절약${applied ? ', 적용 완료' : ''}`}
-      accessibilityState={{ checked: selected, disabled: applied }}
-      disabled={applied}
+      accessibilityLabel={[
+        categoryName,
+        currentBehavior,
+        targetBehavior,
+        contextInsight,
+        `월 ${amount} 절약`,
+      ]
+        .filter(Boolean)
+        .join(', ')}
+      accessibilityState={{ checked: selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
-      style={[styles.card, selected && styles.selected, applied && styles.applied]}
+      style={[styles.card, selected && styles.selected]}
     >
       <View style={styles.row}>
-        <Text variant="section" style={styles.label}>
-          {label}
+        <Text variant="body" weight="bold" style={[styles.heading, styles.label]}>
+          {categoryName}
         </Text>
-        <Text variant="section" style={[styles.amount, applied && styles.muted]}>
-          -{formatFullAmount(plan.monthlySavings)}
+        <Text variant="body" weight="bold" style={styles.heading}>
+          {monthlySavingWon > 0 ? '-' : ''}
+          {amount}
         </Text>
       </View>
-      <Text variant="label" style={styles.muted}>
-        {plan.description}
-      </Text>
-      {applied && (
-        <View style={styles.badge}>
-          <Text variant="caption" weight="semibold" style={styles.badgeText}>
-            적용 완료
-          </Text>
-        </View>
+      {(currentBehavior || targetBehavior) && (
+        <Text variant="label" weight="semibold" style={styles.behavior}>
+          {currentBehavior}
+          {currentBehavior && targetBehavior && (
+            <Text variant="inherit" style={styles.arrow}>
+              {' → '}
+            </Text>
+          )}
+          {targetBehavior && (
+            <Text variant="inherit" style={styles.target}>
+              {targetBehavior}
+            </Text>
+          )}
+        </Text>
+      )}
+      {!!contextInsight && (
+        <Text variant="label" weight="regular" style={styles.muted}>
+          {contextInsight}
+        </Text>
       )}
     </Pressable>
   );
@@ -49,31 +68,24 @@ export function SavingsPlanCard({ plan, selected, applied, onPress }: SavingsPla
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.lg + 2,
+    padding: spacing.xl - metrics.hairline,
     gap: spacing.xs,
     borderRadius: radius.card,
     backgroundColor: colors.backgroundAlt,
-    borderWidth: 1,
+    borderWidth: metrics.hairline,
     borderColor: colors.transparent,
   },
   selected: { backgroundColor: colors.background, borderColor: colors.primary },
-  applied: { borderColor: colors.border },
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  label: { flex: 1, fontSize: 16, lineHeight: 24 },
-  amount: { color: colors.primaryDark, fontSize: 18, lineHeight: 24 },
+  heading: { lineHeight: 20 },
+  label: { flex: 1 },
+  behavior: { color: colors.textSecondary },
+  arrow: { color: colors.textDisabled },
+  target: { color: colors.primaryDark },
   muted: { color: colors.textTertiary },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.disabledBg,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    marginTop: spacing.xs,
-  },
-  badgeText: { color: colors.textTertiary },
 });
