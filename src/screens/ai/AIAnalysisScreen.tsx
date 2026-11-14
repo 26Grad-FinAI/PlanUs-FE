@@ -7,8 +7,10 @@ import { Button } from '@/components/common/Button';
 import { Text } from '@/components/common/Text';
 import { SavingsPlanCard } from '@/components/domain/ai/SavingsPlanCard';
 import { SavingsSummary } from '@/components/domain/ai/SavingsSummary';
+import { WeeklyFeedbackCard } from '@/components/domain/ai/WeeklyFeedbackCard';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
+import { useWeeklyFeedback } from '@/hooks/useWeeklyFeedback';
 import { colors } from '@/constants/colors';
 import { metrics, spacing } from '@/constants/layout';
 import { formatFullAmount } from '@/utils/formatCurrency';
@@ -17,6 +19,7 @@ import { formatFullAmount } from '@/utils/formatCurrency';
 export function AIAnalysisScreen() {
   const scrollRef = useRef<ScrollViewInstance>(null);
   useScrollToTopOnFocus(scrollRef);
+  const weeklyFeedback = useWeeklyFeedback();
   const {
     query,
     selectedIds,
@@ -38,6 +41,7 @@ export function AIAnalysisScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
+        <WeeklyFeedbackCard weeklyFeedback={weeklyFeedback} />
         <View style={styles.simulation}>
           <View style={styles.sectionHeading}>
             <Text

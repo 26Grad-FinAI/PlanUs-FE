@@ -10,6 +10,10 @@ interface ApiResponse<T> {
   result?: T;
 }
 
+interface RequestOptions extends RequestInit {
+  internal?: boolean;
+}
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -21,8 +25,12 @@ export class ApiError extends Error {
   }
 }
 
-export async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function request<T>(
+  path: string,
+  { internal, ...options }: RequestOptions = {},
+): Promise<T> {
   if (!baseUrl) throw new Error('API 주소가 설정되지 않았어요.');
+  const requestBase = internal ? baseUrl.replace(/\/api$/, '') : baseUrl;
 
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
@@ -32,13 +40,15 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
 
   let response: Response;
   try {
-    response = await fetch(baseUrl + path, { ...options, headers });
+    response = await fetch(requestBase + path, { ...options, headers });
   } catch (error) {
     if (options.signal?.aborted) throw error;
     throw new Error('서버에 연결할 수 없어요. 인터넷 연결을 확인하고 다시 시도해주세요.');
   }
 
-  const payload = (await response.json().catch(() => null)) as ApiResponse<T> | null;
+  const body = await response.json().catch(() => null);
+  if (internal && response.ok && body !== null) return body as T;
+  const payload = body as ApiResponse<T> | null;
   if (!response.ok || payload?.isSuccess !== true) {
     throw new ApiError(
       response.status,
@@ -92,7 +102,10 @@ export async function refreshSession(): Promise<Session> {
   return promise;
 }
 
-export async function authenticatedRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function authenticatedRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const session = requireSession();
   const headers = new Headers(options.headers);
   headers.set('Authorization', 'Bearer ' + session.accessToken);
