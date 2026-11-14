@@ -27,5 +27,8 @@ export const colors = {
   expense: '#F0445C',
   expenseBg: '#FEF2F2',
 
+  savingsChartSaved: '#A5DAF3',
+  savingsChartShortfall: '#F5ADB6',
+
   shadow: '#000000',
 } as const;
