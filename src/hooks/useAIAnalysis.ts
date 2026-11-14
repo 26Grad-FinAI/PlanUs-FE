@@ -1,79 +1,171 @@
-import { useCallback, useMemo, useState } from 'react';
-import { AppState } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { createMockAIAnalysis } from '@/services/mock/ai.mock';
+import { useToday } from '@/hooks/useToday';
+import { ApiError } from '@/services/api/apiClient';
+import { currentBudgetMonth } from '@/services/api/budgetApi';
+import { applySavingsPlans, fetchSavingsPlans } from '@/services/api/savingsSimulationApi';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useBudgetStore } from '@/store/useBudgetStore';
-import { calculateSavings, getAppliedPlanIds } from '@/utils/savings';
-import { toISODate } from '@/utils/formatDate';
+import { useRecordRevision } from '@/store/useRecordRevision';
+import type { SavingsPlan } from '@/types/ai';
 
-/** 선택은 시뮬레이션이며, 저장된 적용 이력만 예산에 영향을 준다. */
+type PlanQuery =
+  | { status: 'loading' }
+  | { status: 'success'; plans: SavingsPlan[] }
+  | { status: 'error' };
+
+type Application =
+  | { status: 'applying' }
+  | { status: 'applied'; totalBudget: number }
+  | { status: 'alreadyApplied' }
+  | { status: 'error'; message: string };
+
+interface MonthScope {
+  sessionId: symbol;
+  yearMonth: string;
+}
+
 export function useAIAnalysis() {
-  const [today, setToday] = useState(() => new Date());
-  const dayKey = toISODate(today);
-  const analysis = useMemo(() => createMockAIAnalysis(new Date(`${dayKey}T12:00:00`)), [dayKey]);
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
-  const selectionScope = `${year}-${month}-${analysis.id}`;
-  const [selection, setSelection] = useState({ scope: selectionScope, ids: [] as string[] });
-  const [notice, setNotice] = useState<{ scope: string; text: string; error: boolean } | null>(
-    null,
-  );
-  const appliedSavings = useBudgetStore((state) => state.appliedSavings);
-  const applySavingsPlans = useBudgetStore((state) => state.applySavingsPlans);
-  const appliedIds = useMemo(
-    () => getAppliedPlanIds(appliedSavings, analysis.id, year, month),
-    [appliedSavings, analysis.id, year, month],
-  );
-  const selectedIds = new Set(
-    selection.scope === selectionScope ? selection.ids.filter((id) => !appliedIds.has(id)) : [],
-  );
-  const selectedPlans = analysis.plans.filter((plan) => selectedIds.has(plan.id));
-  const totals = calculateSavings(selectedPlans);
-  const allApplied =
-    analysis.plans.length > 0 && analysis.plans.every((plan) => appliedIds.has(plan.id));
+  useToday();
+  const { year, month } = currentBudgetMonth();
+  const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
+  const sessionId = useAuthStore((state) => state.session?.id);
+  const [attempt, setAttempt] = useState(0);
+  const [response, setResponse] = useState<{
+    sessionId: symbol;
+    month: string;
+    attempt: number;
+    query: PlanQuery;
+  }>();
+  const [selection, setSelection] = useState<MonthScope & { ids: number[] }>();
+  const [application, setApplication] = useState<
+    MonthScope & {
+      planKey: string;
+      result: Application;
+    }
+  >();
+  const applyPending = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
-      // 탭 복귀, 앱 재개, 자정 경과 시 이번 주와 이번 달을 다시 계산한다.
-      const refresh = () => setToday(new Date());
-      refresh();
-      const timer = setInterval(refresh, 60000);
-      const subscription = AppState.addEventListener('change', (state) => {
-        if (state === 'active') refresh();
-      });
-      return () => {
-        clearInterval(timer);
-        subscription.remove();
-      };
-    }, []),
+      if (!sessionId) return;
+      const controller = new AbortController();
+      const { signal } = controller;
+      void fetchSavingsPlans(yearMonth, signal).then(
+        (plans) => {
+          if (signal.aborted) return;
+          setResponse({
+            sessionId,
+            month: yearMonth,
+            attempt,
+            query: { status: 'success', plans },
+          });
+          setSelection((previous) => {
+            if (previous?.sessionId !== sessionId || previous.yearMonth !== yearMonth) {
+              return previous;
+            }
+            return {
+              ...previous,
+              ids: previous.ids.filter((id) => plans.some((plan) => plan.categoryId === id)),
+            };
+          });
+        },
+        () => {
+          if (!signal.aborted)
+            setResponse({ sessionId, month: yearMonth, attempt, query: { status: 'error' } });
+        },
+      );
+      return () => controller.abort();
+    }, [yearMonth, attempt, sessionId]),
   );
 
-  function togglePlan(id: string) {
-    if (appliedIds.has(id)) return;
-    setNotice(null);
-    setSelection((current) => {
-      const ids = current.scope === selectionScope ? current.ids : [];
+  const query: PlanQuery =
+    response &&
+    response.sessionId === sessionId &&
+    response.month === yearMonth &&
+    response.attempt === attempt
+      ? response.query
+      : { status: 'loading' };
+  const plans = query.status === 'success' ? query.plans : [];
+  const planKey = plans
+    .map(({ categoryId, reductionWon }) => `${categoryId}:${reductionWon}`)
+    .sort()
+    .join(',');
+  const currentApplication =
+    application?.sessionId === sessionId && application?.yearMonth === yearMonth
+      ? application
+      : undefined;
+  const result =
+    currentApplication &&
+    (currentApplication.result.status === 'applying' || currentApplication.planKey === planKey)
+      ? currentApplication.result
+      : undefined;
+  const selectedIds =
+    selection?.sessionId === sessionId && selection?.yearMonth === yearMonth ? selection.ids : [];
+  const selectedPlans = plans.filter((plan) => selectedIds.includes(plan.categoryId));
+  const monthly = selectedPlans.reduce((sum, plan) => sum + plan.monthlySavingWon, 0);
+  const locked = result?.status === 'applied' || result?.status === 'alreadyApplied';
+
+  function togglePlan(categoryId: number) {
+    if (!sessionId || applyPending.current || locked) return;
+    setApplication(undefined);
+    setSelection((previous) => {
+      const ids =
+        previous?.sessionId === sessionId && previous.yearMonth === yearMonth ? previous.ids : [];
       return {
-        scope: selectionScope,
-        ids: ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id],
+        sessionId,
+        yearMonth,
+        ids: ids.includes(categoryId)
+          ? ids.filter((id) => id !== categoryId)
+          : [...ids, categoryId],
       };
     });
   }
 
-  function apply() {
-    const result = applySavingsPlans(analysis, [...selectedIds]);
-    setNotice(result.success ? null : { scope: selectionScope, text: result.message, error: true });
-    if (result.success) setSelection({ scope: selectionScope, ids: [] });
+  async function apply() {
+    if (!sessionId || applyPending.current || locked || !selectedPlans.length) return;
+
+    applyPending.current = true;
+    const scope = { sessionId, yearMonth, planKey };
+    setApplication({ ...scope, result: { status: 'applying' } });
+    const isCurrentSession = () => useAuthStore.getState().session?.id === sessionId;
+    try {
+      const applied = await applySavingsPlans(
+        yearMonth,
+        selectedPlans.map((plan) => plan.categoryId),
+      );
+      if (!isCurrentSession()) return;
+      if (!applied.applied) throw new Error('예산에 반영하지 못했어요. 다시 시도해주세요.');
+      useBudgetStore.getState().updateAppliedSavings(yearMonth, applied.updatedCategories);
+      useRecordRevision.getState().invalidate();
+      setApplication({
+        ...scope,
+        result: { status: 'applied', totalBudget: applied.newTotalBudget },
+      });
+    } catch (error) {
+      if (!isCurrentSession()) return;
+      if (error instanceof ApiError && error.code === 'SIMULATION_409_002') {
+        useRecordRevision.getState().invalidate();
+        setApplication({ ...scope, result: { status: 'alreadyApplied' } });
+      } else {
+        const message = error instanceof Error ? error.message : '예산에 반영하지 못했어요.';
+        setApplication({ ...scope, result: { status: 'error', message } });
+      }
+    } finally {
+      applyPending.current = false;
+    }
   }
 
   return {
-    analysis,
+    query,
     selectedIds,
-    appliedIds,
-    totals,
-    allApplied,
+    hasSelection: selectedPlans.length > 0,
+    monthly,
+    annual: monthly * 12,
+    result,
+    locked,
     togglePlan,
     apply,
-    notice: notice?.scope === selectionScope ? notice : null,
+    retry: () => setAttempt((previous) => previous + 1),
   };
 }

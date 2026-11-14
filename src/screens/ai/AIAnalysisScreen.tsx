@@ -1,22 +1,38 @@
 import React, { useRef } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import type { ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '@/components/common/Header';
+import { Button } from '@/components/common/Button';
 import { Text } from '@/components/common/Text';
 import { SavingsPlanCard } from '@/components/domain/ai/SavingsPlanCard';
 import { SavingsSummary } from '@/components/domain/ai/SavingsSummary';
+import { WeeklyFeedbackCard } from '@/components/domain/ai/WeeklyFeedbackCard';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
+import { useWeeklyFeedback } from '@/hooks/useWeeklyFeedback';
 import { colors } from '@/constants/colors';
-import { metrics, radius, spacing } from '@/constants/layout';
+import { metrics, spacing } from '@/constants/layout';
+import { formatFullAmount } from '@/utils/formatCurrency';
 
 /** 헤더와 탭바는 고정하고, 가변 개수의 플랜과 계산 결과를 함께 스크롤한다. */
 export function AIAnalysisScreen() {
   const scrollRef = useRef<ScrollViewInstance>(null);
   useScrollToTopOnFocus(scrollRef);
-  const { analysis, selectedIds, appliedIds, totals, allApplied, togglePlan, apply, notice } =
-    useAIAnalysis();
+  const weeklyFeedback = useWeeklyFeedback();
+  const {
+    query,
+    selectedIds,
+    monthly,
+    annual,
+    hasSelection,
+    result,
+    locked,
+    togglePlan,
+    apply,
+    retry,
+  } = useAIAnalysis();
+  const applying = result?.status === 'applying';
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <Header title="AI 분석" />
@@ -25,64 +41,74 @@ export function AIAnalysisScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        <View style={styles.overview}>
-          <View style={styles.heading}>
-            <Text variant="title" style={styles.headingText}>
-              이번 주{' '}
-            </Text>
-            <View style={styles.highlightedTitle}>
-              <View style={styles.highlight} />
-              <Text variant="title" style={styles.headingText}>
-                AI 종합 의견
-              </Text>
-            </View>
-          </View>
-          <Text variant="label" style={styles.period}>
-            {analysis.periodLabel}
-          </Text>
-          <View style={styles.insightCard}>
-            <Text variant="label" style={styles.insight}>
-              {analysis.insight}
-            </Text>
-          </View>
-        </View>
+        <WeeklyFeedbackCard weeklyFeedback={weeklyFeedback} />
         <View style={styles.simulation}>
           <View style={styles.sectionHeading}>
-            <Text variant="section" accessibilityRole="header">
+            <Text
+              variant="body"
+              weight="bold"
+              accessibilityRole="header"
+              style={styles.simulationTitle}
+            >
               절약 시뮬레이션
             </Text>
-            <Text variant="label" style={styles.muted}>
+            <Text variant="label" weight="regular" style={styles.muted}>
               AI가 추천하는 절약 플랜을 확인해보세요
             </Text>
           </View>
-          <View style={styles.plans}>
-            {analysis.plans.map((plan) => (
-              <SavingsPlanCard
-                key={plan.id}
-                plan={plan}
-                selected={selectedIds.has(plan.id)}
-                applied={appliedIds.has(plan.id)}
-                onPress={() => togglePlan(plan.id)}
-              />
-            ))}
-            {analysis.plans.length === 0 && (
+          {query.status === 'loading' && (
+            <ActivityIndicator color={colors.primary} accessibilityLabel="절약 플랜 조회 중" />
+          )}
+          {query.status === 'error' && (
+            <View style={styles.sectionHeading}>
+              <Text accessibilityRole="alert">절약 플랜을 불러오지 못했어요.</Text>
+              <Button label="다시 시도" onPress={retry} variant="ghost" size="sm" />
+            </View>
+          )}
+          {query.status === 'success' &&
+            (query.plans.length === 0 ? (
               <Text style={styles.muted}>추천할 절약 플랜이 없어요. 다음 분석을 기다려주세요.</Text>
-            )}
-          </View>
-          <SavingsSummary
-            {...totals}
-            allApplied={allApplied}
-            hasPlans={analysis.plans.length > 0}
-            onApply={apply}
-          />
-          {notice?.error && (
+            ) : (
+              <>
+                <View style={styles.plans}>
+                  {query.plans.map((plan) => (
+                    <SavingsPlanCard
+                      key={plan.categoryId}
+                      plan={plan}
+                      selected={selectedIds.includes(plan.categoryId)}
+                      disabled={applying || locked}
+                      onPress={() => togglePlan(plan.categoryId)}
+                    />
+                  ))}
+                </View>
+                <SavingsSummary
+                  monthly={monthly}
+                  annual={annual}
+                  hasSelection={hasSelection}
+                  applied={locked}
+                  applying={applying}
+                  onApply={apply}
+                />
+              </>
+            ))}
+          {result?.status === 'applied' && (
+            <Text accessibilityLiveRegion="polite" variant="label" style={styles.success}>
+              이번 달 예산에 반영했어요. 총예산은 {formatFullAmount(result.totalBudget)}이에요.
+            </Text>
+          )}
+          {result?.status === 'alreadyApplied' && (
+            <Text accessibilityLiveRegion="polite" variant="label" style={styles.muted}>
+              이번 절약 플랜은 이미 예산에 반영했어요.
+            </Text>
+          )}
+          {result?.status === 'error' && (
             <Text
-              accessibilityRole={notice.error ? 'alert' : 'text'}
+              accessibilityRole="alert"
               accessibilityLiveRegion="polite"
               variant="label"
-              style={notice.error ? styles.error : styles.success}
+              style={styles.error}
             >
-              {notice.text}
+              {result.message}
             </Text>
           )}
         </View>
@@ -102,28 +128,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.huge,
     gap: spacing.section,
   },
-  overview: { gap: spacing.xs },
-  heading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
-  headingText: { fontSize: 20, lineHeight: 30 },
-  highlightedTitle: { alignSelf: 'flex-start' },
-  highlight: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 3,
-    height: 10,
-    backgroundColor: '#ACDDF6',
-  },
-  period: { color: colors.textDisabled },
-  insightCard: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: radius.card,
-    padding: spacing.lg + 2,
-    marginTop: spacing.sm,
-  },
-  insight: { color: colors.textSecondary, lineHeight: 22 },
   simulation: { gap: spacing.lg },
-  sectionHeading: { gap: spacing.xxs },
+  sectionHeading: { gap: spacing.xxs, marginBottom: -spacing.xs },
+  simulationTitle: { lineHeight: 20 },
   plans: { gap: spacing.md },
   muted: { color: colors.textTertiary },
   error: { color: colors.error },

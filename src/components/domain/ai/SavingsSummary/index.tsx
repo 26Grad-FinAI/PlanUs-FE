@@ -3,41 +3,40 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { Button } from '@/components/common/Button';
 import { colors } from '@/constants/colors';
-import { radius, spacing } from '@/constants/layout';
+import { metrics, radius, spacing } from '@/constants/layout';
+import { fontSize } from '@/constants/typography';
 import { formatFullAmount } from '@/utils/formatCurrency';
 
 interface SavingsSummaryProps {
   monthly: number;
   annual: number;
-  allApplied: boolean;
-  hasPlans: boolean;
+  hasSelection: boolean;
+  applied: boolean;
+  applying: boolean;
   onApply: () => void;
 }
 
 export function SavingsSummary({
   monthly,
   annual,
-  allApplied,
-  hasPlans,
+  hasSelection,
+  applied,
+  applying,
   onApply,
 }: SavingsSummaryProps) {
-  const empty = monthly === 0;
+  const empty = !hasSelection;
   return (
     <View style={[styles.card, empty && styles.empty]}>
       <View accessibilityLiveRegion="polite" style={styles.copy}>
-        <Text variant="label" style={styles.muted}>
+        <Text variant="label" weight="regular" style={[styles.caption, empty && styles.muted]}>
           월 {formatFullAmount(monthly)} 절약
         </Text>
         {empty ? (
-          <Text variant="section" style={styles.muted}>
-            {allApplied
-              ? '모든 절약 플랜을 적용했어요'
-              : hasPlans
-                ? '절약할 항목을 선택해보세요'
-                : '추천 절약 플랜이 아직 없어요'}
+          <Text variant="body" weight="bold" style={[styles.headline, styles.muted]}>
+            {applied ? '이미 예산에 반영했어요' : '절약할 항목을 선택해보세요'}
           </Text>
         ) : (
-          <Text variant="title" style={styles.annual}>
+          <Text variant="title" style={[styles.headline, styles.annual]}>
             매년{' '}
             <Text variant="inherit" style={styles.emphasis}>
               {formatFullAmount(annual)}
@@ -46,7 +45,15 @@ export function SavingsSummary({
           </Text>
         )}
       </View>
-      <Button label="이번 달 예산에 반영하기" disabled={empty} onPress={onApply} fullWidth />
+      <Button
+        label={applied ? '예산 반영 완료' : '이번 달 예산에 반영하기'}
+        disabled={empty || applied}
+        loading={applying}
+        onPress={onApply}
+        fullWidth
+        style={styles.applyButton}
+        labelStyle={styles.applyLabel}
+      />
     </View>
   );
 }
@@ -60,7 +67,11 @@ const styles = StyleSheet.create({
   },
   empty: { backgroundColor: colors.backgroundAlt },
   copy: { gap: spacing.xs },
+  caption: { color: colors.textSecondary, lineHeight: 18 },
   muted: { color: colors.textTertiary },
-  annual: { fontSize: 22, lineHeight: 32 },
+  headline: { minHeight: 26, lineHeight: 26 },
+  annual: { fontSize: 22, letterSpacing: -0.4 },
   emphasis: { color: colors.primaryDark },
+  applyButton: { minHeight: metrics.header },
+  applyLabel: { fontSize: fontSize.base, lineHeight: 24, textAlign: 'center' },
 });

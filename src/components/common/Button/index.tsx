@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import type { StyleProp, TextStyle } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { colors } from '@/constants/colors';
 import { spacing, radius, metrics } from '@/constants/layout';
@@ -15,6 +16,7 @@ interface ButtonProps extends TouchableOpacityProps {
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   fullWidth?: boolean;
+  labelStyle?: StyleProp<TextStyle>;
 }
 export function Button({
   label,
@@ -22,6 +24,7 @@ export function Button({
   size = 'lg',
   loading = false,
   fullWidth = false,
+  labelStyle,
   disabled,
   style,
   accessibilityState,
@@ -58,7 +61,10 @@ export function Button({
       {loading ? (
         <ActivityIndicator accessibilityLabel="처리 중" color={textColor} />
       ) : (
-        <Text variant={size === 'sm' ? 'label' : 'button'} style={{ color: textColor }}>
+        <Text
+          variant={size === 'sm' ? 'label' : 'button'}
+          style={[labelStyle, { color: textColor }]}
+        >
           {label}
         </Text>
       )}
