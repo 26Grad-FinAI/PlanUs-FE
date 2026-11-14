@@ -41,6 +41,8 @@ export type RootStackParamList = {
   Auth: undefined; // AuthStack
   Onboarding: undefined; // OnboardingStack
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
+  SavingsStatus: undefined;
+  AccountInfo: undefined;
   RecordDetail: { record: RecordListItem };
   RecordAdd: undefined;
   RecordEdit: { record: SpendingRecord };
