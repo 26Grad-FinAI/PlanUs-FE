@@ -22,7 +22,6 @@ export function AIAnalysisScreen() {
   const {
     query,
     selectedIds,
-    appliedIds,
     monthly,
     annual,
     hasSelection,
@@ -33,6 +32,8 @@ export function AIAnalysisScreen() {
     retry,
   } = useAIAnalysis();
   const applying = result?.status === 'applying';
+  const errorMessage =
+    result?.status === 'error' || result?.status === 'alreadyApplied' ? result.message : undefined;
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <Header title="AI 분석" />
@@ -76,8 +77,7 @@ export function AIAnalysisScreen() {
                       key={plan.categoryId}
                       plan={plan}
                       selected={selectedIds.includes(plan.categoryId)}
-                      disabled={applying || appliedIds.includes(plan.categoryId)}
-                      applied={appliedIds.includes(plan.categoryId)}
+                      disabled={applying || locked}
                       onPress={() => togglePlan(plan.categoryId)}
                     />
                   ))}
@@ -92,14 +92,14 @@ export function AIAnalysisScreen() {
                 />
               </>
             ))}
-          {result?.status === 'error' && (
+          {errorMessage && (
             <Text
               accessibilityRole="alert"
               accessibilityLiveRegion="polite"
               variant="label"
               style={styles.error}
             >
-              {result.message}
+              {errorMessage}
             </Text>
           )}
         </View>
