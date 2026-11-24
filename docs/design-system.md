@@ -102,12 +102,17 @@ import { Text } from '@/components/common/Text';
 
 다음 PNG 에셋은 원본 해상도와 투명도를 유지한다.
 
-| 내용      | 저장 파일                                               |
-| --------- | ------------------------------------------------------- |
-| 파란색 P  | `assets/images/brand/planus-logo-3d.png`                |
-| 분석 문서 | `assets/images/illustrations/budget-analysis-3d.png`    |
-| 저금통    | `assets/images/illustrations/savings-piggy-bank-3d.png` |
-| 달력      | `assets/images/illustrations/budget-calendar-3d.png`    |
+| 내용                  | 저장 파일                                                          |
+| --------------------- | ------------------------------------------------------------------ |
+| 원형 P 심볼           | `assets/images/brand/planus-symbol.png` (`planus-symbol.svg` 원본) |
+| 워드마크              | `assets/images/brand/planus-wordmark.png`                          |
+| 앱 아이콘             | `assets/images/brand/planus-app-icon.png`                          |
+| Android 적응형 아이콘 | `assets/images/brand/planus-adaptive-icon.png`                     |
+| iOS 스플래시          | `assets/images/brand/planus-splash-ios.png`                        |
+| Android 스플래시      | `assets/images/brand/planus-splash-android.png`                    |
+| 분석 문서             | `assets/images/illustrations/budget-analysis-3d.png`               |
+| 저금통                | `assets/images/illustrations/savings-piggy-bank-3d.png`            |
+| 달력                  | `assets/images/illustrations/budget-calendar-3d.png`               |
 
 브랜드 이미지와 앱 런처 아이콘은 별도로 관리한다. 앱 아이콘·스플래시·favicon 설정은 `app.json`을 기준으로 한다.
 

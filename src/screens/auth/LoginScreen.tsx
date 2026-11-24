@@ -65,14 +65,13 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
     <AuthLayout>
       <View style={styles.brand}>
         <Image
-          source={brandImages.logo}
-          accessible={false}
+          source={brandImages.wordmark}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel="Planus"
           resizeMode="contain"
           style={styles.logo}
         />
-        <Text weight="bold" accessibilityRole="header" style={styles.wordmark}>
-          planus
-        </Text>
         <Text style={styles.introduction}>{authCopy.introduction}</Text>
       </View>
       <View style={styles.form}>
@@ -153,8 +152,11 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
 
 const styles = StyleSheet.create({
   brand: { alignItems: 'center' },
-  logo: { width: authLayout.logoSize, height: authLayout.logoSize, marginBottom: spacing.md },
-  wordmark: { fontSize: authLayout.wordmarkSize, lineHeight: 44, letterSpacing: -1.5 },
+  logo: {
+    width: authLayout.wordmarkWidth,
+    height: authLayout.wordmarkWidth / authLayout.wordmarkAspectRatio,
+    maxWidth: '100%',
+  },
   introduction: { color: colors.textTertiary, marginTop: spacing.sm, textAlign: 'center' },
   form: { marginTop: spacing.huge + spacing.sm, gap: spacing.lg },
   submit: { marginTop: spacing.sm },

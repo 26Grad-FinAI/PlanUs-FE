@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <mask id="counter"><rect width="1024" height="1024" fill="white"/><circle cx="512" cy="410" r="130" fill="black"/></mask>
+  </defs>
+  <g mask="url(#counter)">
+    <circle cx="512" cy="410" r="300" fill="#49B1E2"/>
+    <path d="M212 410H382V875H212Z" fill="#49B1E2"/>
+    <path d="M512 110V280M771.807621 260L624.583302 345" stroke="white" stroke-width="16"/>
+  </g>
+</svg>

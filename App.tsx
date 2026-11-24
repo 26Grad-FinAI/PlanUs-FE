@@ -16,7 +16,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <FontProvider>
-        <NavigationContainer>
+        <NavigationContainer documentTitle={{ formatter: () => 'Planus' }}>
           <StatusBar style="dark" />
           {__DEV__ && process.env.EXPO_PUBLIC_DESIGN_SYSTEM_PREVIEW === '1' ? (
             <View style={styles.fill} onLayout={() => void hideNativeSplash()}>

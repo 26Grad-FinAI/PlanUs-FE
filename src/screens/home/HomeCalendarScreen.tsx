@@ -1,6 +1,6 @@
 /** 홈은 조회 상태를 유지한 채 루트 스택의 상세 화면으로 이동한다. */
 import React, { useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import type { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -9,7 +9,7 @@ import { Text } from '@/components/common/Text';
 import { Button } from '@/components/common/Button';
 import { RootStackParamList } from '@/app/navigation/types';
 import { colors } from '@/constants/colors';
-import { fontFamily } from '@/constants/typography';
+import { brandImages } from '@/constants/auth';
 import { useHomeCalendar } from '@/hooks/useHomeCalendar';
 import { useMotionEnabled } from '@/hooks/useMotionEnabled';
 import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
@@ -63,7 +63,14 @@ export function HomeCalendarScreen() {
         header={
           <>
             <View style={styles.header}>
-              <Text style={styles.logo}>planus</Text>
+              <Image
+                source={brandImages.wordmark}
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel="Planus"
+                resizeMode="contain"
+                style={styles.logo}
+              />
             </View>
             {summary ? (
               <SummaryCard
@@ -117,11 +124,8 @@ const styles = StyleSheet.create({
   },
   header: { height: 62, justifyContent: 'center' },
   logo: {
-    color: colors.primary,
-    fontSize: 22,
-    lineHeight: 30,
-    letterSpacing: -0.8,
-    fontFamily: fontFamily.extrabold,
+    width: 66,
+    height: 30,
   },
   calendarSection: { marginTop: 12, marginBottom: 8 },
   status: { alignItems: 'center', gap: 12, paddingVertical: 20 },
