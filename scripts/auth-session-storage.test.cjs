@@ -21,10 +21,9 @@ const savedSession = {
   version: 0,
 };
 
-function createBrowser() {
-  const data = new Map();
+function createBrowser(data = new Map()) {
   return {
-    sessionStorage: {
+    localStorage: {
       getItem: (name) => data.get(name) ?? null,
       setItem: (name, value) => data.set(name, value),
       removeItem: (name) => data.delete(name),
@@ -46,7 +45,14 @@ test('같은 탭에서 새로고침 후 로그인 정보를 복원한다', () =>
   assert.equal(JSON.stringify(restored), JSON.stringify(savedSession));
 });
 
-test('별도 세션 저장소에는 로그인 정보를 복원하지 않는다', () => {
+test('같은 사이트의 새 탭이나 재접속에서도 로그인 정보를 복원한다', () => {
+  const data = new Map();
+  loadStorage(createBrowser(data)).setItem(key, savedSession);
+  const restored = loadStorage(createBrowser(data)).getItem(key);
+  assert.equal(JSON.stringify(restored), JSON.stringify(savedSession));
+});
+
+test('다른 사이트나 브라우저 저장소에는 로그인 정보를 복원하지 않는다', () => {
   loadStorage(createBrowser()).setItem(key, savedSession);
   assert.equal(loadStorage(createBrowser()).getItem(key), null);
 });
@@ -64,13 +70,13 @@ test('로그아웃하면 저장된 로그인 정보를 제거한다', () => {
 
 test('손상된 데이터는 제거하고 로그인하지 않은 상태로 시작한다', () => {
   const browser = createBrowser();
-  browser.sessionStorage.setItem(key, '{broken');
+  browser.localStorage.setItem(key, '{broken');
   assert.equal(loadStorage(browser).getItem(key), null);
-  assert.equal(browser.sessionStorage.getItem(key), null);
+  assert.equal(browser.localStorage.getItem(key), null);
 });
 
 test('브라우저가 저장소 접근을 차단해도 예외를 전파하지 않는다', () => {
-  const browser = Object.defineProperty({}, 'sessionStorage', {
+  const browser = Object.defineProperty({}, 'localStorage', {
     get() {
       throw new Error('Storage blocked');
     },
