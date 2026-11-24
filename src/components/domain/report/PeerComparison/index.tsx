@@ -5,7 +5,7 @@ import { Card } from '@/components/common/Card';
 import { Text } from '@/components/common/Text';
 import { ReportMoreButton } from '@/components/domain/report/ReportMoreButton';
 import { colors } from '@/constants/colors';
-import { radius, spacing } from '@/constants/layout';
+import { spacing } from '@/constants/layout';
 import { REPORT_VISIBLE_COUNT } from '@/constants/report';
 import { PeerComparisonItem } from '@/types/report';
 import { formatFullAmount } from '@/utils/formatCurrency';
@@ -109,17 +109,17 @@ export function PeerComparison({ items, expanded, onToggle, fillProgress }: Peer
 }
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.xxl },
+  card: { gap: spacing.xl },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   dot: { width: 10, height: 10, borderRadius: spacing.xxs, backgroundColor: colors.primary },
-  item: { gap: spacing.xs },
-  bars: { gap: spacing.xxs },
+  item: { gap: spacing.xxs },
+  bars: { gap: 0 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   barSpace: { flex: 1, minWidth: spacing.xl },
   bar: {
-    height: 9,
-    borderRadius: radius.pill,
+    height: 10,
+    borderRadius: 3,
     backgroundColor: colors.primary,
     transformOrigin: 'left center',
   },

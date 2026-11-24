@@ -6,7 +6,7 @@ import { colors } from '@/constants/colors';
 import { radius, spacing } from '@/constants/layout';
 import { fontSize } from '@/constants/typography';
 import { MonthlyTrendItem } from '@/types/report';
-import { formatFullAmount, formatManwon } from '@/utils/formatCurrency';
+import { formatFullAmount } from '@/utils/formatCurrency';
 
 interface MonthlyTrendChartProps {
   items: MonthlyTrendItem[];
@@ -14,6 +14,12 @@ interface MonthlyTrendChartProps {
 }
 
 const MAX_BAR_HEIGHT = 120;
+
+function formatTrendAmount(amount: number) {
+  if (amount === 0) return '0원';
+  if (amount < 10000) return '1만 미만';
+  return `${Math.round(amount / 10000).toLocaleString('ko-KR')}만`;
+}
 
 export function MonthlyTrendChart({ items, fillProgress }: MonthlyTrendChartProps) {
   const { fontScale } = useWindowDimensions();
@@ -29,7 +35,7 @@ export function MonthlyTrendChart({ items, fillProgress }: MonthlyTrendChartProp
           key={item.label}
           accessible
           accessibilityLabel={`${item.label} 소비 ${formatFullAmount(item.amount)}${item.isCurrent ? ', 선택한 달' : ''}`}
-          style={[styles.column, { minWidth: 36 * fontScale }]}
+          style={[styles.column, { minWidth: 44 * fontScale }]}
         >
           <View
             style={[styles.barArea, { minHeight: MAX_BAR_HEIGHT + 28 * fontScale + spacing.sm }]}
@@ -39,7 +45,7 @@ export function MonthlyTrendChart({ items, fillProgress }: MonthlyTrendChartProp
               weight={item.isCurrent ? 'bold' : 'medium'}
               style={[styles.amount, item.isCurrent && styles.highlight]}
             >
-              {item.amount === 0 ? '0원' : formatManwon(item.amount)}
+              {formatTrendAmount(item.amount)}
             </Text>
             <Animated.View
               style={[
@@ -68,8 +74,8 @@ const styles = StyleSheet.create({
   column: { flex: 1, alignItems: 'center', gap: spacing.sm },
   barArea: { justifyContent: 'flex-end', alignItems: 'center', gap: spacing.sm, width: '100%' },
   amount: {
-    fontSize: fontSize.xxs,
-    lineHeight: 14,
+    fontSize: fontSize.xs,
+    lineHeight: 18,
     color: colors.textTertiary,
     textAlign: 'center',
   },

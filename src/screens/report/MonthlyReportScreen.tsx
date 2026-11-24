@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.page,
     paddingTop: spacing.sm,
     paddingBottom: spacing.huge,
-    gap: spacing.section,
+    gap: spacing.huge,
   },
   month: { width: '100%', maxWidth: 240, alignSelf: 'center' },
   summary: {
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.border,
     paddingLeft: spacing.xl,
   },
-  section: { gap: spacing.md },
+  section: { gap: spacing.sm },
   sectionHeading: { gap: spacing.xs },
   compactNotice: { alignItems: 'center', gap: spacing.sm },
   notice: { minHeight: 168, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
