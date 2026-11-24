@@ -1,11 +1,13 @@
 export interface WeeklyFeedback {
+  weekStart: string;
+  weekEnd: string;
   feedback: string;
   confidence?: string | null;
 }
 
 export type WeeklyFeedbackState =
   | { status: 'loading' }
-  | ({ status: 'success'; weekStart: string; weekEnd: string } & WeeklyFeedback)
+  | ({ status: 'success' } & WeeklyFeedback)
   | { status: 'empty' }
   | { status: 'error' };
 
