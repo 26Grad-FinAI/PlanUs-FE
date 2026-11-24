@@ -2,23 +2,22 @@ import { authenticatedRequest } from '@/services/api/apiClient';
 import type { WeeklyFeedback } from '@/types/ai';
 
 type WeeklyFeedbackResponse =
-  | ({ created: true } & WeeklyFeedback)
-  | { created: false; reason?: string; error?: string };
+  | {
+      exists: true;
+      weekStart: string;
+      weekEnd: string;
+      feedbackText: string;
+      confidence: string | null;
+    }
+  | { exists: false };
 
-export async function fetchWeeklyFeedback(
-  userId: number,
-  weekEnd: string,
-  signal: AbortSignal,
-): Promise<WeeklyFeedback | null> {
-  const query = new URLSearchParams({ userId: String(userId), weekEnd });
+export async function fetchWeeklyFeedback(signal: AbortSignal): Promise<WeeklyFeedback | null> {
   const response = await authenticatedRequest<WeeklyFeedbackResponse>(
-    '/internal/aifeedback/run-weekly?' + query,
-    { signal, internal: true, cache: 'no-store' },
+    '/ai-feedback/weekly/latest',
+    { signal },
   );
 
-  if (response.created === true && response.feedback?.trim()) {
-    return { feedback: response.feedback, confidence: response.confidence };
-  }
-  if (response.created === false && response.reason) return null;
-  throw new Error('AI 종합 의견을 불러오지 못했어요.');
+  if (!response.exists) return null;
+  const { weekStart, weekEnd, feedbackText, confidence } = response;
+  return { weekStart, weekEnd, feedback: feedbackText, confidence };
 }

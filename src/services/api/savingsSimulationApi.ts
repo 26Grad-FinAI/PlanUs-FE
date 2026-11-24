@@ -1,18 +1,27 @@
 import { ApiError, authenticatedRequest } from '@/services/api/apiClient';
-import type { SavingsApplication, SavingsPlan } from '@/types/ai';
+import type { SavingsApplication, SavingsPlan, SavingsSuggestion } from '@/types/ai';
 
 type SavingsPlanResponse = Omit<SavingsPlan, 'monthlySavingWon'> & {
   monthlySavingWon?: number | null;
 };
 
-export async function fetchSavingsPlans(yearMonth: string, signal: AbortSignal) {
+interface SavingsSuggestionResponse {
+  feedbackId: number;
+  applied: boolean;
+  actions: SavingsPlanResponse[];
+}
+
+export async function fetchSavingsSuggestion(
+  yearMonth: string,
+  signal: AbortSignal,
+): Promise<SavingsSuggestion | null> {
   const query = new URLSearchParams({ yearMonth });
   try {
-    const { actions } = await authenticatedRequest<{ actions: SavingsPlanResponse[] }>(
+    const { feedbackId, applied, actions } = await authenticatedRequest<SavingsSuggestionResponse>(
       '/savings-simulation/suggest?' + query,
       { signal },
     );
-    return actions.map((plan): SavingsPlan => {
+    const plans = actions.map((plan): SavingsPlan => {
       const monthly = plan.monthlySavingWon;
       return {
         categoryId: plan.categoryId,
@@ -25,20 +34,25 @@ export async function fetchSavingsPlans(yearMonth: string, signal: AbortSignal) 
           typeof monthly === 'number' && Number.isFinite(monthly) ? monthly : plan.reductionWon,
       };
     });
+    return { feedbackId, applied, plans };
   } catch (error) {
     if (
       error instanceof ApiError &&
       (error.code === 'SIMULATION_404_001' || error.code === 'SIMULATION_404_002')
     ) {
-      return [];
+      return null;
     }
     throw error;
   }
 }
 
-export function applySavingsPlans(yearMonth: string, selectedCategoryIds: number[]) {
+export function applySavingsPlans(
+  yearMonth: string,
+  feedbackId: number,
+  selectedCategoryIds: number[],
+) {
   return authenticatedRequest<SavingsApplication>('/savings-simulation/apply', {
     method: 'POST',
-    body: JSON.stringify({ yearMonth, selectedCategoryIds }),
+    body: JSON.stringify({ yearMonth, feedbackId, selectedCategoryIds }),
   });
 }

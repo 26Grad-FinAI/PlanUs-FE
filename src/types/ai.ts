@@ -1,11 +1,13 @@
 export interface WeeklyFeedback {
+  weekStart: string;
+  weekEnd: string;
   feedback: string;
   confidence?: string | null;
 }
 
 export type WeeklyFeedbackState =
   | { status: 'loading' }
-  | ({ status: 'success'; weekStart: string; weekEnd: string } & WeeklyFeedback)
+  | ({ status: 'success' } & WeeklyFeedback)
   | { status: 'empty' }
   | { status: 'error' };
 
@@ -23,4 +25,10 @@ export interface SavingsApplication {
   applied: boolean;
   updatedCategories: { categoryId: number; before: number; after: number }[];
   newTotalBudget: number;
+}
+
+export interface SavingsSuggestion {
+  feedbackId: number;
+  applied: boolean;
+  plans: SavingsPlan[];
 }

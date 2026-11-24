@@ -13,7 +13,6 @@ import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
 import { useWeeklyFeedback } from '@/hooks/useWeeklyFeedback';
 import { colors } from '@/constants/colors';
 import { metrics, spacing } from '@/constants/layout';
-import { formatFullAmount } from '@/utils/formatCurrency';
 
 /** 헤더와 탭바는 고정하고, 가변 개수의 플랜과 계산 결과를 함께 스크롤한다. */
 export function AIAnalysisScreen() {
@@ -32,7 +31,10 @@ export function AIAnalysisScreen() {
     apply,
     retry,
   } = useAIAnalysis();
+  const plans = query.status === 'success' ? (query.suggestion?.plans ?? []) : [];
   const applying = result?.status === 'applying';
+  const errorMessage =
+    result?.status === 'error' || result?.status === 'alreadyApplied' ? result.message : undefined;
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <Header title="AI 분석" />
@@ -53,7 +55,7 @@ export function AIAnalysisScreen() {
               절약 시뮬레이션
             </Text>
             <Text variant="label" weight="regular" style={styles.muted}>
-              AI가 추천하는 절약 플랜을 확인해보세요
+              AI가 추천하는 이번 달 절약 플랜을 확인해보세요
             </Text>
           </View>
           {query.status === 'loading' && (
@@ -66,12 +68,12 @@ export function AIAnalysisScreen() {
             </View>
           )}
           {query.status === 'success' &&
-            (query.plans.length === 0 ? (
+            (plans.length === 0 ? (
               <Text style={styles.muted}>추천할 절약 플랜이 없어요. 다음 분석을 기다려주세요.</Text>
             ) : (
               <>
                 <View style={styles.plans}>
-                  {query.plans.map((plan) => (
+                  {plans.map((plan) => (
                     <SavingsPlanCard
                       key={plan.categoryId}
                       plan={plan}
@@ -91,24 +93,14 @@ export function AIAnalysisScreen() {
                 />
               </>
             ))}
-          {result?.status === 'applied' && (
-            <Text accessibilityLiveRegion="polite" variant="label" style={styles.success}>
-              이번 달 예산에 반영했어요. 총예산은 {formatFullAmount(result.totalBudget)}이에요.
-            </Text>
-          )}
-          {result?.status === 'alreadyApplied' && (
-            <Text accessibilityLiveRegion="polite" variant="label" style={styles.muted}>
-              이번 절약 플랜은 이미 예산에 반영했어요.
-            </Text>
-          )}
-          {result?.status === 'error' && (
+          {errorMessage && (
             <Text
               accessibilityRole="alert"
               accessibilityLiveRegion="polite"
               variant="label"
               style={styles.error}
             >
-              {result.message}
+              {errorMessage}
             </Text>
           )}
         </View>
@@ -134,5 +126,4 @@ const styles = StyleSheet.create({
   plans: { gap: spacing.md },
   muted: { color: colors.textTertiary },
   error: { color: colors.error },
-  success: { color: colors.primaryDark },
 });
