@@ -14,8 +14,8 @@ interface SavingsPlanCardProps {
 }
 
 export function SavingsPlanCard({ plan, selected, disabled, onPress }: SavingsPlanCardProps) {
-  const { categoryName, currentBehavior, targetBehavior, contextInsight, monthlySavingWon } = plan;
-  const amount = formatFullAmount(monthlySavingWon);
+  const { categoryName, currentBehavior, targetBehavior, contextInsight, reductionWon } = plan;
+  const amount = formatFullAmount(reductionWon);
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -24,7 +24,7 @@ export function SavingsPlanCard({ plan, selected, disabled, onPress }: SavingsPl
         currentBehavior,
         targetBehavior,
         contextInsight,
-        `월 ${amount} 절약`,
+        `이번 달 예산 ${amount} 감축`,
       ]
         .filter(Boolean)
         .join(', ')}
@@ -38,7 +38,7 @@ export function SavingsPlanCard({ plan, selected, disabled, onPress }: SavingsPl
           {categoryName}
         </Text>
         <Text variant="body" weight="bold" style={styles.heading}>
-          {monthlySavingWon > 0 ? '-' : ''}
+          {reductionWon > 0 ? '-' : ''}
           {amount}
         </Text>
       </View>

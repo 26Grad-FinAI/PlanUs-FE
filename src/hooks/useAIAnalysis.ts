@@ -3,15 +3,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useToday } from '@/hooks/useToday';
 import { ApiError } from '@/services/api/apiClient';
 import { currentBudgetMonth } from '@/services/api/budgetApi';
-import { applySavingsPlans, fetchSavingsPlans } from '@/services/api/savingsSimulationApi';
+import { applySavingsPlans, fetchSavingsSuggestion } from '@/services/api/savingsSimulationApi';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { useRecordRevision } from '@/store/useRecordRevision';
-import type { SavingsPlan } from '@/types/ai';
+import type { SavingsSuggestion } from '@/types/ai';
 
 type PlanQuery =
   | { status: 'loading' }
-  | { status: 'success'; plans: SavingsPlan[] }
+  | { status: 'success'; suggestion: SavingsSuggestion | null }
   | { status: 'error' };
 
 type Application =
@@ -25,22 +25,20 @@ interface MonthScope {
   yearMonth: string;
 }
 
+interface FeedbackScope extends MonthScope {
+  feedbackId: number;
+}
+
 export function useAIAnalysis() {
   useToday();
   const { year, month } = currentBudgetMonth();
   const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
   const sessionId = useAuthStore((state) => state.session?.id);
   const [attempt, setAttempt] = useState(0);
-  const [response, setResponse] = useState<{
-    sessionId: symbol;
-    month: string;
-    attempt: number;
-    query: PlanQuery;
-  }>();
-  const [selection, setSelection] = useState<MonthScope & { ids: number[] }>();
+  const [response, setResponse] = useState<MonthScope & { attempt: number; query: PlanQuery }>();
+  const [selection, setSelection] = useState<FeedbackScope & { ids: number[] }>();
   const [application, setApplication] = useState<
-    MonthScope & {
-      planKey: string;
+    FeedbackScope & {
       result: Application;
     }
   >();
@@ -51,28 +49,35 @@ export function useAIAnalysis() {
       if (!sessionId) return;
       const controller = new AbortController();
       const { signal } = controller;
-      void fetchSavingsPlans(yearMonth, signal).then(
-        (plans) => {
+      void fetchSavingsSuggestion(yearMonth, signal).then(
+        (suggestion) => {
           if (signal.aborted) return;
           setResponse({
             sessionId,
-            month: yearMonth,
+            yearMonth,
             attempt,
-            query: { status: 'success', plans },
+            query: { status: 'success', suggestion },
           });
           setSelection((previous) => {
-            if (previous?.sessionId !== sessionId || previous.yearMonth !== yearMonth) {
+            if (
+              !previous ||
+              previous.sessionId !== sessionId ||
+              previous.yearMonth !== yearMonth ||
+              previous.feedbackId !== suggestion?.feedbackId
+            ) {
               return previous;
             }
             return {
               ...previous,
-              ids: previous.ids.filter((id) => plans.some((plan) => plan.categoryId === id)),
+              ids: previous.ids.filter((id) =>
+                suggestion?.plans.some((plan) => plan.categoryId === id),
+              ),
             };
           });
         },
         () => {
           if (!signal.aborted)
-            setResponse({ sessionId, month: yearMonth, attempt, query: { status: 'error' } });
+            setResponse({ sessionId, yearMonth, attempt, query: { status: 'error' } });
         },
       );
       return () => controller.abort();
@@ -82,38 +87,47 @@ export function useAIAnalysis() {
   const query: PlanQuery =
     response &&
     response.sessionId === sessionId &&
-    response.month === yearMonth &&
+    response.yearMonth === yearMonth &&
     response.attempt === attempt
       ? response.query
       : { status: 'loading' };
-  const plans = query.status === 'success' ? query.plans : [];
-  const planKey = plans
-    .map(({ categoryId, reductionWon }) => `${categoryId}:${reductionWon}`)
-    .sort()
-    .join(',');
+  const suggestion = query.status === 'success' ? query.suggestion : null;
+  const plans = suggestion?.plans ?? [];
+  const feedbackId = suggestion?.feedbackId;
   const currentApplication =
-    application?.sessionId === sessionId && application?.yearMonth === yearMonth
+    application?.sessionId === sessionId &&
+    application?.yearMonth === yearMonth &&
+    application?.feedbackId === feedbackId
       ? application
       : undefined;
-  const result =
-    currentApplication && currentApplication.planKey === planKey
-      ? currentApplication.result
-      : undefined;
+  const result = currentApplication?.result;
   const selectedIds =
-    selection?.sessionId === sessionId && selection?.yearMonth === yearMonth ? selection.ids : [];
+    selection?.sessionId === sessionId &&
+    selection?.yearMonth === yearMonth &&
+    selection?.feedbackId === feedbackId
+      ? selection.ids
+      : [];
   const selectedPlans = plans.filter((plan) => selectedIds.includes(plan.categoryId));
   const monthly = selectedPlans.reduce((sum, plan) => sum + plan.monthlySavingWon, 0);
-  const locked = result?.status === 'applied' || result?.status === 'alreadyApplied';
+  const locked =
+    suggestion?.applied === true ||
+    result?.status === 'applied' ||
+    result?.status === 'alreadyApplied';
 
   function togglePlan(categoryId: number) {
-    if (!sessionId || applyPending.current || locked) return;
+    if (!sessionId || feedbackId === undefined || applyPending.current || locked) return;
     setApplication(undefined);
     setSelection((previous) => {
       const ids =
-        previous?.sessionId === sessionId && previous.yearMonth === yearMonth ? previous.ids : [];
+        previous?.sessionId === sessionId &&
+        previous.yearMonth === yearMonth &&
+        previous.feedbackId === feedbackId
+          ? previous.ids
+          : [];
       return {
         sessionId,
         yearMonth,
+        feedbackId,
         ids: ids.includes(categoryId)
           ? ids.filter((id) => id !== categoryId)
           : [...ids, categoryId],
@@ -122,15 +136,23 @@ export function useAIAnalysis() {
   }
 
   async function apply() {
-    if (!sessionId || applyPending.current || locked || !selectedPlans.length) return;
+    if (
+      !sessionId ||
+      feedbackId === undefined ||
+      applyPending.current ||
+      locked ||
+      !selectedPlans.length
+    )
+      return;
 
     applyPending.current = true;
-    const scope = { sessionId, yearMonth, planKey };
+    const scope = { sessionId, yearMonth, feedbackId };
     setApplication({ ...scope, result: { status: 'applying' } });
     const isCurrentSession = () => useAuthStore.getState().session?.id === sessionId;
     try {
       const applied = await applySavingsPlans(
         yearMonth,
+        feedbackId,
         selectedPlans.map((plan) => plan.categoryId),
       );
       if (!isCurrentSession()) return;

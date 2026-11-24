@@ -26,3 +26,9 @@ export interface SavingsApplication {
   updatedCategories: { categoryId: number; before: number; after: number }[];
   newTotalBudget: number;
 }
+
+export interface SavingsSuggestion {
+  feedbackId: number;
+  applied: boolean;
+  plans: SavingsPlan[];
+}

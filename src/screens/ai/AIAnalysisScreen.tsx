@@ -31,6 +31,7 @@ export function AIAnalysisScreen() {
     apply,
     retry,
   } = useAIAnalysis();
+  const plans = query.status === 'success' ? (query.suggestion?.plans ?? []) : [];
   const applying = result?.status === 'applying';
   const errorMessage =
     result?.status === 'error' || result?.status === 'alreadyApplied' ? result.message : undefined;
@@ -54,7 +55,7 @@ export function AIAnalysisScreen() {
               절약 시뮬레이션
             </Text>
             <Text variant="label" weight="regular" style={styles.muted}>
-              AI가 추천하는 절약 플랜을 확인해보세요
+              AI가 추천하는 이번 달 절약 플랜을 확인해보세요
             </Text>
           </View>
           {query.status === 'loading' && (
@@ -67,12 +68,12 @@ export function AIAnalysisScreen() {
             </View>
           )}
           {query.status === 'success' &&
-            (query.plans.length === 0 ? (
+            (plans.length === 0 ? (
               <Text style={styles.muted}>추천할 절약 플랜이 없어요. 다음 분석을 기다려주세요.</Text>
             ) : (
               <>
                 <View style={styles.plans}>
-                  {query.plans.map((plan) => (
+                  {plans.map((plan) => (
                     <SavingsPlanCard
                       key={plan.categoryId}
                       plan={plan}
