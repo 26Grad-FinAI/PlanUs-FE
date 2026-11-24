@@ -1,10 +1,9 @@
 /** 인증 화면의 시안 치수와 서비스 문구. */
 export const authLayout = {
   contentMax: 440,
-  logoSize: 84,
+  wordmarkWidth: 220,
+  wordmarkAspectRatio: 3,
   socialButtonSize: 52,
-  wordmarkSize: 36,
-  splashMinimumMs: 1000,
 } as const;
 
 export const authCopy = {
@@ -13,7 +12,7 @@ export const authCopy = {
 } as const;
 
 export const brandImages = {
-  logo: require('../../assets/images/brand/planus-logo-3d.png'),
+  wordmark: require('../../assets/images/brand/planus-wordmark.png'),
   kakaoLogin: require('../../assets/images/social/kakao-login.png'),
   googleLogin: require('../../assets/images/social/google-login.png'),
 } as const;

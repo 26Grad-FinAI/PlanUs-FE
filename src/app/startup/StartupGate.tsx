@@ -1,12 +1,12 @@
-/** 인증 스택과 분리해 로그아웃이나 화면 이동이 스플래시를 재실행하지 않게 한다. */
-import React, { PropsWithChildren, useCallback, useEffect, useState } from 'react';
-import { SplashScreen } from '@/screens/auth/SplashScreen';
+/** 로그인 상태 복원을 마친 첫 화면이 준비되면 네이티브 시작 화면을 닫는다. */
+import React, { PropsWithChildren, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { hideNativeSplash } from '@/app/startup/nativeSplash';
+import { colors } from '@/constants/colors';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export function StartupGate({ children }: PropsWithChildren) {
-  const [started, setStarted] = useState(false);
   const [sessionReady, setSessionReady] = useState(() => useAuthStore.persist.hasHydrated());
-  const complete = useCallback(() => setStarted(true), []);
 
   useEffect(() => {
     let active = true;
@@ -19,5 +19,27 @@ export function StartupGate({ children }: PropsWithChildren) {
     };
   }, []);
 
-  return started && sessionReady ? children : <SplashScreen onComplete={complete} />;
+  if (!sessionReady) {
+    return (
+      <View key="loading" style={styles.loading}>
+        <ActivityIndicator accessibilityLabel="로그인 상태 불러오는 중" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View key="content" style={styles.content} onLayout={() => void hideNativeSplash()}>
+      {children}
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  content: { flex: 1, backgroundColor: colors.background },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+  },
+});

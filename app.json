@@ -4,22 +4,23 @@
     "slug": "my-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/brand/planus-app-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/images/brand/planus-adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
+      "name": "Planus",
       "bundler": "metro",
       "output": "single",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/brand/planus-symbol.png"
     },
     "plugins": [
       "expo-font",
@@ -27,10 +28,14 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/brand/planus-logo-3d.png",
-          "imageWidth": 120,
+          "image": "./assets/images/brand/planus-splash-ios.png",
+          "imageWidth": 280,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#1DA7E0",
+          "android": {
+            "image": "./assets/images/brand/planus-splash-android.png",
+            "imageWidth": 200
+          }
         }
       ],
       [
