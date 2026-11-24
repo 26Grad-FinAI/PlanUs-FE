@@ -133,7 +133,7 @@ export function BudgetComparison({
 
 const styles = StyleSheet.create({
   container: { gap: spacing.md },
-  card: { gap: spacing.sm, padding: spacing.lg },
+  card: { gap: spacing.xs, padding: spacing.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   label: { flex: 1, flexShrink: 1 },
   ratio: { color: colors.primaryDark, textAlign: 'right', flexShrink: 1 },
