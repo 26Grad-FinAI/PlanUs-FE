@@ -10,10 +10,17 @@ interface SavingsPlanCardProps {
   plan: SavingsPlan;
   selected: boolean;
   disabled: boolean;
+  applied?: boolean;
   onPress: () => void;
 }
 
-export function SavingsPlanCard({ plan, selected, disabled, onPress }: SavingsPlanCardProps) {
+export function SavingsPlanCard({
+  plan,
+  selected,
+  disabled,
+  applied = false,
+  onPress,
+}: SavingsPlanCardProps) {
   const { categoryName, currentBehavior, targetBehavior, contextInsight, monthlySavingWon } = plan;
   const amount = formatFullAmount(monthlySavingWon);
   return (
@@ -31,7 +38,7 @@ export function SavingsPlanCard({ plan, selected, disabled, onPress }: SavingsPl
       accessibilityState={{ checked: selected, disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={[styles.card, selected && styles.selected]}
+      style={[styles.card, selected && styles.selected, applied && styles.applied]}
     >
       <View style={styles.row}>
         <Text variant="body" weight="bold" style={[styles.heading, styles.label]}>
@@ -76,6 +83,7 @@ const styles = StyleSheet.create({
     borderColor: colors.transparent,
   },
   selected: { backgroundColor: colors.background, borderColor: colors.primary },
+  applied: { opacity: 0.6 },
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',

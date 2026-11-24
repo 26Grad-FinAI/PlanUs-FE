@@ -33,7 +33,7 @@ export function SavingsSummary({
         </Text>
         {empty ? (
           <Text variant="body" weight="bold" style={[styles.headline, styles.muted]}>
-            {applied ? '이미 예산에 반영했어요' : '절약할 항목을 선택해보세요'}
+            {applied ? '반영할 수 있는 플랜이 없어요' : '절약할 항목을 선택해보세요'}
           </Text>
         ) : (
           <Text variant="title" style={[styles.headline, styles.annual]}>
@@ -46,7 +46,7 @@ export function SavingsSummary({
         )}
       </View>
       <Button
-        label={applied ? '예산 반영 완료' : '이번 달 예산에 반영하기'}
+        label="이번 달 예산에 반영하기"
         disabled={empty || applied}
         loading={applying}
         onPress={onApply}

@@ -14,11 +14,7 @@ type PlanQuery =
   | { status: 'success'; plans: SavingsPlan[] }
   | { status: 'error' };
 
-type Application =
-  | { status: 'applying' }
-  | { status: 'applied'; totalBudget: number }
-  | { status: 'alreadyApplied' }
-  | { status: 'error'; message: string };
+type Application = { status: 'applying' } | { status: 'error'; message: string };
 
 interface MonthScope {
   sessionId: symbol;
@@ -38,6 +34,9 @@ export function useAIAnalysis() {
     query: PlanQuery;
   }>();
   const [selection, setSelection] = useState<MonthScope & { ids: number[] }>();
+  const [appliedSelection, setAppliedSelection] = useState<
+    MonthScope & { planKey: string; ids: number[] }
+  >();
   const [application, setApplication] = useState<
     MonthScope & {
       planKey: string;
@@ -96,18 +95,44 @@ export function useAIAnalysis() {
       ? application
       : undefined;
   const result =
-    currentApplication &&
-    (currentApplication.result.status === 'applying' || currentApplication.planKey === planKey)
+    currentApplication && currentApplication.planKey === planKey
       ? currentApplication.result
       : undefined;
+  const localAppliedIds =
+    appliedSelection &&
+    appliedSelection.sessionId === sessionId &&
+    appliedSelection.yearMonth === yearMonth &&
+    appliedSelection.planKey === planKey
+      ? appliedSelection.ids
+      : [];
+  const appliedIds = plans
+    .filter((plan) => localAppliedIds.includes(plan.categoryId))
+    .map((plan) => plan.categoryId);
   const selectedIds =
-    selection?.sessionId === sessionId && selection?.yearMonth === yearMonth ? selection.ids : [];
+    selection?.sessionId === sessionId && selection?.yearMonth === yearMonth
+      ? selection.ids.filter((id) => !appliedIds.includes(id))
+      : [];
   const selectedPlans = plans.filter((plan) => selectedIds.includes(plan.categoryId));
   const monthly = selectedPlans.reduce((sum, plan) => sum + plan.monthlySavingWon, 0);
-  const locked = result?.status === 'applied' || result?.status === 'alreadyApplied';
+  const locked = plans.length > 0 && appliedIds.length === plans.length;
+
+  function markApplied(ids: number[], scope: MonthScope & { planKey: string }) {
+    setAppliedSelection((previous) => {
+      const samePlans =
+        previous?.sessionId === scope.sessionId &&
+        previous.yearMonth === scope.yearMonth &&
+        previous.planKey === scope.planKey;
+      return { ...scope, ids: [...new Set([...(samePlans ? previous.ids : []), ...ids])] };
+    });
+    setSelection((previous) =>
+      previous?.sessionId === scope.sessionId && previous.yearMonth === scope.yearMonth
+        ? { ...previous, ids: previous.ids.filter((id) => !ids.includes(id)) }
+        : previous,
+    );
+  }
 
   function togglePlan(categoryId: number) {
-    if (!sessionId || applyPending.current || locked) return;
+    if (!sessionId || applyPending.current || appliedIds.includes(categoryId)) return;
     setApplication(undefined);
     setSelection((previous) => {
       const ids =
@@ -138,19 +163,20 @@ export function useAIAnalysis() {
       if (!applied.applied) throw new Error('예산에 반영하지 못했어요. 다시 시도해주세요.');
       useBudgetStore.getState().updateAppliedSavings(yearMonth, applied.updatedCategories);
       useRecordRevision.getState().invalidate();
-      setApplication({
-        ...scope,
-        result: { status: 'applied', totalBudget: applied.newTotalBudget },
-      });
+      markApplied(
+        applied.updatedCategories.map((item) => item.categoryId),
+        scope,
+      );
+      setApplication(undefined);
     } catch (error) {
       if (!isCurrentSession()) return;
-      if (error instanceof ApiError && error.code === 'SIMULATION_409_002') {
-        useRecordRevision.getState().invalidate();
-        setApplication({ ...scope, result: { status: 'alreadyApplied' } });
-      } else {
-        const message = error instanceof Error ? error.message : '예산에 반영하지 못했어요.';
-        setApplication({ ...scope, result: { status: 'error', message } });
-      }
+      const message =
+        error instanceof ApiError && error.code === 'SIMULATION_409_002'
+          ? '이 주간 피드백의 절약 제안은 이미 반영되어 추가 반영할 수 없어요.'
+          : error instanceof Error
+            ? error.message
+            : '예산에 반영하지 못했어요.';
+      setApplication({ ...scope, result: { status: 'error', message } });
     } finally {
       applyPending.current = false;
     }
@@ -159,6 +185,7 @@ export function useAIAnalysis() {
   return {
     query,
     selectedIds,
+    appliedIds,
     hasSelection: selectedPlans.length > 0,
     monthly,
     annual: monthly * 12,

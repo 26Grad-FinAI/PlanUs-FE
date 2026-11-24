@@ -13,7 +13,6 @@ import { useScrollToTopOnFocus } from '@/hooks/useScrollToTopOnFocus';
 import { useWeeklyFeedback } from '@/hooks/useWeeklyFeedback';
 import { colors } from '@/constants/colors';
 import { metrics, spacing } from '@/constants/layout';
-import { formatFullAmount } from '@/utils/formatCurrency';
 
 /** 헤더와 탭바는 고정하고, 가변 개수의 플랜과 계산 결과를 함께 스크롤한다. */
 export function AIAnalysisScreen() {
@@ -23,6 +22,7 @@ export function AIAnalysisScreen() {
   const {
     query,
     selectedIds,
+    appliedIds,
     monthly,
     annual,
     hasSelection,
@@ -76,7 +76,8 @@ export function AIAnalysisScreen() {
                       key={plan.categoryId}
                       plan={plan}
                       selected={selectedIds.includes(plan.categoryId)}
-                      disabled={applying || locked}
+                      disabled={applying || appliedIds.includes(plan.categoryId)}
+                      applied={appliedIds.includes(plan.categoryId)}
                       onPress={() => togglePlan(plan.categoryId)}
                     />
                   ))}
@@ -91,16 +92,6 @@ export function AIAnalysisScreen() {
                 />
               </>
             ))}
-          {result?.status === 'applied' && (
-            <Text accessibilityLiveRegion="polite" variant="label" style={styles.success}>
-              이번 달 예산에 반영했어요. 총예산은 {formatFullAmount(result.totalBudget)}이에요.
-            </Text>
-          )}
-          {result?.status === 'alreadyApplied' && (
-            <Text accessibilityLiveRegion="polite" variant="label" style={styles.muted}>
-              이번 절약 플랜은 이미 예산에 반영했어요.
-            </Text>
-          )}
           {result?.status === 'error' && (
             <Text
               accessibilityRole="alert"
@@ -134,5 +125,4 @@ const styles = StyleSheet.create({
   plans: { gap: spacing.md },
   muted: { color: colors.textTertiary },
   error: { color: colors.error },
-  success: { color: colors.primaryDark },
 });
